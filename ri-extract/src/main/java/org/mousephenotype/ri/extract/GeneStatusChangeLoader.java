@@ -84,7 +84,7 @@ public class GeneStatusChangeLoader implements InitializingBean, Step {
             , "phenotyping_status"                              // L - Phenotyping status
             , "phenotyping_centre"                              // M - Phenotyping centre
             , "phenotyping_status_date"                         // N - Date phenotyping status was last updated
-            , "number_of_significant_phenotpyes"                // O - Number of significant phenotypes
+            , "number_of_significant_phenotypes"                // O - Number of significant phenotypes
     };
 
     @Autowired
@@ -141,31 +141,7 @@ public class GeneStatusChangeLoader implements InitializingBean, Step {
             geneStatusChange.setGeneAssignmentStatusDate(fs.readString("gene_assignment_status_date"));
 
             geneStatusChange.setConditionalAlleleProductionStatus(fs.readString("conditional_allele_production_status"));
-
-
-
-
-
-
-
-            String s = fs.readString("conditional_allele_production_centre");
-            geneStatusChange.setConditionalAlleleProductionCentre(s);
-
-
-
             geneStatusChange.setConditionalAlleleProductionCentre(fs.readString("conditional_allele_production_centre"));
-
-
-
-
-
-
-
-
-
-
-
-
             geneStatusChange.setConditionalAlleleStatusDate(fs.readString("conditional_allele_status_date"));
 
             geneStatusChange.setNullAlleleProductionStatus(fs.readString("null_allele_production_status"));
@@ -175,18 +151,6 @@ public class GeneStatusChangeLoader implements InitializingBean, Step {
             geneStatusChange.setPhenotypingStatus(fs.readString("phenotyping_status"));
             geneStatusChange.setPhenotypingCentre(fs.readString("phenotyping_centre"));
             geneStatusChange.setPhenotypingStatusDate(fs.readString("phenotyping_status_date"));
-
-
-
-
-
-
-
-            String t = fs.readString("number_of_significant_phenotypes");
-            geneStatusChange.setNumberOfSignificantPhenotypes(t);
-
-
-
 
             geneStatusChange.setNumberOfSignificantPhenotypes(fs.readString("number_of_significant_phenotypes"));
 

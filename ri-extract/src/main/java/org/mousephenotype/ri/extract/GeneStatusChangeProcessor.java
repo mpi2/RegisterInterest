@@ -60,7 +60,7 @@ public class GeneStatusChangeProcessor implements ItemProcessor<GeneStatusChange
             , "phenotyping_status"
             , "phenotyping_centre"
             , "phenotyping_status_date"
-            , "number_of_significant_phenotpyes"
+            , "number_of_significant_phenotypes"
     };
 
 
