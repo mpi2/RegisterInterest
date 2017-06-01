@@ -7,6 +7,7 @@ import java.util.Date;
  */
 public class ImitsStatus {
     private int pk;
+    private int status_pk;          // This field is not part of the imits_status table, but it is useful to have a place to put the equivalent register interest status pk.
     private String status;
     private boolean active;
     private Date updatedAt;
@@ -17,6 +18,14 @@ public class ImitsStatus {
 
     public void setPk(int pk) {
         this.pk = pk;
+    }
+
+    public int getStatus_pk() {
+        return status_pk;
+    }
+
+    public void setStatus_pk(int status_pk) {
+        this.status_pk = status_pk;
     }
 
     public String getStatus() {
@@ -41,5 +50,16 @@ public class ImitsStatus {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    @Override
+    public String toString() {
+        return "ImitsStatus{" +
+                "pk=" + pk +
+                ", status_pk=" + status_pk +
+                ", status='" + status + '\'' +
+                ", active=" + active +
+                ", updatedAt=" + updatedAt +
+                '}';
     }
 }

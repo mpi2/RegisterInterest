@@ -20,9 +20,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by mrelac on 12/05/2017.
@@ -131,6 +129,24 @@ public class SqlUtils {
         List<Interest> interestList = jdbcInterest.query(query, parameterMap, new InterestRowMapper());
 
         return interestList;
+    }
+
+    /**
+     * @return A {@link HashMap} of all {@link GeneStatusChange} instances, keyed by mgi accession id
+     */
+    public HashMap<String, GeneStatusChange> getGeneStatusChangeMap() {
+        HashMap<String, GeneStatusChange> map = new HashMap<>();
+        final String query = "SELECT DISTINCT mgi_accession_id FROM gene_status_change;";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+
+        List<GeneStatusChange> genes = jdbcInterest.query(query, parameterMap,new GeneStatusChangeRowMapper());
+        for (GeneStatusChange gene : genes) {
+            map.put(gene.getMgiAccessionId(), gene);
+        }
+
+        return map;
     }
 
     /**
@@ -348,12 +364,6 @@ public class SqlUtils {
         return count;
     }
 
-    public int insertGeneStatus(List<GeneStatusChange> geneStatusList) {
-        int count = 0;
-
-        return count;
-    }
-
     /**
      * Try to insert the {@link Interest} object.
      *
@@ -447,5 +457,122 @@ public class SqlUtils {
             logger.error("Error removing interest {} {}: {}. Record skipped...", interest.getAddress(), interest.getMgiAccessionId(), e.getLocalizedMessage());
             throw new InterestException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * For every {@link GeneStatusChange}:
+     * <ul>
+     *     <li>If the gene exists in gene_status_change and its status has changed, update the {@link GeneStatusChange} with the new status</li>
+     *     <li>Else add the {@link GeneStatusChange} instance to the geneStatusChange table</li>
+     * </ul>
+     *
+     * @param geneStatusList the list of {@link GeneStatusChange} instances to be used to update the database
+     * @param geneStatusMap A map, indexed by mgi accession id, of all {@link GeneStatusChange} instances
+     *
+     * @return The number of instances inserted/updated
+     *
+     * @throws InterestException
+     */
+    public int updateGeneStatusIfChanged(List<GeneStatusChange> geneStatusList, Map<String, GeneStatusChange> geneStatusMap) throws InterestException {
+        int count = 0;
+
+        for (GeneStatusChange gene : geneStatusList) {
+
+            // If the gene exists in gene_status_change, and its [register interest] status has changed, update it.
+            GeneStatusChange cachedGene = geneStatusMap.get(gene.getMgiAccessionId());
+            if ((cachedGene != null) && (cachedGene.getStatusPk() != gene.getStatusPk())) {
+
+                count = updateGeneStatusChange(gene);
+
+            } else {
+
+                // The gene does not yet exist. Make sure it exists in the gene table, then add the GeneStatusChange instance to the gene_status_change table.
+                insertGene(gene.getMgiAccessionId());
+
+                count = insertGeneStatusChange(gene);
+            }
+        }
+
+        return count;
+    }
+
+
+    // PRIVATE METHODS
+
+
+    private int insertGeneStatusChange(GeneStatusChange gene) {
+        final String columnNames =
+                "mgi_accession_id, symbol, assignment_status, assigned_to, assignment_status_date, " +
+                        "conditional_allele_production_status, conditional_allele_production_centre, conditional_allele_status_date, " +
+                        "null_allele_production_status, null_allele_production_centre, null_allele_status_date, " +
+                        "phenotyping_status, phenotyping_centre, phenotyping_status_date, " +
+                        "number_of_significant_phenotypes";
+
+        final String columnValues =
+                ":mgi_accession_id, :symbol, :assignment_status, :assigned_to, :assignment_status_date, " +
+                        ":conditional_allele_production_status, :conditional_allele_production_centre, :conditional_allele_status_date, " +
+                        ":null_allele_production_status, :null_allele_production_centre, :null_allele_status_date, " +
+                        ":phenotyping_status, :phenotyping_centre, :phenotyping_status_date, " +
+                        ":number_of_significant_phenotypes";
+
+        final String query = "INSERT INTO gene_status_change(" + columnNames + ") VALUES (" + columnValues + ")";
+
+        Map<String, Object> parameterMap = setGeneStatusChangeValues(gene);
+
+        int count = jdbcInterest.update(query, parameterMap);
+
+        return count;
+    }
+
+    private int updateGeneStatusChange(GeneStatusChange gene) {
+
+        final String colData =
+                // Omit mgi_accession_id in the UPDATE as it is used in the WHERE clause.
+                "symbol = :symbol, assignment_status = :assignment_status, assigned_to = :assigned_to, assignment_status_date = :assignment_status_date, " +
+                "conditional_allele_production_status = :conditional_allele_production_status, " +
+                "conditional_allele_production_centre = :conditional_allele_production_centre, " +
+                "conditional_allele_status_date = :conditional_allele_status_date " +
+                "null_allele_production_status = :null_allele_production_status, " +
+                "null_allele_production_centre = :null_allele_production_centre, " +
+                "null_allele_status_date = :null_allele_status_date " +
+                "phenotyping_status = :phenotyping_status, " +
+                "phenotyping_centre = :phenotyping_centre, " +
+                "phenotyping_status_date = :phenotyping_status_date, " +
+                "number_of_significant_phenotypes = :number_of_significant_phenotypes";
+
+        final String query = "UPDATE gene_status_change SET " + colData + " WHERE mgi_accession_id = :mgi_accession_id";
+
+        Map<String, Object> parameterMap = setGeneStatusChangeValues(gene);
+
+        int count = jdbcInterest.update(query, parameterMap);
+
+        return count;
+    }
+
+    private Map<String, Object> setGeneStatusChangeValues(GeneStatusChange gene) {
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        parameterMap.put("mgi_accession_id", gene.getMgiAccessionId());
+        parameterMap.put("symbol", gene.getSymbol());
+        parameterMap.put("assignment_status", gene.getAssignmentStatus());
+        parameterMap.put("assigned_to", gene.getAssignedTo());
+        parameterMap.put("assignment_status_date", gene.getAssignmentStatusDate());
+
+        parameterMap.put("conditional_allele_production_status", gene.getConditionalAlleleProductionStatus());
+        parameterMap.put("conditional_allele_production_centre", gene.getConditionalAlleleProductionCentre());
+        parameterMap.put("conditional_allele_status_date", gene.getConditionalAlleleStatusDate());
+
+        parameterMap.put("null_allele_production_status", gene.getNullAlleleProductionStatus());
+        parameterMap.put("null_allele_production_centre", gene.getNullAlleleProductionCentre());
+        parameterMap.put("null_allele_status_date", gene.getNullAlleleStatusDate());
+
+        parameterMap.put("phenotyping_status", gene.getPhenotypingStatus());
+        parameterMap.put("phenotyping_centre", gene.getPhenotypingCentre());
+        parameterMap.put("phenotyping_status_date", gene.getPhenotypingStatusDate());
+
+        parameterMap.put("number_of_significant_phenotypes", gene.getNumberOfSignificantPhenotypes());
+
+        return parameterMap;
     }
 }

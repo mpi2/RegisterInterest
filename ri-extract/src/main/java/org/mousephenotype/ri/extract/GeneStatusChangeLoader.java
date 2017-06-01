@@ -134,25 +134,25 @@ public class GeneStatusChangeLoader implements InitializingBean, Step {
         public GeneStatusChange mapFieldSet(FieldSet fs) throws BindException {
             GeneStatusChange geneStatusChange = new GeneStatusChange();
 
-            geneStatusChange.setGeneMgiAccessionId(fs.readString("gene_mgi_accession_id"));
-            geneStatusChange.setGeneMarkerSymbol(fs.readString("gene_marker_symbol"));
-            geneStatusChange.setGeneAssignmentStatus(fs.readString("gene_assignment_status"));
-            geneStatusChange.setGeneAssignedTo(fs.readString("gene_assigned_to"));
-            geneStatusChange.setGeneAssignmentStatusDate(fs.readString("gene_assignment_status_date"));
+            geneStatusChange.setMgiAccessionId(fs.readString("gene_mgi_accession_id"));
+            geneStatusChange.setSymbol(fs.readString("gene_marker_symbol"));
+            geneStatusChange.setAssignmentStatus(fs.readString("gene_assignment_status"));
+            geneStatusChange.setAssignedTo(fs.readString("gene_assigned_to"));
+            geneStatusChange.setAssignmentStatusDateString(fs.readString("gene_assignment_status_date"));
 
             geneStatusChange.setConditionalAlleleProductionStatus(fs.readString("conditional_allele_production_status"));
             geneStatusChange.setConditionalAlleleProductionCentre(fs.readString("conditional_allele_production_centre"));
-            geneStatusChange.setConditionalAlleleStatusDate(fs.readString("conditional_allele_status_date"));
+            geneStatusChange.setConditionalAlleleStatusDateString(fs.readString("conditional_allele_status_date"));
 
             geneStatusChange.setNullAlleleProductionStatus(fs.readString("null_allele_production_status"));
             geneStatusChange.setNullAlleleProductionCentre(fs.readString("null_allele_production_centre"));
-            geneStatusChange.setNullAlleleStatusDate(fs.readString("null_allele_status_date"));
+            geneStatusChange.setNullAlleleStatusDateString(fs.readString("null_allele_status_date"));
 
             geneStatusChange.setPhenotypingStatus(fs.readString("phenotyping_status"));
             geneStatusChange.setPhenotypingCentre(fs.readString("phenotyping_centre"));
-            geneStatusChange.setPhenotypingStatusDate(fs.readString("phenotyping_status_date"));
+            geneStatusChange.setPhenotypingStatusDateString(fs.readString("phenotyping_status_date"));
 
-            geneStatusChange.setNumberOfSignificantPhenotypes(fs.readString("number_of_significant_phenotypes"));
+            geneStatusChange.setNumberOfSignificantPhenotypesString(fs.readString("number_of_significant_phenotypes"));
 
             return geneStatusChange;
         }

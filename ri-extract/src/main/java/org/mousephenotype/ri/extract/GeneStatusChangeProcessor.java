@@ -77,25 +77,25 @@ public class GeneStatusChangeProcessor implements ItemProcessor<GeneStatusChange
         // Validate the file using the heading names and initialize any collections.
         if (lineNumber == 1) {
             String[] actualHeadings = new String[] {
-                    geneStatusChange.getGeneMgiAccessionId()
-                  , geneStatusChange.getGeneMarkerSymbol()
-                  , geneStatusChange.getGeneAssignmentStatus()
-                  , geneStatusChange.getGeneAssignedTo()
-                  , geneStatusChange.getGeneAssignmentStatusDate()
+                    geneStatusChange.getMgiAccessionId()
+                  , geneStatusChange.getSymbol()
+                  , geneStatusChange.getAssignmentStatus()
+                  , geneStatusChange.getAssignedTo()
+                  , geneStatusChange.getAssignmentStatusDateString()
 
                   , geneStatusChange.getConditionalAlleleProductionStatus()
                   , geneStatusChange.getConditionalAlleleProductionCentre()
-                  , geneStatusChange.getConditionalAlleleStatusDate()
+                  , geneStatusChange.getConditionalAlleleStatusDateString()
 
                   , geneStatusChange.getNullAlleleProductionStatus()
                   , geneStatusChange.getNullAlleleProductionCentre()
-                  , geneStatusChange.getNullAlleleStatusDate()
+                  , geneStatusChange.getNullAlleleStatusDateString()
 
                   , geneStatusChange.getPhenotypingStatus()
                   , geneStatusChange.getPhenotypingCentre()
-                  , geneStatusChange.getPhenotypingStatusDate()
+                  , geneStatusChange.getPhenotypingStatusDateString()
 
-                  , geneStatusChange.getNumberOfSignificantPhenotypes()
+                  , geneStatusChange.getNumberOfSignificantPhenotypesString()
             };
 
             for (int i = 0; i < expectedHeadings.length; i++) {
@@ -110,66 +110,72 @@ public class GeneStatusChangeProcessor implements ItemProcessor<GeneStatusChange
         // Validate fields. If errors, log them and return null.
 
         // status
-        if ( ! imitsStatusMap.containsKey(geneStatusChange.getGeneAssignmentStatus())) {
-            errMessages.add("Unknown imitsStatus '" + geneStatusChange.getGeneAssignmentStatus());
+        if ( ! imitsStatusMap.containsKey(geneStatusChange.getAssignmentStatus())) {
+            errMessages.add("Unknown gene assignment status '" + geneStatusChange.getAssignmentStatus() + +'"');
             return null;
         }
-        if ( ! imitsStatusMap.containsKey(geneStatusChange.getConditionalAlleleProductionStatus())) {
-            errMessages.add("Unknown imitsStatus '" + geneStatusChange.getConditionalAlleleProductionStatus());
-            return null;
+
+        if ((geneStatusChange.getConditionalAlleleProductionStatus() != null) && ( ! geneStatusChange.getConditionalAlleleProductionStatus().trim().isEmpty())) {
+            if ( ! imitsStatusMap.containsKey(geneStatusChange.getConditionalAlleleProductionStatus())) {
+                errMessages.add("Unknown conditional allele production status '" + geneStatusChange.getConditionalAlleleProductionStatus() + "'");
+                return null;
+            }
         }
-        if ( ! imitsStatusMap.containsKey(geneStatusChange.getNullAlleleProductionStatus())) {
-            errMessages.add("Unknown imitsStatus '" + geneStatusChange.getNullAlleleProductionStatus());
-            return null;
+        if ((geneStatusChange.getNullAlleleProductionStatus() != null) && ( ! geneStatusChange.getNullAlleleProductionStatus().trim().isEmpty())) {
+            if (!imitsStatusMap.containsKey(geneStatusChange.getNullAlleleProductionStatus())) {
+                errMessages.add("Unknown null allele production status '" + geneStatusChange.getNullAlleleProductionStatus() + "'");
+                return null;
+            }
         }
-        if ( ! imitsStatusMap.containsKey(geneStatusChange.getPhenotypingStatus())) {
-            errMessages.add("Unknown imitsStatus '" + geneStatusChange.getPhenotypingStatus());
-            return null;
+        if ((geneStatusChange.getPhenotypingStatus() != null) && ( ! geneStatusChange.getPhenotypingStatus().trim().isEmpty())) {
+            if (!imitsStatusMap.containsKey(geneStatusChange.getPhenotypingStatus())) {
+                errMessages.add("Unknown phenotyping status '" + geneStatusChange.getPhenotypingStatus() + "'");
+                return null;
+            }
         }
 
         // date
-        if (geneStatusChange.getGeneAssignmentStatusDate() != null) {
-            Date date = parseUtils.tryParseDate(new SimpleDateFormat("dd MMM yyyy"), geneStatusChange.getGeneAssignmentStatusDate());
+        SimpleDateFormat sdf = new SimpleDateFormat("y-M-d h:m:s");
+        if ((geneStatusChange.getAssignmentStatusDateString() != null) && ( ! geneStatusChange.getAssignmentStatusDateString().trim().isEmpty())) {
+            Date date = parseUtils.tryParseDate(sdf, geneStatusChange.getAssignmentStatusDateString());
             if (date == null) {
-                errMessages.add("Line " + lineNumber + ": Invalid date '" + geneStatusChange.getGeneAssignmentStatusDate() + "'");
+                errMessages.add("Invalid date '" + geneStatusChange.getAssignmentStatusDate() + "'");
                 return null;
             }
+            geneStatusChange.setAssignmentStatusDate(date);
         }
-        if (geneStatusChange.getConditionalAlleleStatusDate() != null) {
-            Date date = parseUtils.tryParseDate(new SimpleDateFormat("dd MMM yyyy"), geneStatusChange.getConditionalAlleleStatusDate());
+        if ((geneStatusChange.getConditionalAlleleStatusDateString() != null) && ( ! geneStatusChange.getConditionalAlleleStatusDateString().trim().isEmpty())) {
+            Date date = parseUtils.tryParseDate(sdf, geneStatusChange.getConditionalAlleleStatusDateString());
             if (date == null) {
-                errMessages.add("Line " + lineNumber + ": Invalid date '" + geneStatusChange.getConditionalAlleleStatusDate() + "'");
+                errMessages.add("Invalid date '" + geneStatusChange.getConditionalAlleleStatusDate() + "'");
                 return null;
             }
+            geneStatusChange.setConditionalAlleleStatusDate(date);
         }
-        if (geneStatusChange.getNullAlleleStatusDate() != null) {
-            Date date = parseUtils.tryParseDate(new SimpleDateFormat("dd MMM yyyy"), geneStatusChange.getNullAlleleStatusDate());
+        if ((geneStatusChange.getNullAlleleStatusDateString() != null) && ( ! geneStatusChange.getNullAlleleStatusDateString().trim().isEmpty())) {
+            Date date = parseUtils.tryParseDate(sdf, geneStatusChange.getNullAlleleStatusDateString());
             if (date == null) {
-                errMessages.add("Line " + lineNumber + ": Invalid date '" + geneStatusChange.getNullAlleleStatusDate() + "'");
+                errMessages.add("Invalid date '" + geneStatusChange.getNullAlleleStatusDate() + "'");
                 return null;
             }
+            geneStatusChange.setNullAlleleStatusDate(date);
         }
-        if (geneStatusChange.getPhenotypingStatusDate() != null) {
-            Date date = parseUtils.tryParseDate(new SimpleDateFormat("dd MMM yyyy"), geneStatusChange.getPhenotypingStatusDate());
+        if ((geneStatusChange.getPhenotypingStatusDateString() != null) && ( ! geneStatusChange.getPhenotypingStatusDateString().trim().isEmpty())) {
+            Date date = parseUtils.tryParseDate(sdf, geneStatusChange.getPhenotypingStatusDateString());
             if (date == null) {
-                errMessages.add("Line " + lineNumber + ": Invalid date '" + geneStatusChange.getPhenotypingStatusDate() + "'");
+                errMessages.add("Invalid date '" + geneStatusChange.getPhenotypingStatusDate() + "'");
                 return null;
             }
+            geneStatusChange.setPhenotypingStatusDate(date);
         }
 
         // number
-        Integer number = parseUtils.tryParseInt(geneStatusChange.getNumberOfSignificantPhenotypes());
+        Integer number = parseUtils.tryParseInt(geneStatusChange.getNumberOfSignificantPhenotypesString());
         if (number == null) {
-            errMessages.add("Line " + lineNumber + ": Invalid date '" + geneStatusChange.getNumberOfSignificantPhenotypes() + "'");
+            errMessages.add("Invalid number '" + geneStatusChange.getNumberOfSignificantPhenotypes() + "'");
             return null;
         }
-
-
-
-        if ( ! imitsStatusMap.containsKey(geneStatusChange.getNumberOfSignificantPhenotypes())) {
-            errMessages.add("Line " + lineNumber + ": Invalid or missing number of significant phenotypes: '" + geneStatusChange.getNumberOfSignificantPhenotypes() + "'");
-            return null;
-        }
+        geneStatusChange.setNumberOfSignificantPhenotypes(number);
 
         geneStatusChangeCount++;
 

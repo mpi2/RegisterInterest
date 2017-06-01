@@ -13,9 +13,10 @@ CREATE TABLE component (
 
 DROP TABLE IF EXISTS gene;
 CREATE TABLE gene (
-    pk                INT         NOT NULL         AUTO_INCREMENT PRIMARY KEY,
-    mgi_accession_id  VARCHAR(32) NOT NULL UNIQUE,
-    updated_at        TIMESTAMP   NOT NULL        DEFAULT CURRENT_TIMESTAMP
+    pk                INT          NOT NULL         AUTO_INCREMENT PRIMARY KEY,
+    mgi_accession_id  VARCHAR(32)  NOT NULL UNIQUE,
+    symbol            VARCHAR(128) NOT NULL,
+    updated_at        TIMESTAMP    NOT NULL         DEFAULT CURRENT_TIMESTAMP
                         ON UPDATE CURRENT_TIMESTAMP
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
@@ -46,13 +47,44 @@ CREATE TABLE contact_gene (
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 
+DROP TABLE IF EXISTS gene_status_change;
+CREATE TABLE gene_status_change (
+    pk                                      INT          NOT NULL  AUTO_INCREMENT PRIMARY KEY,
+
+    status_pk                               INT          NOT NULL,
+
+    mgi_accession_id                        VARCHAR(32)  NOT NULL,
+    symbol                                  VARCHAR(128) NOT NULL,
+    assignment_status                       VARCHAR(128) NOT NULL,
+    assigned_to                             VARCHAR(128) NOT NULL,
+    assignment_status_date                  DATETIME     NOT NULL,
+
+    conditional_allele_production_status    VARCHAR(128) DEFAULT NULL,
+    conditional_allele_production_centre    VARCHAR(128) DEFAULT NULL,
+    conditional_allele_status_date          DATETIME     DEFAULT NULL,
+
+    null_allele_production_status           VARCHAR(128) DEFAULT NULL,
+    null_allele_production_centre           VARCHAR(128) DEFAULT NULL,
+    null_allele_status_date                 DATETIME     DEFAULT NULL,
+
+    phenotyping_status                      VARCHAR(128) DEFAULT NULL,
+    phenotyping_centre                      VARCHAR(128) DEFAULT NULL,
+    phenotyping_status_date                 DATETIME     DEFAULT NULL,
+
+    number_of_significant_phenotypes        INT          NOT NULL,
+
+    updated_at                              TIMESTAMP    NOT NULL   DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP
+
+) COLLATE=utf8_general_ci ENGINE=InnoDb;
 
 DROP TABLE IF EXISTS imits_status;
 CREATE TABLE imits_status (
     pk          INT          NOT NULL           AUTO_INCREMENT PRIMARY KEY,
+    status_pk   INT                             DEFAULT NULL,
     status      VARCHAR(64)  NOT NULL UNIQUE,
     active      INT          NOT NULL           DEFAULT 1,                   -- 1 = active; 0 = inactive
-    updated_at  TIMESTAMP   NOT NULL        DEFAULT CURRENT_TIMESTAMP
+    updated_at  TIMESTAMP   NOT NULL            DEFAULT CURRENT_TIMESTAMP
                   ON UPDATE CURRENT_TIMESTAMP
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
@@ -141,34 +173,34 @@ INSERT INTO status (status) VALUES
     ('unregister'),
     ('withdrawn');
 
-INSERT INTO imits_status (status) VALUES
-    ('Aborted - ES Cell QC Failed'),
-    ('Assigned - ES Cell QC Complete'),
-    ('Assigned - ES Cell QC In Progress'),
-    ('Assigned'),
-    ('Chimeras obtained'),
-    ('Chimeras/Founder obtained'),
-    ('Conflict'),
-    ('Cre Excision Complete'),
-    ('Cre Excision Started'),
-    ('Founder obtained'),
-    ('Genotype confirmed'),
-    ('Inactive'),
-    ('Inspect - Conflict'),
-    ('Inspect - GLT Mouse'),
-    ('Inspect - MI Attempt'),
-    ('Interest'),
-    ('Micro-injection aborted'),
-    ('Micro-injection in progress'),
-    ('Mouse Allele Modification Registered'),
-    ('Phenotype Attempt Registered'),
-    ('Phenotype Production Aborted'),
-    ('Phenotyping Complete'),
-    ('Phenotyping Production Registered'),
-    ('Phenotyping Started'),
-    ('Rederivation Complete'),
-    ('Rederivation Started'),
-    ('Withdrawn');
+INSERT INTO imits_status (status, status_pk) VALUES
+    ('Aborted - ES Cell QC Failed', (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
+    ('Assigned - ES Cell QC Complete', (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
+    ('Assigned - ES Cell QC In Progress', (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
+    ('Assigned', (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
+    ('Chimeras obtained', (SELECT pk FROM status WHERE status = 'mouse_production_started')),
+    ('Chimeras/Founder obtained', (SELECT pk FROM status WHERE status = 'mouse_production_started')),
+    ('Conflict', (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
+    ('Cre Excision Complete', (SELECT pk FROM status WHERE status = 'mouse_produced')),
+    ('Cre Excision Started', (SELECT pk FROM status WHERE status = 'mouse_production_started')),
+    ('Founder obtained', (SELECT pk FROM status WHERE status = 'mouse_production_started')),
+    ('Genotype confirmed', (SELECT pk FROM status WHERE status = 'mouse_produced')),
+    ('Inactive', (SELECT pk FROM status WHERE status = 'withdrawn')),
+    ('Inspect - Conflict', (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
+    ('Inspect - GLT Mouse', (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
+    ('Inspect - MI Attempt', (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
+    ('Interest', (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
+    ('Micro-injection aborted', (SELECT pk FROM status WHERE status = 'mouse_production_started')),
+    ('Micro-injection in progress', (SELECT pk FROM status WHERE status = 'mouse_production_started')),
+    ('Mouse Allele Modification Registered', (SELECT pk FROM status WHERE status = 'mouse_production_started')),
+    ('Phenotype Attempt Registered', NULL),
+    ('Phenotype Production Aborted', NULL),
+    ('Phenotyping Complete', (SELECT pk FROM status WHERE status = 'phenotyping_data_available')),
+    ('Phenotyping Production Registered', NULL),
+    ('Phenotyping Started', NULL),
+    ('Rederivation Complete', (SELECT pk FROM status WHERE status = 'mouse_production_started')),
+    ('Rederivation Started', (SELECT pk FROM status WHERE status = 'mouse_production_started')),
+    ('Withdrawn', (SELECT pk FROM status WHERE status = 'withdrawn'));
 
 SET AUTOCOMMIT = 1;
 

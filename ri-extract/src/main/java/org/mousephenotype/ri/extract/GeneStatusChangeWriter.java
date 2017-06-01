@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.mousephenotype.ri.core.entities.GeneStatusChange;
 import org.mousephenotype.ri.core.SqlUtils;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by mrelac on 26/04/16.
@@ -35,6 +36,9 @@ public class GeneStatusChangeWriter implements ItemWriter {
     @Autowired
     @Qualifier("sqlUtils")
     private SqlUtils sqlUtils;
+
+    @Autowired
+    private Map<String, GeneStatusChange> geneStatusChangeMap;
 
     private int count = 0;
 
@@ -49,7 +53,7 @@ public class GeneStatusChangeWriter implements ItemWriter {
      */
     @Override
     public void write(List items) throws Exception {
-        count += sqlUtils.insertGeneStatus((List<GeneStatusChange>)items);
+        count += sqlUtils.updateGeneStatusIfChanged((List<GeneStatusChange>)items, geneStatusChangeMap);
     }
 
     public int getCount() {

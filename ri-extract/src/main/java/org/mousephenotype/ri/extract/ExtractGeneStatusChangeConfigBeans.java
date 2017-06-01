@@ -43,11 +43,8 @@ import java.util.Map;
 @Import(AppConfig.class)
 public class ExtractGeneStatusChangeConfigBeans {
 
-
-    private Map<String, GeneStatusChange> geneStatusChangeMap = new HashMap<>();    // key = marker accession id
-
     private Map<DownloadFileEnum, DownloadFilename> downloadFilenameMap = new HashMap<>();
-    private Map<String, ImitsStatus> imitsStatusMap = new HashMap<>();
+    private Map<String, ImitsStatus> imitsStatusMap;                                // key = status
 
     @NotNull
     @Value("${download.workspace}")
@@ -58,6 +55,9 @@ public class ExtractGeneStatusChangeConfigBeans {
 
     @Autowired
     private SqlUtils sqlUtils;
+
+    @Autowired
+    private Map<String, GeneStatusChange> geneStatusChangeMap;                      // key = marker accession id. map is declared in AppConfig but initialised in this code.
 
 
     public class DownloadFilename {
@@ -94,6 +94,7 @@ public class ExtractGeneStatusChangeConfigBeans {
         }
 
         imitsStatusMap = sqlUtils.getImitsStatusMap();
+        geneStatusChangeMap = sqlUtils.getGeneStatusChangeMap();
     }
 
     @Bean
@@ -125,7 +126,7 @@ public class ExtractGeneStatusChangeConfigBeans {
     }
 
     @Bean(name = "geneStatusChangeWriter")
-    public GeneStatusChangeWriter geneStatusChangeWritere() {
+    public GeneStatusChangeWriter geneStatusChangeWriter() {
         return new GeneStatusChangeWriter();
     }
 }

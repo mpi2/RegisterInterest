@@ -9,9 +9,9 @@ CREATE TABLE component (
 
 DROP TABLE IF EXISTS gene;
 CREATE TABLE gene (
-  pk                INT         NOT NULL      IDENTITY PRIMARY KEY,
-  mgi_accession_id  VARCHAR(32) NOT NULL,     UNIQUE(mgi_accession_id),
-  updated_at        TIMESTAMP   NOT NULL      DEFAULT CURRENT_TIMESTAMP
+  pk                INT          NOT NULL      IDENTITY PRIMARY KEY,
+  mgi_accession_id  VARCHAR(32)  NOT NULL,     UNIQUE(mgi_accession_id),
+  updated_at        TIMESTAMP    NOT NULL      DEFAULT CURRENT_TIMESTAMP
 
 );
 
@@ -38,9 +38,41 @@ CREATE TABLE contact_gene (
 );
 
 
+DROP TABLE IF EXISTS gene_status_change;
+CREATE TABLE gene_status_change (
+  pk                                      INT          NOT NULL  AUTO_INCREMENT PRIMARY KEY,
+
+  status_pk                               INT          NOT NULL,
+
+  mgi_accession_id                        VARCHAR(32)  NOT NULL,
+  symbol                                  VARCHAR(128) NOT NULL,
+  gene_assignment_status                  VARCHAR(128) NOT NULL,
+  gene_assigned_to                        VARCHAR(128) NOT NULL,
+  gene_assignment_status_date             DATETIME     NOT NULL,
+
+  conditional_allele_production_status    VARCHAR(128) DEFAULT NULL,
+  conditional_allele_production_centre    VARCHAR(128) DEFAULT NULL,
+  conditional_allele_status_date          DATETIME     DEFAULT NULL,
+
+  null_allele_production_status           VARCHAR(128) DEFAULT NULL,
+  null_allele_production_centre           VARCHAR(128) DEFAULT NULL,
+  null_allele_status_date                 DATETIME     DEFAULT NULL,
+
+  phenotyping_status                      VARCHAR(128) DEFAULT NULL,
+  phenotyping_centre                      VARCHAR(128) DEFAULT NULL,
+  phenotyping_status_date                 DATETIME     DEFAULT NULL,
+
+  number_of_significant_phenotypes        INT          NOT NULL,
+
+  updated_at                              TIMESTAMP    NOT NULL   DEFAULT CURRENT_TIMESTAMP,
+
+);
+
+
 DROP TABLE IF EXISTS imits_status;
 CREATE TABLE imits_status (
   pk             INT          NOT NULL      IDENTITY PRIMARY KEY,
+  status_pk      INT                        DEFAULT NULL,
   status         VARCHAR(64)  NOT NULL,     UNIQUE(status),
   active         INT          NOT NULL      DEFAULT 1,                   -- 1 = active; 0 = inactive
   updated_at     TIMESTAMP    NOT NULL      DEFAULT CURRENT_TIMESTAMP

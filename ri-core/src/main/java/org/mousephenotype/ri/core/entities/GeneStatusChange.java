@@ -1,30 +1,41 @@
 package org.mousephenotype.ri.core.entities;
 
+import java.util.Date;
+
 /**
  * Created by mrelac on 22/05/2017.
  */
 public class GeneStatusChange {
 
     private int pk;
-    private String geneMgiAccessionId;
-    private String geneMarkerSymbol;
-    private String geneAssignmentStatus;
-    private String geneAssignedTo;
-    private String geneAssignmentStatusDate;
+
+    private int statusPk;
+    private String mgiAccessionId;
+    private String symbol;
+    private String assignmentStatus;
+    private String assignedTo;
+    private Date assignmentStatusDate;
+    private String assignmentStatusDateString;
 
     private String conditionalAlleleProductionStatus;
-    private String xconditionalAlleleProductionCentre;
-    private String conditionalAlleleStatusDate;
+    private String conditionalAlleleProductionCentre;
+    private Date conditionalAlleleStatusDate;
+    private String conditionalAlleleStatusDateString;
 
     private String nullAlleleProductionStatus;
     private String nullAlleleProductionCentre;
-    private String nullAlleleStatusDate;
+    private Date nullAlleleStatusDate;
+    private String nullAlleleStatusDateString;
 
     private String phenotypingStatus;
     private String phenotypingCentre;
-    private String phenotypingStatusDate;
+    private Date phenotypingStatusDate;
+    private String phenotypingStatusDateString;
 
-    private String numberOfSignificantPhenotypes;
+    private Integer numberOfSignificantPhenotypes;
+    private String numberOfSignificantPhenotypesString;
+
+    private Date updated_at;
 
     public int getPk() {
         return pk;
@@ -34,44 +45,60 @@ public class GeneStatusChange {
         this.pk = pk;
     }
 
-    public String getGeneMgiAccessionId() {
-        return geneMgiAccessionId;
+    public int getStatusPk() {
+        return statusPk;
     }
 
-    public void setGeneMgiAccessionId(String geneMgiAccessionId) {
-        this.geneMgiAccessionId = geneMgiAccessionId;
+    public void setStatusPk(int statusPk) {
+        this.statusPk = statusPk;
     }
 
-    public String getGeneMarkerSymbol() {
-        return geneMarkerSymbol;
+    public String getMgiAccessionId() {
+        return mgiAccessionId;
     }
 
-    public void setGeneMarkerSymbol(String geneMarkerSymbol) {
-        this.geneMarkerSymbol = geneMarkerSymbol;
+    public void setMgiAccessionId(String mgiAccessionId) {
+        this.mgiAccessionId = mgiAccessionId;
     }
 
-    public String getGeneAssignmentStatus() {
-        return geneAssignmentStatus;
+    public String getSymbol() {
+        return symbol;
     }
 
-    public void setGeneAssignmentStatus(String geneAssignmentStatus) {
-        this.geneAssignmentStatus = geneAssignmentStatus;
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
     }
 
-    public String getGeneAssignedTo() {
-        return geneAssignedTo;
+    public String getAssignmentStatus() {
+        return assignmentStatus;
     }
 
-    public void setGeneAssignedTo(String geneAssignedTo) {
-        this.geneAssignedTo = geneAssignedTo;
+    public void setAssignmentStatus(String assignmentStatus) {
+        this.assignmentStatus = assignmentStatus;
     }
 
-    public String getGeneAssignmentStatusDate() {
-        return geneAssignmentStatusDate;
+    public String getAssignedTo() {
+        return assignedTo;
     }
 
-    public void setGeneAssignmentStatusDate(String geneAssignmentStatusDate) {
-        this.geneAssignmentStatusDate = geneAssignmentStatusDate;
+    public void setAssignedTo(String assignedTo) {
+        this.assignedTo = assignedTo;
+    }
+
+    public Date getAssignmentStatusDate() {
+        return assignmentStatusDate;
+    }
+
+    public void setAssignmentStatusDate(Date assignmentStatusDate) {
+        this.assignmentStatusDate = assignmentStatusDate;
+    }
+
+    public String getAssignmentStatusDateString() {
+        return assignmentStatusDateString;
+    }
+
+    public void setAssignmentStatusDateString(String assignmentStatusDateString) {
+        this.assignmentStatusDateString = assignmentStatusDateString;
     }
 
     public String getConditionalAlleleProductionStatus() {
@@ -83,19 +110,27 @@ public class GeneStatusChange {
     }
 
     public String getConditionalAlleleProductionCentre() {
-        return xconditionalAlleleProductionCentre;
+        return conditionalAlleleProductionCentre;
     }
 
     public void setConditionalAlleleProductionCentre(String conditionalAlleleProductionCentre) {
-        this.xconditionalAlleleProductionCentre = conditionalAlleleProductionCentre;
+        this.conditionalAlleleProductionCentre = conditionalAlleleProductionCentre;
     }
 
-    public String getConditionalAlleleStatusDate() {
+    public Date getConditionalAlleleStatusDate() {
         return conditionalAlleleStatusDate;
     }
 
-    public void setConditionalAlleleStatusDate(String conditionalAlleleStatusDate) {
+    public void setConditionalAlleleStatusDate(Date conditionalAlleleStatusDate) {
         this.conditionalAlleleStatusDate = conditionalAlleleStatusDate;
+    }
+
+    public String getConditionalAlleleStatusDateString() {
+        return conditionalAlleleStatusDateString;
+    }
+
+    public void setConditionalAlleleStatusDateString(String conditionalAlleleStatusDateString) {
+        this.conditionalAlleleStatusDateString = conditionalAlleleStatusDateString;
     }
 
     public String getNullAlleleProductionStatus() {
@@ -114,12 +149,20 @@ public class GeneStatusChange {
         this.nullAlleleProductionCentre = nullAlleleProductionCentre;
     }
 
-    public String getNullAlleleStatusDate() {
+    public Date getNullAlleleStatusDate() {
         return nullAlleleStatusDate;
     }
 
-    public void setNullAlleleStatusDate(String nullAlleleStatusDate) {
+    public void setNullAlleleStatusDate(Date nullAlleleStatusDate) {
         this.nullAlleleStatusDate = nullAlleleStatusDate;
+    }
+
+    public String getNullAlleleStatusDateString() {
+        return nullAlleleStatusDateString;
+    }
+
+    public void setNullAlleleStatusDateString(String nullAlleleStatusDateString) {
+        this.nullAlleleStatusDateString = nullAlleleStatusDateString;
     }
 
     public String getPhenotypingStatus() {
@@ -138,41 +181,67 @@ public class GeneStatusChange {
         this.phenotypingCentre = phenotypingCentre;
     }
 
-    public String getPhenotypingStatusDate() {
+    public Date getPhenotypingStatusDate() {
         return phenotypingStatusDate;
     }
 
-    public void setPhenotypingStatusDate(String phenotypingStatusDate) {
+    public void setPhenotypingStatusDate(Date phenotypingStatusDate) {
         this.phenotypingStatusDate = phenotypingStatusDate;
     }
 
-    public String getNumberOfSignificantPhenotypes() {
+    public String getPhenotypingStatusDateString() {
+        return phenotypingStatusDateString;
+    }
+
+    public void setPhenotypingStatusDateString(String phenotypingStatusDateString) {
+        this.phenotypingStatusDateString = phenotypingStatusDateString;
+    }
+
+    public Integer getNumberOfSignificantPhenotypes() {
         return numberOfSignificantPhenotypes;
     }
 
-    public void setNumberOfSignificantPhenotypes(String numberOfSignificantPhenotypes) {
+    public void setNumberOfSignificantPhenotypes(Integer numberOfSignificantPhenotypes) {
         this.numberOfSignificantPhenotypes = numberOfSignificantPhenotypes;
+    }
+
+    public String getNumberOfSignificantPhenotypesString() {
+        return numberOfSignificantPhenotypesString;
+    }
+
+    public void setNumberOfSignificantPhenotypesString(String numberOfSignificantPhenotypesString) {
+        this.numberOfSignificantPhenotypesString = numberOfSignificantPhenotypesString;
+    }
+
+    public Date getUpdated_at() {
+        return updated_at;
+    }
+
+    public void setUpdated_at(Date updated_at) {
+        this.updated_at = updated_at;
     }
 
     @Override
     public String toString() {
         return "GeneStatusChange{" +
                 "pk=" + pk +
-                ", geneMgiAccessionId='" + geneMgiAccessionId + '\'' +
-                ", geneMarkerSymbol='" + geneMarkerSymbol + '\'' +
-                ", geneAssignmentStatus='" + geneAssignmentStatus + '\'' +
-                ", geneAssignedTo='" + geneAssignedTo + '\'' +
-                ", geneAssignmentStatusDate='" + geneAssignmentStatusDate + '\'' +
+                ", statusPk=" + statusPk +
+                ", mgiAccessionId='" + mgiAccessionId + '\'' +
+                ", symbol='" + symbol + '\'' +
+                ", assignmentStatus='" + assignmentStatus + '\'' +
+                ", assignedTo='" + assignedTo + '\'' +
+                ", assignmentStatusDate=" + assignmentStatusDate +
                 ", conditionalAlleleProductionStatus='" + conditionalAlleleProductionStatus + '\'' +
-                ", condtionalAlleleProductionCentre='" + xconditionalAlleleProductionCentre + '\'' +
-                ", conditionalAlleleStatusDate='" + conditionalAlleleStatusDate + '\'' +
+                ", conditionalAlleleProductionCentre='" + conditionalAlleleProductionCentre + '\'' +
+                ", conditionalAlleleStatusDate=" + conditionalAlleleStatusDate +
                 ", nullAlleleProductionStatus='" + nullAlleleProductionStatus + '\'' +
                 ", nullAlleleProductionCentre='" + nullAlleleProductionCentre + '\'' +
-                ", nullAlleleStatusDate='" + nullAlleleStatusDate + '\'' +
+                ", nullAlleleStatusDate=" + nullAlleleStatusDate +
                 ", phenotypingStatus='" + phenotypingStatus + '\'' +
                 ", phenotypingCentre='" + phenotypingCentre + '\'' +
-                ", phenotypingStatusDate='" + phenotypingStatusDate + '\'' +
-                ", numberOfSignificantPhenotypes='" + numberOfSignificantPhenotypes + '\'' +
+                ", phenotypingStatusDate=" + phenotypingStatusDate +
+                ", numberOfSignificantPhenotypes=" + numberOfSignificantPhenotypes +
+                ", updated_at=" + updated_at +
                 '}';
     }
 }
