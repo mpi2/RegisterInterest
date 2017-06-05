@@ -109,11 +109,11 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
         // Validate fields. If errors, log them and return null.
 
         // Required fields
-        if (gene.getMgiAccessionId().trim().isEmpty()) {
+        if ((gene.getMgiAccessionId() == null) || (gene.getMgiAccessionId().trim().isEmpty())) {
             logger.info("Line " + lineNumber + ": Empty MGI accession id");
             return null;
         }
-        if (gene.getSymbol().trim().isEmpty()) {
+        if ((gene.getSymbol() == null) || (gene.getSymbol().trim().isEmpty())) {
             logger.info("Line " + lineNumber + ": Empty symbol");
             return null;
         }
