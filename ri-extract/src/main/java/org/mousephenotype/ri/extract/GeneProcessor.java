@@ -35,7 +35,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class GeneProcessor implements ItemProcessor<Gene, Gene> {
 
-    private int geneCount = 0;
     private Map<String, ImitsStatus> imitsStatusMap;
     private int lineNumber = 0;
 
@@ -109,10 +108,20 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
 
         // Validate fields. If errors, log them and return null.
 
+        // Required fields
+        if (gene.getMgiAccessionId().trim().isEmpty()) {
+            logger.info("Line " + lineNumber + ": Empty MGI accession id");
+            return null;
+        }
+        if (gene.getSymbol().trim().isEmpty()) {
+            logger.info("Line " + lineNumber + ": Empty symbol");
+            return null;
+        }
+
         // statuses
         if ((gene.getAssignmentStatus() != null) && ( ! gene.getAssignmentStatus().trim().isEmpty())) {
-            if (!imitsStatusMap.containsKey(gene.getAssignmentStatus())) {
-                errMessages.add("Unknown gene assignment status '" + gene.getAssignmentStatus() + +'"');
+            if ( ! imitsStatusMap.containsKey(gene.getAssignmentStatus())) {
+                errMessages.add("Unknown gene assignment status '" + gene.getAssignmentStatus() + '"');
                 return null;
             }
         }
@@ -202,13 +211,7 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
             gene.setPhenotypingStatusPk(null);
         }
 
-        geneCount++;
-
         return gene;
-    }
-
-    public int getGeneCount() {
-        return geneCount;
     }
 
 

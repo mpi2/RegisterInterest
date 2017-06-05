@@ -35,7 +35,7 @@ CREATE TABLE gene (
 
   number_of_significant_phenotypes            INT          DEFAULT 0,
 
-  updated_at                                  TIMESTAMP    NOT NULL   DEFAULT CURRENT_TIMESTAMP,
+  updated_at                                  TIMESTAMP    NOT NULL   DEFAULT CURRENT_TIMESTAMP
 
 );
 
@@ -85,14 +85,15 @@ CREATE TABLE status (
 
 DROP TABLE IF EXISTS sent;
 CREATE TABLE sent (
-  pk               INT            NOT NULL      IDENTITY PRIMARY KEY,
+  pk               INT            NOT NULL        AUTO_INCREMENT PRIMARY KEY,
   subject          VARCHAR(78)    NOT NULL,
   body             VARCHAR(2048)  NOT NULL,
-  contact_pk       INT NOT NULL,
   component_pk     INT NOT NULL,
+  contact_gene_pk  INT NOT NULL,
   status_pk        INT NOT NULL,
-  gene_pk          INT,
-  updated_at       TIMESTAMP      NOT NULL      DEFAULT CURRENT_TIMESTAMP
+  updated_at       TIMESTAMP      NOT NULL      DEFAULT CURRENT_TIMESTAMP,
+
+  UNIQUE (contact_gene_pk)
 
 );
 

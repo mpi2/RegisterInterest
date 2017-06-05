@@ -40,7 +40,7 @@ import java.util.concurrent.Executors;
 /**
  * Created by mrelac on 22/05/2017.
  *
- * This class in intended to be a command-line callable java main program that loads the ri database with the lastest
+ * This class is intended to be a command-line callable java main program that loads the ri database with the lastest
  * iMits Gene Status Change Report.
  */
 @EnableBatchProcessing

@@ -40,10 +40,7 @@ CREATE TABLE gene (
     number_of_significant_phenotypes                            INT          DEFAULT 0,
 
     updated_at                                                  TIMESTAMP    NOT NULL   DEFAULT CURRENT_TIMESTAMP
-    ON UPDATE CURRENT_TIMESTAMP,
-
-    KEY         mgi_accession_id_idx                            (mgi_accession_id),
-    KEY         updated_at_idx                                  (updated_at)
+                                                                  ON UPDATE CURRENT_TIMESTAMP
         /*
             FOREIGN KEY assignment_status_pk_fk                         (assignment_status_pk)                  REFERENCES status(pk),
             FOREIGN KEY conditional_allele_production_status_pk_fk      (conditional_allele_production_status)  REFERENCES status(pk),
@@ -59,7 +56,7 @@ CREATE TABLE contact (
     pk            INT          NOT NULL         AUTO_INCREMENT PRIMARY KEY,
     address       VARCHAR(255) NOT NULL UNIQUE,
     active        INT          NOT NULL         DEFAULT 1,                   -- 1 = active; 0 = inactive
-    updated_at    TIMESTAMP   NOT NULL        DEFAULT CURRENT_TIMESTAMP
+    updated_at    TIMESTAMP   NOT NULL          DEFAULT CURRENT_TIMESTAMP
                     ON UPDATE CURRENT_TIMESTAMP
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
@@ -97,7 +94,7 @@ CREATE TABLE imits_status (
     status_pk   INT                             DEFAULT NULL,
     status      VARCHAR(64)  NOT NULL UNIQUE,
     active      INT          NOT NULL           DEFAULT 1,                   -- 1 = active; 0 = inactive
-    updated_at  TIMESTAMP   NOT NULL            DEFAULT CURRENT_TIMESTAMP
+    updated_at  TIMESTAMP    NOT NULL           DEFAULT CURRENT_TIMESTAMP
                   ON UPDATE CURRENT_TIMESTAMP
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
@@ -105,20 +102,19 @@ CREATE TABLE imits_status (
 
 DROP TABLE IF EXISTS sent;
 CREATE TABLE sent (
-    pk               INT            NOT NULL      AUTO_INCREMENT PRIMARY KEY,
+    pk               INT            NOT NULL        AUTO_INCREMENT PRIMARY KEY,
     subject          VARCHAR(78)    NOT NULL,
     body             VARCHAR(2048)  NOT NULL,
-    contact_pk       INT NOT NULL,
     component_pk     INT NOT NULL,
+    contact_gene_pk  INT NOT NULL,
     status_pk        INT NOT NULL,
-    gene_pk          INT,
-    updated_at       TIMESTAMP   NOT NULL        DEFAULT CURRENT_TIMESTAMP
-                        ON UPDATE CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP      NOT NULL        DEFAULT CURRENT_TIMESTAMP
+                       ON UPDATE CURRENT_TIMESTAMP,
 
-    FOREIGN KEY contact_pk_fk     (contact_pk)   REFERENCES contact(pk),
-    FOREIGN KEY component_pk_fk   (component_pk) REFERENCES component(pk),
-    FOREIGN KEY status_pk_fk      (status_pk)    REFERENCES status(pk),
-    FOREIGN KEY gene_pk_fk        (gene_pk)      REFERENCES gene(pk)
+    FOREIGN KEY contact_gene_pk_fk  (contact_gene_pk)   REFERENCES contact_gene(pk),
+    FOREIGN KEY component_pk_fk     (component_pk)      REFERENCES component(pk),
+    FOREIGN KEY status_pk_fk        (status_pk)         REFERENCES status(pk),
+    UNIQUE KEY  contact_gene_uk     (contact_gene_pk)
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 

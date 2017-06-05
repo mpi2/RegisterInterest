@@ -28,6 +28,7 @@ public class ImitsStatusRowMapper implements RowMapper<ImitsStatus> {
         ImitsStatus imitsStatus = new ImitsStatus();
 
         imitsStatus.setPk(rs.getInt("pk"));
+        imitsStatus.setStatus(rs.getString("status"));
         imitsStatus.setStatus_pk(rs.getInt("status_pk"));
         int active = rs.getInt("active");
         imitsStatus.setActive(active > 0 ? true : false);

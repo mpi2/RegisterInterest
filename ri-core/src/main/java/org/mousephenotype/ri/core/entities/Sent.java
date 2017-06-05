@@ -7,12 +7,12 @@ import java.util.Date;
  */
 public class Sent {
     private int pk;
-    private int componentPk;
-    private int contactPk;
-    private int genePk;
-    private int statusPk;
+
     private String subject;
     private String body;
+    private int componentPk;
+    private int contactGenePk;
+    private int statusPk;
     private Date updatedAt;
 
     public int getPk() {
@@ -21,38 +21,6 @@ public class Sent {
 
     public void setPk(int pk) {
         this.pk = pk;
-    }
-
-    public int getComponentPk() {
-        return componentPk;
-    }
-
-    public void setComponentPk(int componentPk) {
-        this.componentPk = componentPk;
-    }
-
-    public int getContactPk() {
-        return contactPk;
-    }
-
-    public void setContactPk(int contactPk) {
-        this.contactPk = contactPk;
-    }
-
-    public int getGenePk() {
-        return genePk;
-    }
-
-    public void setGenePk(int genePk) {
-        this.genePk = genePk;
-    }
-
-    public int getStatusPk() {
-        return statusPk;
-    }
-
-    public void setStatusPk(int statusPk) {
-        this.statusPk = statusPk;
     }
 
     public String getSubject() {
@@ -69,6 +37,30 @@ public class Sent {
 
     public void setBody(String body) {
         this.body = body;
+    }
+
+    public int getComponentPk() {
+        return componentPk;
+    }
+
+    public void setComponentPk(int componentPk) {
+        this.componentPk = componentPk;
+    }
+
+    public int getContactGenePk() {
+        return contactGenePk;
+    }
+
+    public void setContactGenePk(int contactGenePk) {
+        this.contactGenePk = contactGenePk;
+    }
+
+    public int getStatusPk() {
+        return statusPk;
+    }
+
+    public void setStatusPk(int statusPk) {
+        this.statusPk = statusPk;
     }
 
     public Date getUpdatedAt() {

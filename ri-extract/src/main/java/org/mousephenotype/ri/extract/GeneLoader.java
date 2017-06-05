@@ -242,7 +242,7 @@ public class GeneLoader implements InitializingBean, Step {
         @Override
         protected Set<String> logStatus() {
             logger.info("GENE LOADER: Added {} new gene records to database from file {} in {}.",
-                    ((GeneProcessor) geneProcessor).getGeneCount(),
+                    ((GeneWriter) writer).getCount(),
                     imitsKeys.get(FilenameKeys.EBI_Gene),
                     dateUtils.formatDateDifference(start, stop));
 

@@ -463,10 +463,12 @@ public class SqlUtils {
 
                 // Except for the initial load, most of the time the gene will already exist.
                 // Try to update. If that fails because it doesn't yet exist, insert.
-                count += updateGene(parameterMap);
-                if (count == 0) {
-                    count += insertGene(parameterMap);
+                int updateCount = updateGene(parameterMap);
+                if (updateCount == 0) {
+                    updateCount = insertGene(parameterMap);
                 }
+
+                count += updateCount;
 
             } catch (Exception e) {
                 logger.error(e.getLocalizedMessage());

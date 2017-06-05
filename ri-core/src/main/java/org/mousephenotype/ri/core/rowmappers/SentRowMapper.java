@@ -28,12 +28,13 @@ public class SentRowMapper implements RowMapper<Sent> {
         Sent sent = new Sent();
 
         sent.setPk(rs.getInt("pk"));
+
         sent.setComponentPk(rs.getInt("component_pk"));
-        sent.setContactPk(rs.getInt("contact_pk"));
-        sent.setGenePk(rs.getInt("sent_pk"));
+        sent.setContactGenePk(rs.getInt("contact_gene_pk"));
         sent.setStatusPk(rs.getInt("status_pk"));
         sent.setSubject((rs.getString("subject")));
         sent.setBody((rs.getString("body")));
+
         sent.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));
 
         return sent;
