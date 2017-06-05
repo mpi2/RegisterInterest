@@ -114,7 +114,7 @@ public class InterestControllerTest {
     @Test
     public void queryEmailWithEmailAndNonexistentGene() throws Exception {
 
-        String url = "/email/mrelac@ebi.ac.uk?mgiAccessionId=junk";
+        String url = "/email/user1@ebi.ac.uk?mgiAccessionId=junk";
 
         this.mockMvc.perform(
                 get(url)
@@ -129,21 +129,21 @@ public class InterestControllerTest {
     @Test
     public void queryEmailWithEmailExpectMultipleGenes() throws Exception {
 
-        String url = "/email/mrelac@ebi.ac.uk";
+        String url = "/email/user1@ebi.ac.uk";
 
         this.mockMvc.perform(
                 get(url)
                         .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].address", Matchers.comparesEqualTo("mrelac@ebi.ac.uk")))
+                .andExpect(jsonPath("$[0].address", Matchers.comparesEqualTo("user1@ebi.ac.uk")))
                 .andExpect(jsonPath("$[0].mgiAccessionId", Matchers.comparesEqualTo("MGI:0000010")))
                 .andExpect(jsonPath("$[0].active", Matchers.comparesEqualTo(true)))
 
-                .andExpect(jsonPath("$[1].address", Matchers.comparesEqualTo("mrelac@ebi.ac.uk")))
+                .andExpect(jsonPath("$[1].address", Matchers.comparesEqualTo("user1@ebi.ac.uk")))
                 .andExpect(jsonPath("$[1].mgiAccessionId", Matchers.comparesEqualTo("MGI:0000030")))
                 .andExpect(jsonPath("$[1].active", Matchers.comparesEqualTo(true)))
 
-                .andExpect(jsonPath("$[2].address", Matchers.comparesEqualTo("mrelac@ebi.ac.uk")))
+                .andExpect(jsonPath("$[2].address", Matchers.comparesEqualTo("user1@ebi.ac.uk")))
                 .andExpect(jsonPath("$[2].mgiAccessionId", Matchers.comparesEqualTo("MGI:0000020")))
                 .andExpect(jsonPath("$[2].active", Matchers.comparesEqualTo(true)))
         ;
@@ -152,13 +152,13 @@ public class InterestControllerTest {
     @Test
     public void queryEmailWithEmailAndGeneExpectSingleGene() throws Exception {
 
-        String url = "/email/mrelac@ebi.ac.uk?mgiAccessionId=MGI:0000030";
+        String url = "/email/user1@ebi.ac.uk?mgiAccessionId=MGI:0000030";
 
         this.mockMvc.perform(
                 get(url)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].address", Matchers.comparesEqualTo("mrelac@ebi.ac.uk")))
+                .andExpect(jsonPath("$[0].address", Matchers.comparesEqualTo("user1@ebi.ac.uk")))
                 .andExpect(jsonPath("$[0].mgiAccessionId", Matchers.comparesEqualTo("MGI:0000030")))
                 .andExpect(jsonPath("$[0].active", Matchers.comparesEqualTo(true)))
                 ;
@@ -182,7 +182,7 @@ public class InterestControllerTest {
     @Test
     public void queryGeneWithNonexistingGeneAndEmail() throws Exception {
 
-        String url = "/gene/junk?emailAddress=mrelac@ebi.ac.uk";
+        String url = "/gene/junk?emailAddress=user1@ebi.ac.uk";
 
         this.mockMvc.perform(
                 get(url)
@@ -229,15 +229,15 @@ public class InterestControllerTest {
                 get(url)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].address", Matchers.comparesEqualTo("mrelac@ebi.ac.uk")))
+                .andExpect(jsonPath("$[0].address", Matchers.comparesEqualTo("user1@ebi.ac.uk")))
                 .andExpect(jsonPath("$[0].mgiAccessionId", Matchers.comparesEqualTo("MGI:0000010")))
                 .andExpect(jsonPath("$[0].active", Matchers.comparesEqualTo(true)))
 
-                .andExpect(jsonPath("$[1].address", Matchers.comparesEqualTo("tmeehan@ebi.ac.uk")))
+                .andExpect(jsonPath("$[1].address", Matchers.comparesEqualTo("user2@ebi.ac.uk")))
                 .andExpect(jsonPath("$[1].mgiAccessionId", Matchers.comparesEqualTo("MGI:0000010")))
                 .andExpect(jsonPath("$[1].active", Matchers.comparesEqualTo(true)))
 
-                .andExpect(jsonPath("$[2].address", Matchers.comparesEqualTo("jmason@ebi.ac.uk")))
+                .andExpect(jsonPath("$[2].address", Matchers.comparesEqualTo("user3@ebi.ac.uk")))
                 .andExpect(jsonPath("$[2].mgiAccessionId", Matchers.comparesEqualTo("MGI:0000010")))
                 .andExpect(jsonPath("$[2].active", Matchers.comparesEqualTo(true)))
         ;
@@ -252,7 +252,7 @@ public class InterestControllerTest {
                 get(url)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].address", Matchers.comparesEqualTo("mrelac@ebi.ac.uk")))
+                .andExpect(jsonPath("$[0].address", Matchers.comparesEqualTo("user1@ebi.ac.uk")))
                 .andExpect(jsonPath("$[0].mgiAccessionId", Matchers.comparesEqualTo("MGI:0000030")))
                 .andExpect(jsonPath("$[0].active", Matchers.comparesEqualTo(true)))
         ;
@@ -261,13 +261,13 @@ public class InterestControllerTest {
     @Test
     public void queryGeneWithGeneAndEmailExpectMrelac() throws Exception {
 
-        String url = "/gene/MGI:0000020?emailAddress=mrelac@ebi.ac.uk";
+        String url = "/gene/MGI:0000020?emailAddress=user1@ebi.ac.uk";
 
         this.mockMvc.perform(
                 get(url)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].address", Matchers.comparesEqualTo("mrelac@ebi.ac.uk")))
+                .andExpect(jsonPath("$[0].address", Matchers.comparesEqualTo("user1@ebi.ac.uk")))
                 .andExpect(jsonPath("$[0].mgiAccessionId", Matchers.comparesEqualTo("MGI:0000020")))
                 .andExpect(jsonPath("$[0].active", Matchers.comparesEqualTo(true)))
         ;
@@ -276,13 +276,13 @@ public class InterestControllerTest {
     @Test
     public void queryGeneWithGeneAndEmailExpectJmason() throws Exception {
 
-        String url = "/gene/MGI:0000010?emailAddress=jmason@ebi.ac.uk";
+        String url = "/gene/MGI:0000010?emailAddress=user3@ebi.ac.uk";
 
         this.mockMvc.perform(
                 get(url)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].address", Matchers.comparesEqualTo("jmason@ebi.ac.uk")))
+                .andExpect(jsonPath("$[0].address", Matchers.comparesEqualTo("user3@ebi.ac.uk")))
                 .andExpect(jsonPath("$[0].mgiAccessionId", Matchers.comparesEqualTo("MGI:0000010")))
                 .andExpect(jsonPath("$[0].active", Matchers.comparesEqualTo(true)))
                 ;
@@ -295,7 +295,7 @@ public class InterestControllerTest {
     @Test
     public void registerEmailOnly() throws Exception {
 
-        String url = "/mrelac@ebi.ac.uk";
+        String url = "/user1@ebi.ac.uk";
 
         this.mockMvc.perform(
                 post(url)
@@ -328,7 +328,7 @@ public class InterestControllerTest {
     @Test
     public void registerExistingEmailAndNonexistingGene() throws Exception {
 
-        String url = "/mrelac@ebi.ac.uk/junk";
+        String url = "/user1@ebi.ac.uk/junk";
 
         this.mockMvc.perform(
                 post(url)
@@ -354,13 +354,13 @@ public class InterestControllerTest {
     @Test
     public void registerExistingEmailAndExistingRegisteredGene() throws Exception {
 
-        String url = "/mrelac@ebi.ac.uk/MGI:0000020";
+        String url = "/user1@ebi.ac.uk/MGI:0000020";
 
         this.mockMvc.perform(
                 post(url)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.address", Matchers.comparesEqualTo("mrelac@ebi.ac.uk")))
+                .andExpect(jsonPath("$.address", Matchers.comparesEqualTo("user1@ebi.ac.uk")))
                 .andExpect(jsonPath("$.mgiAccessionId", Matchers.comparesEqualTo("MGI:0000020")))
                 .andExpect(jsonPath("$.active", Matchers.comparesEqualTo(true)))
                 ;
@@ -384,13 +384,13 @@ public class InterestControllerTest {
     @Test
     public void registerExistingEmailAndExistingUnregisteredGene() throws Exception {
 
-        String url = "/jmason@ebi.ac.uk/MGI:0000020";
+        String url = "/user3@ebi.ac.uk/MGI:0000020";
 
         this.mockMvc.perform(
                 post(url)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.address", Matchers.comparesEqualTo("jmason@ebi.ac.uk")))
+                .andExpect(jsonPath("$.address", Matchers.comparesEqualTo("user3@ebi.ac.uk")))
                 .andExpect(jsonPath("$.mgiAccessionId", Matchers.comparesEqualTo("MGI:0000020")))
                 .andExpect(jsonPath("$.active", Matchers.comparesEqualTo(true)))
         ;
@@ -403,7 +403,7 @@ public class InterestControllerTest {
     @Test
     public void unregisterOmitGeneComponent() throws Exception {
 
-        String url = "/mrelac@ebi.ac.uk";
+        String url = "/user1@ebi.ac.uk";
 
         this.mockMvc.perform(
                 delete(url)
@@ -425,7 +425,7 @@ public class InterestControllerTest {
     @Test
     public void unregisterExistingEmailAndNonexistingGene() throws Exception {
 
-        String url = "/mrelac@ebi.ac.uk/junk";
+        String url = "/user1@ebi.ac.uk/junk";
 
         this.mockMvc.perform(
                 delete(url)
@@ -447,7 +447,7 @@ public class InterestControllerTest {
     @Test
     public void unregisterExistingEmailAndExistingUnregisteredGene() throws Exception {
 
-        String url = "/mrelac@ebi.ac.uk/MGI:0000060";
+        String url = "/user1@ebi.ac.uk/MGI:0000060";
 
         this.mockMvc.perform(
                 delete(url)
@@ -458,13 +458,13 @@ public class InterestControllerTest {
     @Test
     public void unregisterExistingEmailAndExistingRegisteredGene() throws Exception {
 
-        String url = "/mrelac@ebi.ac.uk/MGI:0000020";
+        String url = "/user1@ebi.ac.uk/MGI:0000020";
 
         this.mockMvc.perform(
                 delete(url)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.address", Matchers.comparesEqualTo("mrelac@ebi.ac.uk")))
+                .andExpect(jsonPath("$.address", Matchers.comparesEqualTo("user1@ebi.ac.uk")))
                 .andExpect(jsonPath("$.mgiAccessionId", Matchers.comparesEqualTo("MGI:0000020")))
                 .andExpect(jsonPath("$.active", Matchers.comparesEqualTo(true)))
         ;

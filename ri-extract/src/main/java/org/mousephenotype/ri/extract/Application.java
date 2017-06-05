@@ -44,10 +44,9 @@ import java.util.concurrent.Executors;
  * iMits Gene Status Change Report.
  */
 @EnableBatchProcessing
-@SpringBootApplication
 @ComponentScan({"org.mousephenotype"})
-@Import( {ExtractGeneStatusChangeConfigBeans.class })
-public class Application extends SpringBootServletInitializer implements CommandLineRunner {
+@Import( {ExtractGeneConfigBeans.class })
+public class Application implements CommandLineRunner {
 
     public static void main(String[] args) throws Exception {
         SpringApplication app = new SpringApplication(Application.class);
@@ -55,15 +54,6 @@ public class Application extends SpringBootServletInitializer implements Command
         app.setLogStartupInfo(false);
         app.run(args);
     }
-
-//    @Override
-//    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-//        return application.sources(Application.class);
-//    }
-//
-//    public static void main(String[] args) throws Exception {
-//        SpringApplication.run(Application.class, args);
-//    }
 
     @Autowired
     public JobBuilderFactory jobBuilderFactory;
@@ -79,7 +69,7 @@ public class Application extends SpringBootServletInitializer implements Command
     public List<Downloader> downloader;
 
     @Autowired
-    public GeneStatusChangeLoader imitsLoader;
+    public GeneLoader imitsLoader;
 
     @Autowired
     public NamedParameterJdbcTemplate jdbc;
@@ -135,8 +125,6 @@ public class Application extends SpringBootServletInitializer implements Command
 
     public Job downloaderJob() throws InterestException {
 
-
-
         List<Flow> flows = new ArrayList<>();
         for (int i = 0; i < downloader.size(); i++) {
             Downloader downloader = this.downloader.get(i);
@@ -157,30 +145,14 @@ public class Application extends SpringBootServletInitializer implements Command
                 .build();
     }
 
-
-
-
-
-
-//        Flow flow = new FlowBuilder<Flow>("downloadFlow").from(downloader.getStep(stepBuilderFactory)).end();
-//
-//        FlowBuilder<Flow> flowBuilder = new FlowBuilder<Flow>("downloadFlowbuilder").start(flow);
-//
-//        return jobBuilderFactory.get("downloaderJob")
-//                .incrementer(new RunIdIncrementer())
-//                .start(flowBuilder.build())
-//                .end()
-//                .build();
-//    }
-
     public Job imitsLoaderJob() throws InterestException {
 
         // imits
-        Flow geneStatusChangeFlow = new FlowBuilder<Flow>("geneStatusChangeFlow").from(imitsLoader).end();
+        Flow geneFlow = new FlowBuilder<Flow>("geneFlow").from(imitsLoader).end();
 
-        return jobBuilderFactory.get("geneStatusChangeLoaderJob")
+        return jobBuilderFactory.get("geneLoaderJob")
                 .incrementer(new RunIdIncrementer())
-                .start(geneStatusChangeFlow)
+                .start(geneFlow)
                 .end()
                 .build();
     }

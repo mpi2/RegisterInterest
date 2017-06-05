@@ -1,12 +1,12 @@
 INSERT INTO contact (address, active) VALUES
-  ('mrelac@ebi.ac.uk', 1),
-  ('tmeehan@ebi.ac.uk', 1),
-  ('jmason@ebi.ac.uk', 1);
+  ('user1@ebi.ac.uk', 1),
+  ('user2@ebi.ac.uk', 1),
+  ('user3@ebi.ac.uk', 1);
 
-INSERT INTO gene (mgi_accession_id) VALUES
-  ('MGI:0000010'),
-  ('MGI:0000020'),
-  ('MGI:0000030');
+INSERT INTO gene (mgi_accession_id, symbol) VALUES
+  ('MGI:0000010', 'gene-10'),
+  ('MGI:0000020', 'gene-20'),
+  ('MGI:0000030', 'gene-30');
 
 insert into contact_gene(contact_pk, gene_pk) values
   (1, 1),

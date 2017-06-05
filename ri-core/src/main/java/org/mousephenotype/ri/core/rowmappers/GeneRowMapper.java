@@ -27,9 +27,33 @@ public class GeneRowMapper implements RowMapper<Gene> {
     public Gene mapRow(ResultSet rs, int rowNum) throws SQLException {
         Gene gene = new Gene();
 
-        gene.setMgiAccessionId((rs.getString("mgi_accession_id")));
         gene.setPk(rs.getInt("pk"));
-        gene.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));
+
+        gene.setMgiAccessionId(rs.getString("mgi_accession_id"));
+        gene.setSymbol(rs.getString("symbol"));
+        gene.setAssignedTo(rs.getString("assigned_to"));
+        gene.setAssignmentStatus(rs.getString("assignment_status"));
+        gene.setAssignmentStatusDate(rs.getDate("assignment_status_date"));
+        gene.setAssignmentStatusPk(rs.getInt("assignment_status_pk"));
+
+        gene.setConditionalAlleleProductionCentre(rs.getString("conditional_allele_production_centre"));
+        gene.setConditionalAlleleProductionStatus(rs.getString("conditional_allele_production_status"));
+        gene.setConditionalAlleleProductionStatusDate(rs.getDate("conditional_allele_production_status_date"));
+        gene.setConditionalAlleleProductionStatusPk(rs.getInt("conditional_allele_production_status_pk"));
+
+        gene.setNullAlleleProductionCentre(rs.getString("null_allele_production_centre"));
+        gene.setNullAlleleProductionStatus(rs.getString("null_allele_production_status"));
+        gene.setNullAlleleProductionStatusDate(rs.getDate("null_allele_production_status_date"));
+        gene.setNullAlleleProductionStatusPk(rs.getInt("null_allele_production_status_pk"));
+
+        gene.setPhenotypingCentre(rs.getString("phenotyping_centre"));
+        gene.setPhenotypingStatus(rs.getString("phenotyping_status"));
+        gene.setPhenotypingStatusDate(rs.getDate("phenotyping_status_date"));
+        gene.setPhenotypingStatusPk(rs.getInt("phenotyping_status_pk"));
+
+        gene.setNumberOfSignificantPhenotypes(rs.getInt("number_of_significant_phenotypes"));
+
+        gene.setUpdatedAt(rs.getDate("updated_at"));
 
         return gene;
     }

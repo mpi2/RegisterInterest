@@ -13,11 +13,43 @@ CREATE TABLE component (
 
 DROP TABLE IF EXISTS gene;
 CREATE TABLE gene (
-    pk                INT          NOT NULL         AUTO_INCREMENT PRIMARY KEY,
-    mgi_accession_id  VARCHAR(32)  NOT NULL UNIQUE,
-    symbol            VARCHAR(128) NOT NULL,
-    updated_at        TIMESTAMP    NOT NULL         DEFAULT CURRENT_TIMESTAMP
-                        ON UPDATE CURRENT_TIMESTAMP
+    pk                                                          INT          NOT NULL  AUTO_INCREMENT PRIMARY KEY,
+
+    mgi_accession_id                                            VARCHAR(32)  NOT NULL           UNIQUE,
+    symbol                                                      VARCHAR(128) NOT NULL,
+    assigned_to                                                 VARCHAR(128) DEFAULT NULL,
+    assignment_status                                           VARCHAR(128) DEFAULT NULL,
+    assignment_status_date                                      DATETIME     DEFAULT NULL,
+    assignment_status_pk                                        INT          DEFAULT NULL,
+
+    conditional_allele_production_centre                        VARCHAR(128) DEFAULT NULL,
+    conditional_allele_production_status                        VARCHAR(128) DEFAULT NULL,
+    conditional_allele_production_status_date                   DATETIME     DEFAULT NULL,
+    conditional_allele_production_status_pk                     INT          DEFAULT NULL,
+
+    null_allele_production_centre                               VARCHAR(128) DEFAULT NULL,
+    null_allele_production_status                               VARCHAR(128) DEFAULT NULL,
+    null_allele_production_status_date                          DATETIME     DEFAULT NULL,
+    null_allele_production_status_pk                            INT          DEFAULT NULL,
+
+    phenotyping_centre                                          VARCHAR(128) DEFAULT NULL,
+    phenotyping_status                                          VARCHAR(128) DEFAULT NULL,
+    phenotyping_status_date                                     DATETIME     DEFAULT NULL,
+    phenotyping_status_pk                                       INT          DEFAULT NULL,
+
+    number_of_significant_phenotypes                            INT          DEFAULT 0,
+
+    updated_at                                                  TIMESTAMP    NOT NULL   DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP,
+
+    KEY         mgi_accession_id_idx                            (mgi_accession_id),
+    KEY         updated_at_idx                                  (updated_at)
+        /*
+            FOREIGN KEY assignment_status_pk_fk                         (assignment_status_pk)                  REFERENCES status(pk),
+            FOREIGN KEY conditional_allele_production_status_pk_fk      (conditional_allele_production_status)  REFERENCES status(pk),
+            FOREIGN KEY null_allele_production_status_pk_fk             (null_allele_production_status)         REFERENCES status(pk),
+            FOREIGN KEY phenotyping_status_pk_fk                        (phenotyping_status_pk)                 REFERENCES status(pk)
+        */
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 
@@ -47,36 +79,17 @@ CREATE TABLE contact_gene (
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 
-DROP TABLE IF EXISTS gene_status_change;
-CREATE TABLE gene_status_change (
-    pk                                      INT          NOT NULL  AUTO_INCREMENT PRIMARY KEY,
 
-    status_pk                               INT          NOT NULL,
-
-    mgi_accession_id                        VARCHAR(32)  NOT NULL,
-    symbol                                  VARCHAR(128) NOT NULL,
-    assignment_status                       VARCHAR(128) NOT NULL,
-    assigned_to                             VARCHAR(128) NOT NULL,
-    assignment_status_date                  DATETIME     NOT NULL,
-
-    conditional_allele_production_status    VARCHAR(128) DEFAULT NULL,
-    conditional_allele_production_centre    VARCHAR(128) DEFAULT NULL,
-    conditional_allele_status_date          DATETIME     DEFAULT NULL,
-
-    null_allele_production_status           VARCHAR(128) DEFAULT NULL,
-    null_allele_production_centre           VARCHAR(128) DEFAULT NULL,
-    null_allele_status_date                 DATETIME     DEFAULT NULL,
-
-    phenotyping_status                      VARCHAR(128) DEFAULT NULL,
-    phenotyping_centre                      VARCHAR(128) DEFAULT NULL,
-    phenotyping_status_date                 DATETIME     DEFAULT NULL,
-
-    number_of_significant_phenotypes        INT          NOT NULL,
-
-    updated_at                              TIMESTAMP    NOT NULL   DEFAULT CURRENT_TIMESTAMP
+DROP TABLE IF EXISTS status;
+CREATE TABLE status (
+    pk          INT          NOT NULL           AUTO_INCREMENT PRIMARY KEY,
+    status      VARCHAR(64)  NOT NULL UNIQUE,
+    active      INT          NOT NULL           DEFAULT 1,                   -- 1 = active; 0 = inactive
+    updated_at  TIMESTAMP    NOT NULL            DEFAULT CURRENT_TIMESTAMP
     ON UPDATE CURRENT_TIMESTAMP
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
+
 
 DROP TABLE IF EXISTS imits_status;
 CREATE TABLE imits_status (
@@ -86,32 +99,6 @@ CREATE TABLE imits_status (
     active      INT          NOT NULL           DEFAULT 1,                   -- 1 = active; 0 = inactive
     updated_at  TIMESTAMP   NOT NULL            DEFAULT CURRENT_TIMESTAMP
                   ON UPDATE CURRENT_TIMESTAMP
-
-) COLLATE=utf8_general_ci ENGINE=InnoDb;
-
-
-DROP TABLE IF EXISTS status;
-CREATE TABLE status (
-    pk          INT          NOT NULL           AUTO_INCREMENT PRIMARY KEY,
-    status      VARCHAR(64)  NOT NULL UNIQUE,
-    active      INT          NOT NULL           DEFAULT 1,                   -- 1 = active; 0 = inactive
-    updated_at  TIMESTAMP   NOT NULL        DEFAULT CURRENT_TIMESTAMP
-                  ON UPDATE CURRENT_TIMESTAMP
-
-) COLLATE=utf8_general_ci ENGINE=InnoDb;
-
-
-DROP TABLE IF EXISTS status_imits_status;
-CREATE TABLE status_imits_status (
-    pk                INT           NOT NULL    AUTO_INCREMENT PRIMARY KEY,
-    status_pk         INT                       DEFAULT NULL,
-    imits_status_pk   INT           NOT NULL,
-    updated_at        TIMESTAMP   NOT NULL        DEFAULT CURRENT_TIMESTAMP
-                        ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY status_pk_fk           (status_pk)          REFERENCES status(pk),
-    FOREIGN KEY imits_status_pk_fk     (imits_status_pk)    REFERENCES imits_status(pk),
-    UNIQUE KEY  status_imits_status_uk (status_pk, imits_status_pk)
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 
@@ -203,7 +190,7 @@ INSERT INTO imits_status (status, status_pk) VALUES
     ('Withdrawn', (SELECT pk FROM status WHERE status = 'withdrawn'));
 
 SET AUTOCOMMIT = 1;
-
+/*
 INSERT INTO status_imits_status(imits_status_pk, status_pk) VALUES
     ((SELECT pk FROM imits_status WHERE status = 'Aborted - ES Cell QC Failed'),            (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
     ((SELECT pk FROM imits_status WHERE status = 'Assigned - ES Cell QC Complete'),         (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
@@ -232,6 +219,6 @@ INSERT INTO status_imits_status(imits_status_pk, status_pk) VALUES
     ((SELECT pk FROM imits_status WHERE status = 'Rederivation Complete'),                  (SELECT pk FROM status WHERE status = 'mouse_production_started')),
     ((SELECT pk FROM imits_status WHERE status = 'Rederivation Started'),                   (SELECT pk FROM status WHERE status = 'mouse_production_started')),
     ((SELECT pk FROM imits_status WHERE status = 'Withdrawn'),                              (SELECT pk FROM status WHERE status = 'withdrawn'));
-
+*/
 
 SET FOREIGN_KEY_CHECKS = 1;

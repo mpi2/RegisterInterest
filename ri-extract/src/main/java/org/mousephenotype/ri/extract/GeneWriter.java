@@ -22,7 +22,7 @@ import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import org.mousephenotype.ri.core.entities.GeneStatusChange;
+import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.SqlUtils;
 import java.util.List;
 import java.util.Map;
@@ -30,15 +30,12 @@ import java.util.Map;
 /**
  * Created by mrelac on 26/04/16.
  */
-public class GeneStatusChangeWriter implements ItemWriter {
+public class GeneWriter implements ItemWriter {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     @Qualifier("sqlUtils")
     private SqlUtils sqlUtils;
-
-    @Autowired
-    private Map<String, GeneStatusChange> geneStatusChangeMap;
 
     private int count = 0;
 
@@ -53,7 +50,7 @@ public class GeneStatusChangeWriter implements ItemWriter {
      */
     @Override
     public void write(List items) throws Exception {
-        count += sqlUtils.updateGeneStatusIfChanged((List<GeneStatusChange>)items, geneStatusChangeMap);
+        count += sqlUtils.insertOrUpdateGene((List<Gene>)items);
     }
 
     public int getCount() {

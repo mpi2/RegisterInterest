@@ -26,22 +26,19 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotNull;
-import org.mousephenotype.ri.core.entities.GeneStatusChange;
 import org.mousephenotype.ri.core.entities.ImitsStatus;
 import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.mousephenotype.ri.core.SqlUtils;
 import org.mousephenotype.ri.core.UrlUtils;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 
 /**
  * Created by mrelac on 03/05/16.
  */
 @Configuration
 @Import(AppConfig.class)
-public class ExtractGeneStatusChangeConfigBeans {
+public class ExtractGeneConfigBeans {
 
     private Map<DownloadFileEnum, DownloadFilename> downloadFilenameMap = new HashMap<>();
     private Map<String, ImitsStatus> imitsStatusMap;                                // key = status
@@ -55,9 +52,6 @@ public class ExtractGeneStatusChangeConfigBeans {
 
     @Autowired
     private SqlUtils sqlUtils;
-
-    @Autowired
-    private Map<String, GeneStatusChange> geneStatusChangeMap;                      // key = marker accession id. map is declared in AppConfig but initialised in this code.
 
 
     public class DownloadFilename {
@@ -75,7 +69,7 @@ public class ExtractGeneStatusChangeConfigBeans {
 
     public DownloadFilename[] filenames;
     private enum DownloadFileEnum {
-        EBI_GeneStatusChange
+        EBI_genes
     }
 
 
@@ -84,7 +78,7 @@ public class ExtractGeneStatusChangeConfigBeans {
 
         filenames = new DownloadFilename[]{
 
-                new DownloadFilename(DownloadFileEnum.EBI_GeneStatusChange, "http://i-dcc.org/imits/v2/reports/mp2_load_phenotyping_colonies_report.tsv", downloadWorkspace + "/EBI_GeneStatusChange.csv")
+                new DownloadFilename(DownloadFileEnum.EBI_genes, "http://i-dcc.org/imits/v2/reports/mp2_load_phenotyping_colonies_report.tsv", downloadWorkspace + "/EBI_genes.csv")
         };
 
         for (DownloadFilename downloadFilename : filenames) {
@@ -94,7 +88,6 @@ public class ExtractGeneStatusChangeConfigBeans {
         }
 
         imitsStatusMap = sqlUtils.getImitsStatusMap();
-        geneStatusChangeMap = sqlUtils.getGeneStatusChangeMap();
     }
 
     @Bean
@@ -112,21 +105,21 @@ public class ExtractGeneStatusChangeConfigBeans {
     // LOADERS, PROCESSORS, AND WRITERS
 
 
-    @Bean(name = "geneStatusChangeLoader")
-    public GeneStatusChangeLoader geneStatusChangeLoader() throws InterestException {
-        Map<GeneStatusChangeLoader.FilenameKeys, String> filenameKeys = new HashMap<>();
-        filenameKeys.put(GeneStatusChangeLoader.FilenameKeys.EBI_GeneStatusChange, downloadFilenameMap.get(DownloadFileEnum.EBI_GeneStatusChange).targetFilename);
+    @Bean(name = "geneLoader")
+    public GeneLoader geneLoader() throws InterestException {
+        Map<GeneLoader.FilenameKeys, String> filenameKeys = new HashMap<>();
+        filenameKeys.put(GeneLoader.FilenameKeys.EBI_Gene, downloadFilenameMap.get(DownloadFileEnum.EBI_genes).targetFilename);
 
-        return new GeneStatusChangeLoader(filenameKeys, imitsStatusMap);
+        return new GeneLoader(filenameKeys);
     }
 
-    @Bean(name = "geneStatusChangeProcessor")
-    public GeneStatusChangeProcessor geneStatusChangeProcessor() throws InterestException {
-        return new GeneStatusChangeProcessor(imitsStatusMap);
+    @Bean(name = "geneProcessor")
+    public GeneProcessor geneProcessor() throws InterestException {
+        return new GeneProcessor(imitsStatusMap);
     }
 
-    @Bean(name = "geneStatusChangeWriter")
-    public GeneStatusChangeWriter geneStatusChangeWriter() {
-        return new GeneStatusChangeWriter();
+    @Bean(name = "geneWriter")
+    public GeneWriter geneWriter() {
+        return new GeneWriter();
     }
 }

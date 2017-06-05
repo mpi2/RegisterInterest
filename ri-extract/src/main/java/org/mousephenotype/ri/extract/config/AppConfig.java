@@ -1,7 +1,6 @@
 package org.mousephenotype.ri.extract.config;
 
 import org.apache.commons.dbcp.BasicDataSource;
-import org.mousephenotype.ri.core.entities.GeneStatusChange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,11 +50,6 @@ public class AppConfig {
     @Bean
     public SqlUtils sqlUtils() {
         return new SqlUtils(jdbc());
-    }
-
-    @Bean
-    Map<String, GeneStatusChange> geneStatusChangeMap() {
-        return new HashMap<>();
     }
 
     @Value("${datasource.ri.url}")

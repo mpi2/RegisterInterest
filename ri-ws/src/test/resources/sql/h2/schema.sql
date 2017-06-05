@@ -9,9 +9,33 @@ CREATE TABLE component (
 
 DROP TABLE IF EXISTS gene;
 CREATE TABLE gene (
-  pk                INT          NOT NULL      IDENTITY PRIMARY KEY,
-  mgi_accession_id  VARCHAR(32)  NOT NULL,     UNIQUE(mgi_accession_id),
-  updated_at        TIMESTAMP    NOT NULL      DEFAULT CURRENT_TIMESTAMP
+  pk                                          INT          NOT NULL  AUTO_INCREMENT PRIMARY KEY,
+
+  mgi_accession_id                            VARCHAR(32)  NOT NULL       UNIQUE,
+  symbol                                      VARCHAR(128) NOT NULL,
+  assigned_to                                 VARCHAR(128) DEFAULT NULL,
+  assignment_status                           VARCHAR(128) DEFAULT NULL,
+  assignment_status_date                      DATETIME     DEFAULT NULL,
+  assignment_status_pk                        INT          DEFAULT NULL,
+
+  conditional_allele_production_centre        VARCHAR(128) DEFAULT NULL,
+  conditional_allele_production_status        VARCHAR(128) DEFAULT NULL,
+  conditional_allele_production_status_date   DATETIME     DEFAULT NULL,
+  conditional_allele_production_status_pk     INT          DEFAULT NULL,
+
+  null_allele_production_centre               VARCHAR(128) DEFAULT NULL,
+  null_allele_production_status               VARCHAR(128) DEFAULT NULL,
+  null_allele_production_status_date          DATETIME     DEFAULT NULL,
+  null_allele_production_status_pk            INT          DEFAULT NULL,
+
+  phenotyping_centre                          VARCHAR(128) DEFAULT NULL,
+  phenotyping_status                          VARCHAR(128) DEFAULT NULL,
+  phenotyping_status_date                     DATETIME     DEFAULT NULL,
+  phenotyping_status_pk                       INT          DEFAULT NULL,
+
+  number_of_significant_phenotypes            INT          DEFAULT 0,
+
+  updated_at                                  TIMESTAMP    NOT NULL   DEFAULT CURRENT_TIMESTAMP,
 
 );
 
@@ -38,37 +62,6 @@ CREATE TABLE contact_gene (
 );
 
 
-DROP TABLE IF EXISTS gene_status_change;
-CREATE TABLE gene_status_change (
-  pk                                      INT          NOT NULL  AUTO_INCREMENT PRIMARY KEY,
-
-  status_pk                               INT          NOT NULL,
-
-  mgi_accession_id                        VARCHAR(32)  NOT NULL,
-  symbol                                  VARCHAR(128) NOT NULL,
-  gene_assignment_status                  VARCHAR(128) NOT NULL,
-  gene_assigned_to                        VARCHAR(128) NOT NULL,
-  gene_assignment_status_date             DATETIME     NOT NULL,
-
-  conditional_allele_production_status    VARCHAR(128) DEFAULT NULL,
-  conditional_allele_production_centre    VARCHAR(128) DEFAULT NULL,
-  conditional_allele_status_date          DATETIME     DEFAULT NULL,
-
-  null_allele_production_status           VARCHAR(128) DEFAULT NULL,
-  null_allele_production_centre           VARCHAR(128) DEFAULT NULL,
-  null_allele_status_date                 DATETIME     DEFAULT NULL,
-
-  phenotyping_status                      VARCHAR(128) DEFAULT NULL,
-  phenotyping_centre                      VARCHAR(128) DEFAULT NULL,
-  phenotyping_status_date                 DATETIME     DEFAULT NULL,
-
-  number_of_significant_phenotypes        INT          NOT NULL,
-
-  updated_at                              TIMESTAMP    NOT NULL   DEFAULT CURRENT_TIMESTAMP,
-
-);
-
-
 DROP TABLE IF EXISTS imits_status;
 CREATE TABLE imits_status (
   pk             INT          NOT NULL      IDENTITY PRIMARY KEY,
@@ -86,18 +79,6 @@ CREATE TABLE status (
   status         VARCHAR(64)  NOT NULL,     UNIQUE(status),
   active         INT          NOT NULL      DEFAULT 1,                   -- 1 = active; 0 = inactive
   updated_at     TIMESTAMP    NOT NULL      DEFAULT CURRENT_TIMESTAMP
-
-);
-
-
-DROP TABLE IF EXISTS status_imits_status;
-CREATE TABLE status_imits_status (
-  pk                  INT         NOT NULL        IDENTITY PRIMARY KEY,
-  status_pk           INT                         DEFAULT NULL,
-  imits_status_pk     INT         NOT NULL,
-  updated_at          TIMESTAMP      NOT NULL     DEFAULT CURRENT_TIMESTAMP,
-
-  UNIQUE (status_pk, imits_status_pk),
 
 );
 
@@ -173,32 +154,3 @@ INSERT INTO imits_status (status) VALUES
   ('Rederivation Complete'),
   ('Rederivation Started'),
   ('Withdrawn');
-
-INSERT INTO status_imits_status(imits_status_pk, status_pk) VALUES
-  ((SELECT pk FROM imits_status WHERE status = 'Aborted - ES Cell QC Failed'),            (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
-  ((SELECT pk FROM imits_status WHERE status = 'Assigned - ES Cell QC Complete'),         (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
-  ((SELECT pk FROM imits_status WHERE status = 'Assigned - ES Cell QC In Progress'),      (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
-  ((SELECT pk FROM imits_status WHERE status = 'Assigned'),                               (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
-  ((SELECT pk FROM imits_status WHERE status = 'Chimeras obtained'),                      (SELECT pk FROM status WHERE status = 'mouse_production_started')),
-  ((SELECT pk FROM imits_status WHERE status = 'Chimeras/Founder obtained'),              (SELECT pk FROM status WHERE status = 'mouse_production_started')),
-  ((SELECT pk FROM imits_status WHERE status = 'Conflict'),                               (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
-  ((SELECT pk FROM imits_status WHERE status = 'Cre Excision Complete'),                  (SELECT pk FROM status WHERE status = 'mouse_produced')),
-  ((SELECT pk FROM imits_status WHERE status = 'Cre Excision Started'),                   (SELECT pk FROM status WHERE status = 'mouse_production_started')),
-  ((SELECT pk FROM imits_status WHERE status = 'Founder obtained'),                       (SELECT pk FROM status WHERE status = 'mouse_production_started')),
-  ((SELECT pk FROM imits_status WHERE status = 'Genotype confirmed'),                     (SELECT pk FROM status WHERE status = 'mouse_produced')),
-  ((SELECT pk FROM imits_status WHERE status = 'Inactive'),                               (SELECT pk FROM status WHERE status = 'withdrawn')),
-  ((SELECT pk FROM imits_status WHERE status = 'Inspect - Conflict'),                     (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
-  ((SELECT pk FROM imits_status WHERE status = 'Inspect - GLT Mouse'),                    (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
-  ((SELECT pk FROM imits_status WHERE status = 'Inspect - MI Attempt'),                   (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
-  ((SELECT pk FROM imits_status WHERE status = 'Interest'),                               (SELECT pk FROM status WHERE status = 'production_and_phenotyping_planned')),
-  ((SELECT pk FROM imits_status WHERE status = 'Micro-injection aborted'),                (SELECT pk FROM status WHERE status = 'mouse_production_started')),
-  ((SELECT pk FROM imits_status WHERE status = 'Micro-injection in progress'),            (SELECT pk FROM status WHERE status = 'mouse_production_started')),
-  ((SELECT pk FROM imits_status WHERE status = 'Mouse Allele Modification Registered'),   (SELECT pk FROM status WHERE status = 'mouse_production_started')),
-  ((SELECT pk FROM imits_status WHERE status = 'Phenotype Attempt Registered'),           (SELECT pk FROM status WHERE status = '')),
-  ((SELECT pk FROM imits_status WHERE status = 'Phenotype Production Aborted'),           (SELECT pk FROM status WHERE status = '')),
-  ((SELECT pk FROM imits_status WHERE status = 'Phenotyping Complete'),                   (SELECT pk FROM status WHERE status = 'phenotyping_data_available')),
-  ((SELECT pk FROM imits_status WHERE status = 'Phenotyping Production Registered'),      (SELECT pk FROM status WHERE status = '')),
-  ((SELECT pk FROM imits_status WHERE status = 'Phenotyping Started'),                    (SELECT pk FROM status WHERE status = '')),
-  ((SELECT pk FROM imits_status WHERE status = 'Rederivation Complete'),                  (SELECT pk FROM status WHERE status = 'mouse_production_started')),
-  ((SELECT pk FROM imits_status WHERE status = 'Rederivation Started'),                   (SELECT pk FROM status WHERE status = 'mouse_production_started')),
-  ((SELECT pk FROM imits_status WHERE status = 'Withdrawn'),                              (SELECT pk FROM status WHERE status = 'withdrawn'));
