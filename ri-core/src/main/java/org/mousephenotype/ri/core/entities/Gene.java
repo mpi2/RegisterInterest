@@ -274,4 +274,74 @@ public class Gene {
                 ", updated_at=" + updatedAt +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Gene gene = (Gene) o;
+
+        if (!mgiAccessionId.equals(gene.mgiAccessionId)) return false;
+        if (symbol != null ? !symbol.equals(gene.symbol) : gene.symbol != null) return false;
+        if (assignedTo != null ? !assignedTo.equals(gene.assignedTo) : gene.assignedTo != null) return false;
+        if (assignmentStatus != null ? !assignmentStatus.equals(gene.assignmentStatus) : gene.assignmentStatus != null)
+            return false;
+        if (assignmentStatusDate != null ? !assignmentStatusDate.equals(gene.assignmentStatusDate) : gene.assignmentStatusDate != null)
+            return false;
+        if (assignmentStatusPk != null ? !assignmentStatusPk.equals(gene.assignmentStatusPk) : gene.assignmentStatusPk != null)
+            return false;
+        if (conditionalAlleleProductionCentre != null ? !conditionalAlleleProductionCentre.equals(gene.conditionalAlleleProductionCentre) : gene.conditionalAlleleProductionCentre != null)
+            return false;
+        if (conditionalAlleleProductionStatus != null ? !conditionalAlleleProductionStatus.equals(gene.conditionalAlleleProductionStatus) : gene.conditionalAlleleProductionStatus != null)
+            return false;
+        if (conditionalAlleleProductionStatusDate != null ? !conditionalAlleleProductionStatusDate.equals(gene.conditionalAlleleProductionStatusDate) : gene.conditionalAlleleProductionStatusDate != null)
+            return false;
+        if (conditionalAlleleProductionStatusPk != null ? !conditionalAlleleProductionStatusPk.equals(gene.conditionalAlleleProductionStatusPk) : gene.conditionalAlleleProductionStatusPk != null)
+            return false;
+        if (nullAlleleProductionCentre != null ? !nullAlleleProductionCentre.equals(gene.nullAlleleProductionCentre) : gene.nullAlleleProductionCentre != null)
+            return false;
+        if (nullAlleleProductionStatus != null ? !nullAlleleProductionStatus.equals(gene.nullAlleleProductionStatus) : gene.nullAlleleProductionStatus != null)
+            return false;
+        if (nullAlleleProductionStatusDate != null ? !nullAlleleProductionStatusDate.equals(gene.nullAlleleProductionStatusDate) : gene.nullAlleleProductionStatusDate != null)
+            return false;
+        if (nullAlleleProductionStatusPk != null ? !nullAlleleProductionStatusPk.equals(gene.nullAlleleProductionStatusPk) : gene.nullAlleleProductionStatusPk != null)
+            return false;
+        if (phenotypingCentre != null ? !phenotypingCentre.equals(gene.phenotypingCentre) : gene.phenotypingCentre != null)
+            return false;
+        if (phenotypingStatus != null ? !phenotypingStatus.equals(gene.phenotypingStatus) : gene.phenotypingStatus != null)
+            return false;
+        if (phenotypingStatusDate != null ? !phenotypingStatusDate.equals(gene.phenotypingStatusDate) : gene.phenotypingStatusDate != null)
+            return false;
+        if (phenotypingStatusPk != null ? !phenotypingStatusPk.equals(gene.phenotypingStatusPk) : gene.phenotypingStatusPk != null)
+            return false;
+        if (numberOfSignificantPhenotypes != null ? !numberOfSignificantPhenotypes.equals(gene.numberOfSignificantPhenotypes) : gene.numberOfSignificantPhenotypes != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = mgiAccessionId.hashCode();
+        result = 31 * result + (symbol != null ? symbol.hashCode() : 0);
+        result = 31 * result + (assignedTo != null ? assignedTo.hashCode() : 0);
+        result = 31 * result + (assignmentStatus != null ? assignmentStatus.hashCode() : 0);
+        result = 31 * result + (assignmentStatusDate != null ? assignmentStatusDate.hashCode() : 0);
+        result = 31 * result + (assignmentStatusPk != null ? assignmentStatusPk.hashCode() : 0);
+        result = 31 * result + (conditionalAlleleProductionCentre != null ? conditionalAlleleProductionCentre.hashCode() : 0);
+        result = 31 * result + (conditionalAlleleProductionStatus != null ? conditionalAlleleProductionStatus.hashCode() : 0);
+        result = 31 * result + (conditionalAlleleProductionStatusDate != null ? conditionalAlleleProductionStatusDate.hashCode() : 0);
+        result = 31 * result + (conditionalAlleleProductionStatusPk != null ? conditionalAlleleProductionStatusPk.hashCode() : 0);
+        result = 31 * result + (nullAlleleProductionCentre != null ? nullAlleleProductionCentre.hashCode() : 0);
+        result = 31 * result + (nullAlleleProductionStatus != null ? nullAlleleProductionStatus.hashCode() : 0);
+        result = 31 * result + (nullAlleleProductionStatusDate != null ? nullAlleleProductionStatusDate.hashCode() : 0);
+        result = 31 * result + (nullAlleleProductionStatusPk != null ? nullAlleleProductionStatusPk.hashCode() : 0);
+        result = 31 * result + (phenotypingCentre != null ? phenotypingCentre.hashCode() : 0);
+        result = 31 * result + (phenotypingStatus != null ? phenotypingStatus.hashCode() : 0);
+        result = 31 * result + (phenotypingStatusDate != null ? phenotypingStatusDate.hashCode() : 0);
+        result = 31 * result + (phenotypingStatusPk != null ? phenotypingStatusPk.hashCode() : 0);
+        result = 31 * result + (numberOfSignificantPhenotypes != null ? numberOfSignificantPhenotypes.hashCode() : 0);
+        return result;
+    }
 }

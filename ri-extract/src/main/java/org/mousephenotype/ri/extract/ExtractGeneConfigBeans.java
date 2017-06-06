@@ -16,6 +16,7 @@
 
 package org.mousephenotype.ri.extract;
 
+import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.extract.config.AppConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,7 +42,8 @@ import java.util.*;
 public class ExtractGeneConfigBeans {
 
     private Map<DownloadFileEnum, DownloadFilename> downloadFilenameMap = new HashMap<>();
-    private Map<String, ImitsStatus> imitsStatusMap;                                // key = status
+    private Map<String, ImitsStatus> imitsStatusMap;        // key = status
+    private Map<String, Gene> genesMap;                     // key = mgi accession id
 
     @NotNull
     @Value("${download.workspace}")
@@ -88,6 +90,7 @@ public class ExtractGeneConfigBeans {
         }
 
         imitsStatusMap = sqlUtils.getImitsStatusMap();
+        genesMap = sqlUtils.getGenes();
     }
 
     @Bean
@@ -115,7 +118,7 @@ public class ExtractGeneConfigBeans {
 
     @Bean(name = "geneProcessor")
     public GeneProcessor geneProcessor() throws InterestException {
-        return new GeneProcessor(imitsStatusMap);
+        return new GeneProcessor(imitsStatusMap, genesMap);
     }
 
     @Bean(name = "geneWriter")

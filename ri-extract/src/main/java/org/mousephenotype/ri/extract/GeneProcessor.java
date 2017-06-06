@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class GeneProcessor implements ItemProcessor<Gene, Gene> {
 
+    private Map<String, Gene> genesMap;
     private Map<String, ImitsStatus> imitsStatusMap;
     private int lineNumber = 0;
 
@@ -63,8 +64,9 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
     };
 
 
-    public GeneProcessor(Map<String, ImitsStatus> imitsStatusMap) {
+    public GeneProcessor(Map<String, ImitsStatus> imitsStatusMap, Map<String, Gene> genesMap) {
         this.imitsStatusMap = imitsStatusMap;
+        this.genesMap = genesMap;
     }
 
 
@@ -147,7 +149,7 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
         }
 
         // date
-        SimpleDateFormat sdf = new SimpleDateFormat("y-M-d h:m:s");
+        SimpleDateFormat sdf = new SimpleDateFormat("d/M/y h:m:s");
         if ((gene.getAssignmentStatusDateString() != null) && ( ! gene.getAssignmentStatusDateString().trim().isEmpty())) {
             Date date = parseUtils.tryParseDate(sdf, gene.getAssignmentStatusDateString());
             if (date == null) {
@@ -209,6 +211,14 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
             gene.setPhenotypingStatusPk(imitsStatusMap.get(gene.getPhenotypingStatus()).getStatus_pk());
         } else {
             gene.setPhenotypingStatusPk(null);
+        }
+
+        // If the Gene record hasn't changed, skip it (i.e. return null)
+        Gene cachedGene = genesMap.get(gene.getMgiAccessionId());
+        if (cachedGene != null) {
+            if (gene.equals(cachedGene)) {
+                return null;
+            }
         }
 
         return gene;

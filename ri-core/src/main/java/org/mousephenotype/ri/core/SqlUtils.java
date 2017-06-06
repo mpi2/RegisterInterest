@@ -93,6 +93,25 @@ public class SqlUtils {
     }
 
     /**
+     * @return A map of all genes, indexed by mgi accession id.
+     */
+    public Map<String, Gene> getGenes() {
+
+        Map<String, Gene> genes = new HashMap<>();
+
+        final String query = "SELECT * FROM gene";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        List<Gene> genesList = jdbcInterest.query(query, parameterMap, new GeneRowMapper());
+        for (Gene gene : genesList) {
+            genes.put(gene.getMgiAccessionId(), gene);
+        }
+
+        return genes;
+    }
+
+    /**
      * Return a list of {@link Interest} instances matching {@code emailAddress} and (if not null or empty) {@code mgiAccessionId}
      *
      * @param emailAddress The contact's email address

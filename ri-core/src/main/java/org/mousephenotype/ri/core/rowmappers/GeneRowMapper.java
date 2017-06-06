@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.mousephenotype.ri.core.entities.Gene;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Date;
 
 /**
@@ -33,23 +34,31 @@ public class GeneRowMapper implements RowMapper<Gene> {
         gene.setSymbol(rs.getString("symbol"));
         gene.setAssignedTo(rs.getString("assigned_to"));
         gene.setAssignmentStatus(rs.getString("assignment_status"));
-        gene.setAssignmentStatusDate(rs.getDate("assignment_status_date"));
-        gene.setAssignmentStatusPk(rs.getInt("assignment_status_pk"));
+        Timestamp ts = rs.getTimestamp("assignment_status_date");
+        gene.setAssignmentStatusDate(ts == null ? null : new Date(ts.getTime()));
+        Integer i = rs.getInt("assignment_status_pk");
+        gene.setAssignmentStatusPk((i == null) || (i == 0) ? null : i);
 
         gene.setConditionalAlleleProductionCentre(rs.getString("conditional_allele_production_centre"));
         gene.setConditionalAlleleProductionStatus(rs.getString("conditional_allele_production_status"));
-        gene.setConditionalAlleleProductionStatusDate(rs.getDate("conditional_allele_production_status_date"));
-        gene.setConditionalAlleleProductionStatusPk(rs.getInt("conditional_allele_production_status_pk"));
+        ts = rs.getTimestamp("conditional_allele_production_status_date");
+        gene.setConditionalAlleleProductionStatusDate(ts == null ? null : new Date(ts.getTime()));
+        i = rs.getInt("conditional_allele_production_status_pk");
+        gene.setConditionalAlleleProductionStatusPk((i == null) || (i == 0) ? null : i);
 
         gene.setNullAlleleProductionCentre(rs.getString("null_allele_production_centre"));
         gene.setNullAlleleProductionStatus(rs.getString("null_allele_production_status"));
-        gene.setNullAlleleProductionStatusDate(rs.getDate("null_allele_production_status_date"));
-        gene.setNullAlleleProductionStatusPk(rs.getInt("null_allele_production_status_pk"));
+        ts = rs.getTimestamp("null_allele_production_status_date");
+        gene.setNullAlleleProductionStatusDate(ts == null ? null : new Date(ts.getTime()));
+        i = rs.getInt("null_allele_production_status_pk");
+        gene.setNullAlleleProductionStatusPk((i == null) || (i == 0) ? null : i);
 
         gene.setPhenotypingCentre(rs.getString("phenotyping_centre"));
         gene.setPhenotypingStatus(rs.getString("phenotyping_status"));
-        gene.setPhenotypingStatusDate(rs.getDate("phenotyping_status_date"));
-        gene.setPhenotypingStatusPk(rs.getInt("phenotyping_status_pk"));
+        ts = rs.getTimestamp("phenotyping_status_date");
+        gene.setPhenotypingStatusDate(ts == null ? null : new Date(ts.getTime()));
+        i = rs.getInt("phenotyping_status_pk");
+        gene.setPhenotypingStatusPk((i == null) || (i == 0) ? null : i);
 
         gene.setNumberOfSignificantPhenotypes(rs.getInt("number_of_significant_phenotypes"));
 
