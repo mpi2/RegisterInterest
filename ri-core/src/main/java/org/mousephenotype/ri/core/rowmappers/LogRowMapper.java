@@ -28,12 +28,15 @@ public class LogRowMapper implements RowMapper<Log> {
         Log log = new Log();
 
         log.setPk(rs.getInt("pk"));
+
         log.setContactPk(rs.getInt("contact_pk"));
-        log.setSentPk(rs.getInt("sent_pk"));
-        log.setStatusPk(rs.getInt("status_pk"));
+        log.setGeneStatusPk(rs.getInt("gene_status_pk"));
         log.setImitsStatusPk(rs.getInt("imits_status_pk"));
-        log.setComponentPk(rs.getInt("component_pk"));
+        log.setGenePk(rs.getInt("gene_pk"));
+        log.setSentPk(rs.getInt("sent_pk"));
+
         log.setMessage((rs.getString("message")));
+
         log.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));
 
         return log;

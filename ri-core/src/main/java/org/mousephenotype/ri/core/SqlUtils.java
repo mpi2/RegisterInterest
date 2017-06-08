@@ -112,6 +112,25 @@ public class SqlUtils {
     }
 
     /**
+     * @return A map of all genes, indexed by primary key.
+     */
+    public Map<Integer, Gene> getGenesByPk() {
+
+        Map<Integer, Gene> genes = new HashMap<>();
+
+        final String query = "SELECT * FROM gene";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        List<Gene> genesList = jdbcInterest.query(query, parameterMap, new GeneRowMapper());
+        for (Gene gene : genesList) {
+            genes.put(gene.getPk(), gene);
+        }
+
+        return genes;
+    }
+
+    /**
      * Return a list of {@link Interest} instances matching {@code emailAddress} and (if not null or empty) {@code mgiAccessionId}
      *
      * @param emailAddress The contact's email address
@@ -129,10 +148,11 @@ public class SqlUtils {
                         "  c.active,\n" +
                         "  g.pk       AS gene_pk,\n" +
                         "  g.mgi_accession_id,\n" +
-                        "  cg.updated_at\n" +
-                        "FROM contact_gene cg\n" +
-                        "JOIN gene    g ON g.pk = cg.gene_pk\n" +
-                        "JOIN contact c ON c.pk = cg.contact_pk\n" +
+                        "  gc.created_at,\n" +
+                        "  gc.updated_at\n" +
+                        "FROM gene_contact gc\n" +
+                        "JOIN gene    g ON g.pk = gc.gene_pk\n" +
+                        "JOIN contact c ON c.pk = gc.contact_pk\n" +
                         "WHERE c.address = :address";
 
         Map<String, Object> parameterMap = new HashMap<>();
@@ -168,19 +188,6 @@ public class SqlUtils {
         return imitsStatusMap;
     }
 
-    public Map<String, Component> getComponents() {
-        Map<String, Component> componentMap = new HashMap<>();
-
-        final String query = "SELECT * FROM component";
-
-        List<Component> list = jdbcInterest.query(query, new ComponentRowMapper());
-        for (Component component : list) {
-            componentMap.put(component.getName(), component);
-        }
-
-        return componentMap;
-    }
-
     /**
      * Return the  {@link Contact}
      *
@@ -202,6 +209,18 @@ public class SqlUtils {
     }
 
     /**
+     *
+     * @return a {@link List} of all {@link GeneContact} entries
+     */
+    public List<GeneContact> getGeneContacts() {
+        final String query = "SELECT * FROM gene_contact";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        return jdbcInterest.query(query, parameterMap, new GeneContactRowMapper());
+    }
+
+    /**
      * Return a list of {@link Interest} instances matching {@code mgiAccessionId} and (if not null or empty) {@code emailAddress}
      *
      * @param mgiAccessionId The gene's MGI accession id
@@ -219,10 +238,11 @@ public class SqlUtils {
                         "  c.active,\n" +
                         "  g.pk       AS gene_pk,\n" +
                         "  g.mgi_accession_id,\n" +
-                        "  cg.updated_at\n" +
-                        "FROM contact_gene cg\n" +
-                        "JOIN gene g ON g.pk = cg.gene_pk\n" +
-                        "JOIN contact c ON c.pk = cg.contact_pk\n" +
+                        "  gc.created_at,\n" +
+                        "  gc.updated_at\n" +
+                        "FROM gene_contact gc\n" +
+                        "JOIN gene g ON g.pk = gc.gene_pk\n" +
+                        "JOIN contact c ON c.pk = gc.contact_pk\n" +
                         "WHERE g.mgi_accession_id = :mgiAccessionId";
 
         Map<String, Object> parameterMap = new HashMap<>();
@@ -264,10 +284,11 @@ public class SqlUtils {
                         "  c.active,\n" +
                         "  g.pk       AS gene_pk,\n" +
                         "  g.mgi_accession_id,\n" +
-                        "  cg.updated_at\n" +
-                        "FROM contact_gene cg\n" +
-                        "JOIN gene g ON g.pk = cg.gene_pk\n" +
-                        "JOIN contact c ON c.pk = cg.contact_pk\n" +
+                        "  gc.created_at,\n" +
+                        "  gc.updated_at\n" +
+                        "FROM gene_contact gc\n" +
+                        "JOIN gene g ON g.pk = gc.gene_pk\n" +
+                        "JOIN contact c ON c.pk = gc.contact_pk\n" +
                         "WHERE c.address = :emailAddress AND g.mgi_accession_id = :mgiAccessionId";
 
         Map<String, Object> parameterMap = new HashMap<>();
@@ -281,6 +302,44 @@ public class SqlUtils {
     }
 
     /**
+     *
+     * @return A {@link Map} of all {@link GeneSent} instances, indexed by gene_contact_pk
+     */
+    public Map<Integer, GeneSent> getSent() {
+
+        Map<Integer, GeneSent> sentMap = new HashMap<>();
+
+        final String query = "SELECT * FROM sent";
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        List<GeneSent> geneSentList = jdbcInterest.query(query, parameterMap, new SentRowMapper());
+        for (GeneSent geneSent : geneSentList) {
+            sentMap.put(geneSent.getGeneContactPk(), geneSent);
+        }
+
+        return sentMap;
+    }
+
+    /**
+     *
+     * @return A {@link Map} of {@link GeneStatus} instances, keyed by status
+     */
+    public Map<String, GeneStatus> getStatusMap() {
+
+        Map<String, GeneStatus> statusMap = new HashMap<>();
+
+        final String query = "SELECT * FROM status";
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        List<GeneStatus> geneStatusList = jdbcInterest.query(query, parameterMap, new GeneStatusRowMapper());
+        for (GeneStatus geneStatus : geneStatusList) {
+            statusMap.put(geneStatus.getStatus(), geneStatus);
+        }
+
+        return statusMap;
+    }
+
+    /**
      * Try to insert the contact. Return the count of inserted contacts.
      *
      * @param contact A {@link String} containing the e-mail address of the contact to be inserted
@@ -289,13 +348,14 @@ public class SqlUtils {
      */
     public int insertContact(String contact) throws InterestException {
         int count = 0;
-        final String query = "INSERT INTO contact(address, active) " +
-                "VALUES (:address, 1)";
+        final String query = "INSERT INTO contact(address, active, created_at) " +
+                "VALUES (:address, 1, :created_at)";
 
         // Insert contact. Ignore any duplicates.
         try {
             Map<String, Object> parameterMap = new HashMap<>();
             parameterMap.put("address", contact);
+            parameterMap.put("created_at", new Date());
 
             count += jdbcInterest.update(query, parameterMap);
 
@@ -309,29 +369,30 @@ public class SqlUtils {
     }
 
     /**
-     * Try to insert {@link Interest} object into the contact_gene table. Return the count of inserted rows.
+     * Try to insert {@link Interest} object into the gene_contact table. Return the count of inserted rows.
      *
-     * @param interest A {@link String} containing the e-mail address of the contactGene to be inserted
+     * @param interest A {@link String} containing the e-mail address of the geneContact to be inserted
      *
-     * @return the count of inserted contactGenes.
+     * @return the count of inserted geneContacts.
      */
-    public int insertContactGene(Interest interest) throws InterestException {
+    public int insertGeneContact(Interest interest) throws InterestException {
         int count = 0;
-        final String query = "INSERT INTO contact_gene(contact_pk, gene_pk) " +
-                "VALUES (:contact_pk, :gene_pk)";
+        final String query = "INSERT INTO gene_contact(contact_pk, gene_pk, created_at) " +
+                "VALUES (:contact_pk, :gene_pk, :created_at)";
 
-        // Insert contact_gene. Ignore any duplicates.
+        // Insert gene_contact. Ignore any duplicates.
         try {
             Map<String, Object> parameterMap = new HashMap<>();
             parameterMap.put("contact_pk", interest.getContactPk());
             parameterMap.put("gene_pk", interest.getGenePk());
+            parameterMap.put("created_at", new Date());
 
             count += jdbcInterest.update(query, parameterMap);
 
         } catch (DuplicateKeyException e) {
 
         } catch (Exception e) {
-            logger.error("Error inserting contact_gene {}: {}. Record skipped...", interest, e.getLocalizedMessage());
+            logger.error("Error inserting gene_contact {}: {}. Record skipped...", interest, e.getLocalizedMessage());
         }
 
         return count;
@@ -346,14 +407,15 @@ public class SqlUtils {
      */
     public int insertGene(String mgi_accession_id) throws InterestException {
         int count = 0;
-        final String query = "INSERT INTO gene(mgi_accession_id) " +
-                "VALUES (:mgi_accession_id)";
+        final String query = "INSERT INTO gene(mgi_accession_id, created_at) " +
+                "VALUES (:mgi_accession_id, :created_at)";
 
         // Insert gene. Ignore any duplicates.
         try {
 
             Map<String, Object> parameterMap = new HashMap<>();
             parameterMap.put(":mgi_accession_id", mgi_accession_id);
+            parameterMap.put("created_at", new Date());
 
             count += jdbcInterest.update(query, parameterMap);
 
@@ -373,18 +435,18 @@ public class SqlUtils {
      *                 the instance to be inserted. If the mgi accession id doesn't exist, an InterestException is thrown.
      *
      * @return a map containing the count of inserted contacts (key = contactsInsertedCount) and the count of inserted
-     *         contact_gene rows (key = contactGeneInsertedCount).
+     *         gene_contact rows (key = geneContactInsertedCount).
      *
-     *         <i>NOTE:</i>If the contact and gene has already been registered, contactGeneInsertedCount is 0. If
+     *         <i>NOTE:</i>If the contact and gene has already been registered, geneContactInsertedCount is 0. If
      *         the contact has already been registered, contactsInsertedCount is 0.
      *
      *         @throws InterestException if the gene does not exist
      */
     public Map<String, Integer> insertInterest(Interest interest) throws InterestException {
         Map<String, Integer> results = new HashMap<>();
-        Integer contactGeneInsertedCount = 0;
+        Integer geneContactInsertedCount = 0;
         Integer contactsInsertedCount = 0;
-        results.put("contactGeneInsertedCount", contactGeneInsertedCount);
+        results.put("geneContactInsertedCount", geneContactInsertedCount);
         results.put("contactsInsertedCount", contactsInsertedCount);
 
         // Check that the mapping doesn't already exist.
@@ -408,23 +470,22 @@ public class SqlUtils {
             interest.setGenePk(getGene(interest.getMgiAccessionId()).getPk());
         }
 
-        // Insert into the contact_gene table.
-        contactGeneInsertedCount = insertContactGene(interest);
+        // Insert into the gene_contact table.
+        geneContactInsertedCount = insertGeneContact(interest);
 
-        results.put("contactGeneInsertedCount", contactGeneInsertedCount);
+        results.put("geneContactInsertedCount", geneContactInsertedCount);
         results.put("contactsInsertedCount", contactsInsertedCount);
 
         return results;
     }
 
-    public void logWebServiceAction(int contact_pk, int component_pk, Integer gene_pk, String message) {
-        final String query = "INSERT INTO log (contact_pk, component_pk, gene_pk, message)" +
-                            " VALUES (:contact_pk, :component_pk, :gene_pk, :message)";
+    public void logWebServiceAction(int contact_pk, Integer gene_pk, String message) {
+        final String query = "INSERT INTO log (contact_pk, gene_pk, message)" +
+                            " VALUES (:contact_pk, :gene_pk, :message)";
 
         Map<String, Object> parameterMap = new HashMap<>();
 
         parameterMap.put("contact_pk", contact_pk);
-        parameterMap.put("component_pk", component_pk);
         parameterMap.put("gene_pk", gene_pk);
         parameterMap.put("message", message);
 
@@ -441,7 +502,7 @@ public class SqlUtils {
      *  @throws InterestException if the gene does not exist
      */
     public void removeInterest(Interest interest) throws InterestException {
-        final String query = "DELETE FROM contact_gene WHERE contact_pk = :contactPk AND gene_pk = :genePk";
+        final String query = "DELETE FROM gene_contact WHERE contact_pk = :contactPk AND gene_pk = :genePk";
 
         try {
             Interest localInterest = getInterest(interest.getAddress(), interest.getMgiAccessionId());
@@ -462,8 +523,8 @@ public class SqlUtils {
     }
 
     /**
-     * For every {@link Gene} in {@code genes, attempt to insert it. If the insert fails because of a DuplicateKeyException,
-     * update the record.
+     * For every {@link Gene} in {@code genes, first attempt to update it. If the update fails because it's missing,
+     * insert the record.
      *
      * @param genes the list of {@link Gene} instances to be used to update the database
      *
@@ -471,10 +532,14 @@ public class SqlUtils {
      *
      * @throws InterestException
      */
-    public int insertOrUpdateGene(List<Gene> genes) throws InterestException {
+    public int updateOrInsertGene(List<Gene> genes) throws InterestException {
         int count = 0;
 
+        Date createdAt = new Date();
+
         for (Gene gene : genes) {
+
+            gene.setCreatedAt(createdAt);
 
             try {
 
@@ -497,6 +562,42 @@ public class SqlUtils {
         return count;
     }
 
+    /**
+     * For every {@link GeneSent} in {@code geneSentList, first attempt to update it. If the update fails because it's missing,
+     * insert the record.
+     *
+     * @param geneSentList the list of {@link GeneSent } instances to be used to update the database
+     *
+     * @return The number of instances inserted/updated
+     *
+     * @throws InterestException
+     */
+    public int updateOrInsertSent(List<GeneSent> geneSentList) throws InterestException {
+        int count = 0;
+
+        for (GeneSent geneSent : geneSentList) {
+
+            try {
+
+                Map<String, Object> parameterMap = loadSentParameterMap(geneSent);
+
+                // Except for the initial load, most of the time the row will already exist.
+                // Try to update. If that fails because it doesn't yet exist, insert.
+                int updateCount = updateSent(parameterMap);
+                if (updateCount == 0) {
+                    updateCount = insertSent(parameterMap);
+                }
+
+                count += updateCount;
+
+            } catch (Exception e) {
+                logger.error(e.getLocalizedMessage());
+            }
+        }
+
+        return count;
+    }
+
 
     // PRIVATE METHODS
 
@@ -506,17 +607,17 @@ public class SqlUtils {
         // Try to insert the row into gene. If the mgi accession id already exists, the INSERT operation is ignored.
         final String columnNames =
                 "mgi_accession_id, symbol, assigned_to, assignment_status, assignment_status_date, assignment_status_pk, " +
-                "conditional_allele_production_centre, conditional_allele_production_status, conditional_allele_production_status_date, conditional_allele_production_status_pk ," +
+                "conditional_allele_production_centre, conditional_allele_production_status, conditional_allele_production_status_date, conditional_allele_production_status_pk, " +
                 "null_allele_production_centre, null_allele_production_status, null_allele_production_status_date, null_allele_production_status_pk, " +
                 "phenotyping_centre, phenotyping_status, phenotyping_status_date, phenotyping_status_pk, " +
-                "number_of_significant_phenotypes";
+                "number_of_significant_phenotypes, created_at";
 
         final String columnValues =
                 ":mgi_accession_id, :symbol, :assigned_to, :assignment_status, :assignment_status_date, :assignment_status_pk, " +
                 ":conditional_allele_production_centre, :conditional_allele_production_status, :conditional_allele_production_status_date, :conditional_allele_production_status_pk, " +
                 ":null_allele_production_centre, :null_allele_production_status, :null_allele_production_status_date, :null_allele_production_status_pk, " +
                 ":phenotyping_centre, :phenotyping_status, :phenotyping_status_date, :phenotyping_status_pk, " +
-                ":number_of_significant_phenotypes";
+                ":number_of_significant_phenotypes, :created_at";
 
         final String query = "INSERT INTO gene(" + columnNames + ") VALUES (" + columnValues + ")";
 
@@ -587,6 +688,69 @@ public class SqlUtils {
         parameterMap.put("phenotyping_status_pk", gene.getPhenotypingStatusPk());
 
         parameterMap.put("number_of_significant_phenotypes", gene.getNumberOfSignificantPhenotypes());
+
+        parameterMap.put("created_at", gene.getCreatedAt());
+
+        return parameterMap;
+    }
+
+    private int insertSent(Map<String, Object> parameterMap) throws InterestException {
+
+        // Try to insert the row into sent. If the gene_contact_pk already exists, the INSERT operation is ignored.
+        final String columnNames =
+                "subject, body, gene_contact_pk, " +
+                "assignment_status_pk, conditional_allele_production_status_pk, null_allele_production_status_pk, phenotyping_status_pk, " +
+                "created_at, sent_at";
+
+        final String columnValues =
+                ":subject, :body, :gene_contact_pk, " +
+                ":assignment_status_pk, :conditional_allele_production_status_pk, :null_allele_production_status_pk, :phenotyping_status_pk, " +
+                ":created_at, :sent_at";
+
+        final String query = "INSERT INTO sent(" + columnNames + ") VALUES (" + columnValues + ")";
+
+        int count = jdbcInterest.update(query, parameterMap);
+
+        return count;
+    }
+
+    private int updateSent(Map<String, Object> parameterMap) {
+
+        final String colData =
+                // Omit gene_contact_pk in the UPDATE as it is used in the WHERE clause.
+
+                "subject = :subject, " +
+                "gene_contact_pk = :gene_contact_pk, " +
+
+                "assignment_status_pk = :assignment_status_pk, " +
+                "conditional_allele_production_status_pk = :conditional_allele_production_status_pk, " +
+                "null_allele_production_status_pk = :null_allele_production_status_pk, " +
+                "phenotyping_status_pk = :phenotyping_status_pk, " +
+
+                "sent_at = :sent_at";
+
+        final String query = "UPDATE sent SET " + colData + " WHERE gene_contact_pk = :gene_contact_pk";
+
+        int count = jdbcInterest.update(query, parameterMap);
+
+        return count;
+    }
+
+    private Map<String, Object> loadSentParameterMap(GeneSent geneSent) {
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        parameterMap.put("subject", geneSent.getSubject());
+        parameterMap.put("body", geneSent.getBody());
+        parameterMap.put("gene_contact_pk", geneSent.getGeneContactPk());
+
+        parameterMap.put("assignment_status_pk", geneSent.getAssignmentStatusPk());
+        parameterMap.put("conditional_allele_production_status_pk", geneSent.getConditionalAlleleProductionStatusPk());
+        parameterMap.put("null_allele_production_status_pk", geneSent.getNullAlleleProductionStatusPk());
+        parameterMap.put("phenotyping_status_pk", geneSent.getPhenotypingStatusPk());
+
+        parameterMap.put("created_at", geneSent.getCreatedAt());
+        parameterMap.put("sent_at", geneSent.getSentAt());
 
         return parameterMap;
     }

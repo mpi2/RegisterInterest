@@ -5,11 +5,12 @@ import java.util.Date;
 /**
  * Created by mrelac on 12/05/2017.
  */
-public class Status {
+public class GeneStatus {
     private int pk;
     private int genePk;
     private String status;
     private boolean active;
+    private Date createdAt;
     private Date updatedAt;
 
     public int getPk() {
@@ -42,6 +43,14 @@ public class Status {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
     public Date getUpdatedAt() {

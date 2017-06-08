@@ -5,10 +5,11 @@ import java.util.Date;
 /**
  * Created by mrelac on 12/05/2017.
  */
-public class ContactGene {
+public class GeneContact {
     private int pk;
     private int contactPk;
     private int genePk;
+    private Date createdAt;
     private Date updatedAt;
 
     public int getPk() {
@@ -33,6 +34,14 @@ public class ContactGene {
 
     public void setGenePk(int genePk) {
         this.genePk = genePk;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
     public Date getUpdatedAt() {

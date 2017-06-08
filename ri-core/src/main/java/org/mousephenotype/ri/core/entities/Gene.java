@@ -38,6 +38,7 @@ public class Gene {
     private Integer numberOfSignificantPhenotypes;
     private String numberOfSignificantPhenotypesString;
 
+    private Date createdAt;
     private Date updatedAt;
 
     public int getPk() {
@@ -240,6 +241,14 @@ public class Gene {
         this.numberOfSignificantPhenotypesString = numberOfSignificantPhenotypesString;
     }
 
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public Date getUpdatedAt() {
         return updatedAt;
     }
@@ -271,6 +280,7 @@ public class Gene {
                 ", phenotypingStatusDate=" + phenotypingStatusDate +
                 ", phenotypingStatusPk=" + phenotypingStatusPk +
                 ", numberOfSignificantPhenotypes=" + numberOfSignificantPhenotypes +
+                ", created_at=" + createdAt +
                 ", updated_at=" + updatedAt +
                 '}';
     }

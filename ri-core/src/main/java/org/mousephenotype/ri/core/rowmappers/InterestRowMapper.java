@@ -33,6 +33,8 @@ public class InterestRowMapper implements RowMapper<Interest> {
         interest.setActive(active > 0 ? true : false);
         interest.setGenePk(rs.getInt("gene_pk"));
         interest.setMgiAccessionId(rs.getString("mgi_accession_id"));
+
+        interest.setCreatedAt(new Date(rs.getTimestamp("created_at").getTime()));
         interest.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));
 
         return interest;

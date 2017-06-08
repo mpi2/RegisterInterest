@@ -9,6 +9,7 @@ public class Contact {
     private int pk;
     private String address;
     private boolean isActive;
+    private Date createdAt;
     private Date updatedAt;
 
     public int getPk() {
@@ -33,6 +34,14 @@ public class Contact {
 
     public void setActive(boolean active) {
         isActive = active;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
     public Date getUpdatedAt() {

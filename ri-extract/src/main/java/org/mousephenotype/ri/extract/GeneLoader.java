@@ -46,7 +46,7 @@ import java.util.Set;
 
 
 /**
- * Loads the iMits Gene Status Change information from the iMits report file.
+ * Loads the iMits Gene GeneStatus Change information from the iMits report file.
  *
  * Created by mrelac on 22/05/2017
  *

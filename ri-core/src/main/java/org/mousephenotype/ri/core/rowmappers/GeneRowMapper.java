@@ -62,6 +62,7 @@ public class GeneRowMapper implements RowMapper<Gene> {
 
         gene.setNumberOfSignificantPhenotypes(rs.getInt("number_of_significant_phenotypes"));
 
+        gene.setCreatedAt(rs.getDate("created_at"));
         gene.setUpdatedAt(rs.getDate("updated_at"));
 
         return gene;

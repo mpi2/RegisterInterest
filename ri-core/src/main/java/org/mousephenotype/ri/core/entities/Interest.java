@@ -13,6 +13,7 @@ public class Interest {
     private boolean isActive;
     private Integer genePk;
     private String mgiAccessionId;
+    private Date createdAt;
     private Date updatedAt;
 
     public Interest() {
@@ -62,6 +63,14 @@ public class Interest {
 
     public void setMgiAccessionId(String mgiAccessionId) {
         this.mgiAccessionId = mgiAccessionId;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
     public Date getUpdatedAt() {

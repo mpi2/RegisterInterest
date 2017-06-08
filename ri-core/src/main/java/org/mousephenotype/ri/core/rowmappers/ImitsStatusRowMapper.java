@@ -28,10 +28,13 @@ public class ImitsStatusRowMapper implements RowMapper<ImitsStatus> {
         ImitsStatus imitsStatus = new ImitsStatus();
 
         imitsStatus.setPk(rs.getInt("pk"));
+        Integer i = rs.getInt("gene_status_pk");
+        imitsStatus.setGeneStatusPk((i == null) || (i == 0) ? null : i);
         imitsStatus.setStatus(rs.getString("status"));
-        imitsStatus.setStatus_pk(rs.getInt("status_pk"));
         int active = rs.getInt("active");
         imitsStatus.setActive(active > 0 ? true : false);
+
+        imitsStatus.setCreatedAt(new Date(rs.getTimestamp("created_at").getTime()));
         imitsStatus.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));
 
         return imitsStatus;

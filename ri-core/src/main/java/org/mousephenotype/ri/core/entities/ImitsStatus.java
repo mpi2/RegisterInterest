@@ -7,9 +7,10 @@ import java.util.Date;
  */
 public class ImitsStatus {
     private int pk;
-    private int status_pk;          // This field is not part of the imits_status table, but it is useful to have a place to put the equivalent register interest status pk.
+    private Integer geneStatusPk;          // This field is not part of the imits_status table, but it is useful to have a place to put the equivalent register interest status pk.
     private String status;
     private boolean active;
+    private Date createdAt;
     private Date updatedAt;
 
     public int getPk() {
@@ -20,12 +21,12 @@ public class ImitsStatus {
         this.pk = pk;
     }
 
-    public int getStatus_pk() {
-        return status_pk;
+    public Integer getGeneStatusPk() {
+        return geneStatusPk;
     }
 
-    public void setStatus_pk(int status_pk) {
-        this.status_pk = status_pk;
+    public void setGeneStatusPk(Integer geneStatusPk) {
+        this.geneStatusPk = geneStatusPk;
     }
 
     public String getStatus() {
@@ -44,6 +45,14 @@ public class ImitsStatus {
         this.active = active;
     }
 
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public Date getUpdatedAt() {
         return updatedAt;
     }
@@ -56,7 +65,7 @@ public class ImitsStatus {
     public String toString() {
         return "ImitsStatus{" +
                 "pk=" + pk +
-                ", status_pk=" + status_pk +
+                ", geneStatusPk=" + geneStatusPk +
                 ", status='" + status + '\'' +
                 ", active=" + active +
                 ", updatedAt=" + updatedAt +

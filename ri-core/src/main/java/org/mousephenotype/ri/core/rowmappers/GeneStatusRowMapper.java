@@ -1,8 +1,8 @@
 package org.mousephenotype.ri.core.rowmappers;
 
+import org.mousephenotype.ri.core.entities.GeneStatus;
 import org.springframework.jdbc.core.RowMapper;
 
-import org.mousephenotype.ri.core.entities.Component;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
@@ -10,7 +10,7 @@ import java.util.Date;
 /**
  * Created by mrelac on 12/05/2017.
  */
-public class ComponentRowMapper implements RowMapper<Component> {
+public class GeneStatusRowMapper implements RowMapper<GeneStatus> {
 
     /**
      * Implementations must implement this method to map each row of data
@@ -24,13 +24,18 @@ public class ComponentRowMapper implements RowMapper<Component> {
      *                      column values (that is, there's no need to catch SQLException)
      */
     @Override
-    public Component mapRow(ResultSet rs, int rowNum) throws SQLException {
-        Component component = new Component();
+    public GeneStatus mapRow(ResultSet rs, int rowNum) throws SQLException {
+        GeneStatus geneStatus = new GeneStatus();
 
-        component.setPk(rs.getInt("pk"));
-        component.setName((rs.getString("name")));
-        component.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));
+        geneStatus.setPk(rs.getInt("pk"));
 
-        return component;
+        geneStatus.setStatus(rs.getString("geneStatus"));
+        int active = rs.getInt("active");
+        geneStatus.setActive(active > 0 ? true : false);
+
+        geneStatus.setCreatedAt(new Date(rs.getTimestamp("created_at").getTime()));
+        geneStatus.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));
+
+        return geneStatus;
     }
 }

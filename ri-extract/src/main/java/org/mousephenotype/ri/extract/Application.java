@@ -41,7 +41,7 @@ import java.util.concurrent.Executors;
  * Created by mrelac on 22/05/2017.
  *
  * This class is intended to be a command-line callable java main program that loads the ri database with the lastest
- * iMits Gene Status Change Report.
+ * iMits Gene GeneStatus Change Report.
  */
 @EnableBatchProcessing
 @ComponentScan({"org.mousephenotype"})

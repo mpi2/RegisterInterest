@@ -7,11 +7,13 @@ import java.util.Date;
  */
 public class Log {
     private int pk;
-    private int componentPk;
+
     private int contactPk;
+    private int geneStatusPk;
     private int imitsStatusPk;
+    private int genePk;
     private int sentPk;
-    private int statusPk;
+
     private String message;
     private Date updatedAt;
 
@@ -23,20 +25,20 @@ public class Log {
         this.pk = pk;
     }
 
-    public int getComponentPk() {
-        return componentPk;
-    }
-
-    public void setComponentPk(int componentPk) {
-        this.componentPk = componentPk;
-    }
-
     public int getContactPk() {
         return contactPk;
     }
 
     public void setContactPk(int contactPk) {
         this.contactPk = contactPk;
+    }
+
+    public int getGeneStatusPk() {
+        return geneStatusPk;
+    }
+
+    public void setGeneStatusPk(int geneStatusPk) {
+        this.geneStatusPk = geneStatusPk;
     }
 
     public int getImitsStatusPk() {
@@ -47,20 +49,20 @@ public class Log {
         this.imitsStatusPk = imitsStatusPk;
     }
 
+    public int getGenePk() {
+        return genePk;
+    }
+
+    public void setGenePk(int genePk) {
+        this.genePk = genePk;
+    }
+
     public int getSentPk() {
         return sentPk;
     }
 
     public void setSentPk(int sentPk) {
         this.sentPk = sentPk;
-    }
-
-    public int getStatusPk() {
-        return statusPk;
-    }
-
-    public void setStatusPk(int statusPk) {
-        this.statusPk = statusPk;
     }
 
     public String getMessage() {

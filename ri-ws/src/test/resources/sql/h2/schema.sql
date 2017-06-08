@@ -1,12 +1,3 @@
-DROP TABLE IF EXISTS component;
-CREATE TABLE component (
-  pk          INT         NOT NULL      IDENTITY PRIMARY KEY,
-  name        VARCHAR(64) NOT NULL,     UNIQUE(name),
-  updated_at  TIMESTAMP   NOT NULL      DEFAULT CURRENT_TIMESTAMP
-
-);
-
-
 DROP TABLE IF EXISTS gene;
 CREATE TABLE gene (
   pk                                          INT          NOT NULL  AUTO_INCREMENT PRIMARY KEY,
@@ -35,6 +26,7 @@ CREATE TABLE gene (
 
   number_of_significant_phenotypes            INT          DEFAULT 0,
 
+  created_at                                  DATETIME     NOT NULL,
   updated_at                                  TIMESTAMP    NOT NULL   DEFAULT CURRENT_TIMESTAMP
 
 );
@@ -45,16 +37,18 @@ CREATE TABLE contact (
   pk              INT          NOT NULL      IDENTITY PRIMARY KEY,
   address         VARCHAR(256) NOT NULL,
   active          INT          NOT NULL      DEFAULT 1,                   -- 1 = active; 0 = inactive
+  created_at      DATETIME     NOT NULL,
   updated_at      TIMESTAMP    NOT NULL      DEFAULT CURRENT_TIMESTAMP
 
 );
 
 
-DROP TABLE IF EXISTS contact_gene;
-CREATE TABLE contact_gene (
+DROP TABLE IF EXISTS gene_contact;
+CREATE TABLE gene_contact (
   pk          INT       NOT NULL      IDENTITY PRIMARY KEY,
   contact_pk  INT       NOT NULL,
   gene_pk     INT       NOT NULL,
+  created_at  DATETIME  NOT NULL,
   updated_at  TIMESTAMP NOT NULL      DEFAULT CURRENT_TIMESTAMP,
 
   UNIQUE (contact_pk, gene_pk)
@@ -64,94 +58,96 @@ CREATE TABLE contact_gene (
 
 DROP TABLE IF EXISTS imits_status;
 CREATE TABLE imits_status (
+  pk                  INT          NOT NULL      IDENTITY PRIMARY KEY,
+  gene_status_pk      INT                        DEFAULT NULL,
+  status              VARCHAR(64)  NOT NULL,     UNIQUE(status),
+  active              INT          NOT NULL      DEFAULT 1,                   -- 1 = active; 0 = inactive
+  created_at          DATETIME     NOT NULL,
+  updated_at          TIMESTAMP    NOT NULL      DEFAULT CURRENT_TIMESTAMP
+
+);
+
+
+DROP TABLE IF EXISTS gene_status;
+CREATE TABLE gene_status (
   pk             INT          NOT NULL      IDENTITY PRIMARY KEY,
-  status_pk      INT                        DEFAULT NULL,
   status         VARCHAR(64)  NOT NULL,     UNIQUE(status),
   active         INT          NOT NULL      DEFAULT 1,                   -- 1 = active; 0 = inactive
+  created_at     DATETIME     NOT NULL,
   updated_at     TIMESTAMP    NOT NULL      DEFAULT CURRENT_TIMESTAMP
 
 );
 
 
-DROP TABLE IF EXISTS status;
-CREATE TABLE status (
-  pk             INT          NOT NULL      IDENTITY PRIMARY KEY,
-  status         VARCHAR(64)  NOT NULL,     UNIQUE(status),
-  active         INT          NOT NULL      DEFAULT 1,                   -- 1 = active; 0 = inactive
-  updated_at     TIMESTAMP    NOT NULL      DEFAULT CURRENT_TIMESTAMP
+DROP TABLE IF EXISTS gene_sent;
+CREATE TABLE gene_sent (
+  pk                    INT            NOT NULL        AUTO_INCREMENT PRIMARY KEY,
+  subject               VARCHAR(78)    NOT NULL,
+  body                  VARCHAR(2048)  NOT NULL,
+  gene_contact_pk       INT NOT NULL,
+  gene_status_pk        INT NOT NULL,
+  created_at            DATETIME       NOT NULL,
+  updated_at            TIMESTAMP      NOT NULL      DEFAULT CURRENT_TIMESTAMP,
 
-);
-
-
-DROP TABLE IF EXISTS sent;
-CREATE TABLE sent (
-  pk               INT            NOT NULL        AUTO_INCREMENT PRIMARY KEY,
-  subject          VARCHAR(78)    NOT NULL,
-  body             VARCHAR(2048)  NOT NULL,
-  component_pk     INT NOT NULL,
-  contact_gene_pk  INT NOT NULL,
-  status_pk        INT NOT NULL,
-  updated_at       TIMESTAMP      NOT NULL      DEFAULT CURRENT_TIMESTAMP,
-
-  UNIQUE (contact_gene_pk)
+  UNIQUE (gene_contact_pk)
 
 );
 
 
 DROP TABLE IF EXISTS log;
 CREATE TABLE log (
-  pk                 INT            NOT NULL      IDENTITY PRIMARY KEY,
-  contact_pk         INT            NOT NULL,
-  component_pk       INT,
-  status_pk          INT,
-  imits_status_pk    INT,
-  gene_pk            INT,
-  sent_pk            INT,
-  message            VARCHAR(2048)  NOT NULL,
-  updated_at         TIMESTAMP      NOT NULL      DEFAULT CURRENT_TIMESTAMP
+  pk                    INT            NOT NULL      IDENTITY PRIMARY KEY,
+  contact_pk            INT            NOT NULL,
+  gene_status_pk        INT,
+  imits_status_pk       INT,
+  gene_pk               INT,
+  gene_sent_pk          INT,
+  message               VARCHAR(2048)  NOT NULL,
+  updated_at            TIMESTAMP      NOT NULL      DEFAULT CURRENT_TIMESTAMP
 
 );
 
 
 -- POPULATE STATIC TABLES
 
-INSERT INTO component (name) VALUES ('disease'), ('gene'), ('phenotype');
+SET @now=NOW();
 
-INSERT INTO status (status) VALUES
-  ('more_phenotyping_data_available'),
-  ('mouse_produced'),
-  ('mouse_production_started'),
-  ('not_planned'),
-  ('phenotyping_data_available'),
-  ('production_and_phenotyping_planned'),
-  ('unregister'),
-  ('withdrawn');
+INSERT INTO gene_status (status, created_at) VALUES
+  ('more_phenotyping_data_available', @now),
+  ('mouse_produced', @now),
+  ('mouse_production_started', @now),
+  ('not_planned', @now),
+  ('phenotyping_data_available', @now),
+  ('production_and_phenotyping_planned', @now),
+  ('register', @now),
+  ('unregister', @now),
+  ('withdrawn', @now);
 
-INSERT INTO imits_status (status) VALUES
-  ('Aborted - ES Cell QC Failed'),
-  ('Assigned - ES Cell QC Complete'),
-  ('Assigned - ES Cell QC In Progress'),
-  ('Assigned'),
-  ('Chimeras obtained'),
-  ('Chimeras/Founder obtained'),
-  ('Conflict'),
-  ('Cre Excision Complete'),
-  ('Cre Excision Started'),
-  ('Founder obtained'),
-  ('Genotype confirmed'),
-  ('Inactive'),
-  ('Inspect - Conflict'),
-  ('Inspect - GLT Mouse'),
-  ('Inspect - MI Attempt'),
-  ('Interest'),
-  ('Micro-injection aborted'),
-  ('Micro-injection in progress'),
-  ('Mouse Allele Modification Registered'),
-  ('Phenotype Attempt Registered'),
-  ('Phenotype Production Aborted'),
-  ('Phenotyping Complete'),
-  ('Phenotyping Production Registered'),
-  ('Phenotyping Started'),
-  ('Rederivation Complete'),
-  ('Rederivation Started'),
-  ('Withdrawn');
+INSERT INTO imits_status (status, gene_status_pk, created_at) VALUES
+  ('Aborted - ES Cell QC Failed', (SELECT pk FROM gene_status WHERE status = 'production_and_phenotyping_planned'), @now),
+  ('Assigned - ES Cell QC Complete', (SELECT pk FROM gene_status WHERE status = 'production_and_phenotyping_planned'), @now),
+  ('Assigned - ES Cell QC In Progress', (SELECT pk FROM gene_status WHERE status = 'production_and_phenotyping_planned'), @now),
+  ('Assigned', (SELECT pk FROM gene_status WHERE status = 'production_and_phenotyping_planned'), @now),
+  ('Chimeras obtained', (SELECT pk FROM gene_status WHERE status = 'mouse_production_started'), @now),
+  ('Chimeras/Founder obtained', (SELECT pk FROM gene_status WHERE status = 'mouse_production_started'), @now),
+  ('Conflict', (SELECT pk FROM gene_status WHERE status = 'production_and_phenotyping_planned'), @now),
+  ('Cre Excision Complete', (SELECT pk FROM gene_status WHERE status = 'mouse_produced'), @now),
+  ('Cre Excision Started', (SELECT pk FROM gene_status WHERE status = 'mouse_production_started'), @now),
+  ('Founder obtained', (SELECT pk FROM gene_status WHERE status = 'mouse_production_started'), @now),
+  ('Genotype confirmed', (SELECT pk FROM gene_status WHERE status = 'mouse_produced'), @now),
+  ('Inactive', (SELECT pk FROM gene_status WHERE status = 'withdrawn'), @now),
+  ('Inspect - Conflict', (SELECT pk FROM gene_status WHERE status = 'production_and_phenotyping_planned'), @now),
+  ('Inspect - GLT Mouse', (SELECT pk FROM gene_status WHERE status = 'production_and_phenotyping_planned'), @now),
+  ('Inspect - MI Attempt', (SELECT pk FROM gene_status WHERE status = 'production_and_phenotyping_planned'), @now),
+  ('Interest', (SELECT pk FROM gene_status WHERE status = 'production_and_phenotyping_planned'), @now),
+  ('Micro-injection aborted', (SELECT pk FROM gene_status WHERE status = 'mouse_production_started'), @now),
+  ('Micro-injection in progress', (SELECT pk FROM gene_status WHERE status = 'mouse_production_started'), @now),
+  ('Mouse Allele Modification Registered', (SELECT pk FROM gene_status WHERE status = 'mouse_production_started'), @now),
+  ('Phenotype Attempt Registered', NULL, @now),
+  ('Phenotype Production Aborted', NULL, @now),
+  ('Phenotyping Complete', (SELECT pk FROM gene_status WHERE status = 'phenotyping_data_available'), @now),
+  ('Phenotyping Production Registered', NULL, @now),
+  ('Phenotyping Started', NULL, @now),
+  ('Rederivation Complete', (SELECT pk FROM gene_status WHERE status = 'mouse_production_started'), @now),
+  ('Rederivation Started', (SELECT pk FROM gene_status WHERE status = 'mouse_production_started'), @now),
+  ('Withdrawn', (SELECT pk FROM gene_status WHERE status = 'withdrawn'), @now);

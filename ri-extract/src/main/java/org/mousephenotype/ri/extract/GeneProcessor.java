@@ -193,22 +193,22 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
 
         // Populate the ri status fields based on imits status string.
         if ((gene.getAssignmentStatus() != null) && ( ! gene.getAssignmentStatus().trim().isEmpty())) {
-            gene.setAssignmentStatusPk(imitsStatusMap.get(gene.getAssignmentStatus()).getStatus_pk());
+            gene.setAssignmentStatusPk(imitsStatusMap.get(gene.getAssignmentStatus()).getGeneStatusPk());
         } else {
             gene.setAssignmentStatusPk(null);
         }
         if ((gene.getConditionalAlleleProductionStatus() != null) && ( ! gene.getConditionalAlleleProductionStatus().trim().isEmpty())) {
-            gene.setConditionalAlleleProductionStatusPk(imitsStatusMap.get(gene.getConditionalAlleleProductionStatus()).getStatus_pk());
+            gene.setConditionalAlleleProductionStatusPk(imitsStatusMap.get(gene.getConditionalAlleleProductionStatus()).getGeneStatusPk());
         } else {
             gene.setConditionalAlleleProductionStatusPk(null);
         }
         if ((gene.getNullAlleleProductionStatus() != null) && ( ! gene.getNullAlleleProductionStatus().trim().isEmpty())) {
-            gene.setNullAlleleProductionStatusPk(imitsStatusMap.get(gene.getNullAlleleProductionStatus()).getStatus_pk());
+            gene.setNullAlleleProductionStatusPk(imitsStatusMap.get(gene.getNullAlleleProductionStatus()).getGeneStatusPk());
         } else {
             gene.setNullAlleleProductionStatusPk(null);
         }
         if ((gene.getPhenotypingStatus() != null) && ( ! gene.getPhenotypingStatus().trim().isEmpty())) {
-            gene.setPhenotypingStatusPk(imitsStatusMap.get(gene.getPhenotypingStatus()).getStatus_pk());
+            gene.setPhenotypingStatusPk(imitsStatusMap.get(gene.getPhenotypingStatus()).getGeneStatusPk());
         } else {
             gene.setPhenotypingStatusPk(null);
         }

@@ -28,9 +28,12 @@ public class ContactRowMapper implements RowMapper<Contact> {
         Contact contact = new Contact();
 
         contact.setPk(rs.getInt("pk"));
+
         contact.setAddress((rs.getString("address")));
         int active = rs.getInt("active");
         contact.setActive(active > 0 ? true : false);
+
+        contact.setCreatedAt(new Date(rs.getTimestamp("created_at").getTime()));
         contact.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));
 
         return contact;

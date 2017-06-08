@@ -2,7 +2,7 @@ package org.mousephenotype.ri.core.rowmappers;
 
 import org.springframework.jdbc.core.RowMapper;
 
-import org.mousephenotype.ri.core.entities.ContactGene;
+import org.mousephenotype.ri.core.entities.GeneContact;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
@@ -10,7 +10,7 @@ import java.util.Date;
 /**
  * Created by mrelac on 12/05/2017.
  */
-public class ContactGeneRowMapper implements RowMapper<ContactGene> {
+public class GeneContactRowMapper implements RowMapper<GeneContact> {
 
     /**
      * Implementations must implement this method to map each row of data
@@ -24,12 +24,15 @@ public class ContactGeneRowMapper implements RowMapper<ContactGene> {
      *                      column values (that is, there's no need to catch SQLException)
      */
     @Override
-    public ContactGene mapRow(ResultSet rs, int rowNum) throws SQLException {
-        ContactGene contactGene = new ContactGene();
+    public GeneContact mapRow(ResultSet rs, int rowNum) throws SQLException {
+        GeneContact contactGene = new GeneContact();
 
         contactGene.setPk(rs.getInt("pk"));
+
         contactGene.setContactPk(rs.getInt("contact_pk"));
         contactGene.setGenePk(rs.getInt("gene_pk"));
+
+        contactGene.setCreatedAt(new Date(rs.getTimestamp("created_at").getTime()));
         contactGene.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));
 
         return contactGene;
