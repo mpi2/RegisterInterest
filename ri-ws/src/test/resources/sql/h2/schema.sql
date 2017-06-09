@@ -81,13 +81,18 @@ CREATE TABLE gene_status (
 
 DROP TABLE IF EXISTS gene_sent;
 CREATE TABLE gene_sent (
-  pk                    INT            NOT NULL        AUTO_INCREMENT PRIMARY KEY,
-  subject               VARCHAR(78)    NOT NULL,
-  body                  VARCHAR(2048)  NOT NULL,
-  gene_contact_pk       INT NOT NULL,
-  gene_status_pk        INT NOT NULL,
-  created_at            DATETIME       NOT NULL,
-  updated_at            TIMESTAMP      NOT NULL      DEFAULT CURRENT_TIMESTAMP,
+  pk                                          INT             NOT NULL        AUTO_INCREMENT PRIMARY KEY,
+  subject                                     VARCHAR(78)     NOT NULL,
+  body                                        VARCHAR(2048)   NOT NULL,
+  gene_contact_pk                             INT             NOT NULL,
+  assignment_status_pk                        INT             DEFAULT NULL,
+  conditional_allele_production_status_pk     INT             DEFAULT NULL,
+  null_allele_production_status_pk            INT             DEFAULT NULL,
+  phenotyping_status_pk                       INT             DEFAULT NULL,
+
+  created_at                                  DATETIME        NOT NULL,
+  sent_at                                     DATETIME,                       -- a null value means 'generated but not geneSent yet'.
+  updated_at                                  TIMESTAMP       NOT NULL        DEFAULT CURRENT_TIMESTAMP,
 
   UNIQUE (gene_contact_pk)
 
@@ -96,14 +101,18 @@ CREATE TABLE gene_sent (
 
 DROP TABLE IF EXISTS log;
 CREATE TABLE log (
-  pk                    INT            NOT NULL      IDENTITY PRIMARY KEY,
-  contact_pk            INT            NOT NULL,
-  gene_status_pk        INT,
-  imits_status_pk       INT,
-  gene_pk               INT,
-  gene_sent_pk          INT,
-  message               VARCHAR(2048)  NOT NULL,
-  updated_at            TIMESTAMP      NOT NULL      DEFAULT CURRENT_TIMESTAMP
+  pk                                      INT             NOT NULL      AUTO_INCREMENT PRIMARY KEY,
+  contact_pk                              INT             NOT NULL,
+
+  assignment_status_pk                    INT             DEFAULT NULL,
+  conditional_allele_production_status_pk INT             DEFAULT NULL,
+  null_allele_production_status_pk        INT             DEFAULT NULL,
+  phenotyping_status_pk                   INT             DEFAULT NULL,
+
+  gene_pk                                 INT             DEFAULT NULL,
+  gene_sent_pk                            INT             DEFAULT NULL,
+  message                                 VARCHAR(2048)   NOT NULL,
+  updated_at                              TIMESTAMP       NOT NULL       DEFAULT CURRENT_TIMESTAMP
 
 );
 

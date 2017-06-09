@@ -2,6 +2,7 @@ package org.mousephenotype.ri.generate;
 
 import org.mousephenotype.ri.core.SqlUtils;
 import org.mousephenotype.ri.core.entities.*;
+import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.mousephenotype.ri.generate.config.AppConfig;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,12 +12,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +72,7 @@ public class Application implements CommandLineRunner {
     public void initialise() {
         geneContacts = sqlUtils.getGeneContacts();
         genesMap = sqlUtils.getGenesByPk();
-        geneSentMap = sqlUtils.getSent();
+        geneSentMap = sqlUtils.getGeneSent();
         statusMap = sqlUtils.getStatusMap();
 
         STATUS_MORE_PHENOTYPE_DATA_AVAILABLE_PK = statusMap.get("more_phenotyping_data_available").getPk();
@@ -90,8 +89,9 @@ public class Application implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        List<GeneSent> genesSent = new ArrayList<>();
-
+        int count = 0;
+        String message;
+        
         /**
          * For each geneContact:
          *      - Look up the Gene object from genesMap using the gene primary key (found in the geneContact object)
@@ -105,18 +105,34 @@ public class Application implements CommandLineRunner {
          *      - Set the GeneSent statuses to the Gene statuses, build the body, and set the 'sent_at' field to null to
          *        indicate the new gene email has not yet been sent.
          *      - Write the GeneSent object to the gene_sent table.
+         *      - Log the activity.
          */
         for (GeneContact geneContact : geneContacts) {
 
             Gene gene = genesMap.get(geneContact.getGenePk());
+            boolean shouldWelcome = false;
 
             Date now = new Date();
             GeneSent geneSent = geneSentMap.get(geneContact.getPk());
             if (geneSent == null) {
 
                 geneSent = new GeneSent();
+                shouldWelcome = true;
                 geneSent.setSubject(getGeneWelcomeSubject(gene));
+                geneSent.setBody(buildBody(gene, geneSent, shouldWelcome));
                 geneSent.setCreatedAt(now);
+                message = "ri-generate: send welcome message. Status: " +
+                        "null" + "->" +
+                        gene.getAssignmentStatusPk() + " :: " +
+
+                        "null" + "->" +
+                        gene.getConditionalAlleleProductionStatusPk() + " :: " +
+
+                        null + "->" +
+                        gene.getNullAlleleProductionStatusPk() + " :: " +
+
+                        null + "->" +
+                        gene.getPhenotypingStatusPk();
 
             } else {
 
@@ -129,6 +145,20 @@ public class Application implements CommandLineRunner {
                 }
 
                 geneSent.setSubject(getGeneMouseProductionSubject(gene));
+                geneSent.setBody(buildBody(gene, geneSent, shouldWelcome));
+
+                message = "ri-generate: gene status has changed. Status: " +
+                        gene.getAssignmentStatusPk() + "->" +
+                        geneSent.getAssignmentStatusPk() + " :: " +
+
+                        gene.getConditionalAlleleProductionStatusPk() + "->" +
+                        geneSent.getConditionalAlleleProductionStatusPk() + " :: " +
+
+                        gene.getNullAlleleProductionStatusPk() + "->" +
+                        geneSent.getNullAlleleProductionStatusPk() + " :: " +
+
+                        gene.getPhenotypingStatusPk() + "->" +
+                        geneSent.getPhenotypingStatusPk();
             }
 
             // The status has changed.
@@ -139,51 +169,65 @@ public class Application implements CommandLineRunner {
             geneSent.setConditionalAlleleProductionStatusPk(gene.getConditionalAlleleProductionStatusPk());
             geneSent.setNullAlleleProductionStatusPk(gene.getNullAlleleProductionStatusPk());
             geneSent.setPhenotypingStatusPk(gene.getPhenotypingStatusPk());
-            geneSent.setBody(buildBody(gene));
+
             geneSent.setSentAt(null);
 
-            genesSent.add(geneSent);
+            geneSent = sqlUtils.updateOrInsertGeneEmailQueued(geneSent);
+            
+            sqlUtils.logGeneStatusChangeAction(geneSent, geneContact.getContactPk(), geneContact.getGenePk(), message);
+            count++;
         }
 
-        int count = sqlUtils.updateOrInsertSent(genesSent);
+        logger.info("Run ri-generate: " + count + " emails queued for gene status changes");
     }
 
-    public String buildBody(Gene gene) {
-        StringBuilder body = new StringBuilder("Dear colleague,\n");
+    public String buildBody(Gene gene, GeneSent geneSent, boolean shouldWelcome) {
+        StringBuilder body = new StringBuilder("Dear colleague,\n\n");
 
-        if (gene.getAssignmentStatusPk() == STATUS_REGISTER_PK) {
+        if (shouldWelcome) {
             body
                     .append("Thank you for registering interest in gene ")
                     .append(gene.getSymbol())
-                    .append(".\n");
-        } else if (gene.getAssignmentStatusPk() == STATUS_UNREGISTER_PK) {
-            body
-                    .append("You have been unregistered for interest in gene ")
-                    .append(gene.getSymbol())
-                    .append(".\n");
-        }
+                    .append(".\n")
+                    .append("\n");
 
-        if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatusPk() > 0)) {
+        } else if ((gene.getPhenotypingStatusPk() != null) && (gene.getPhenotypingStatusPk() > 0)) {
+
             body
                     .append("You have registered interest in gene ")
                     .append(gene.getSymbol())
                     .append(" via the IMPC (")
-                    .append("<a href=www.mousephenotype.org>www.mousephenotype.org</a>).\n")
-                    .append("You are receiving this email because the IMPC production status of the gene has changed.\n");
+                    .append("<a href=www.mousephenotype.org>www.mousephenotype.org</a>). ")
+                    .append("You are receiving this email because the IMPC phenotyping status of the gene has changed.\n")
+                    .append("\n");
+        } else if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatusPk() > 0)) {
+            body
+                    .append("You have registered interest in gene ")
+                    .append(gene.getSymbol())
+                    .append(" via the IMPC (")
+                    .append("<a href=www.mousephenotype.org>www.mousephenotype.org</a>). ")
+                    .append("You are receiving this email because the IMPC production status of the gene has changed.\n")
+                    .append("\n");
         }
 
-        if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatusPk() == STATUS_PRODUCTION_AND_PHENOTYPING_PLANNED_PK)) {
-            body
-                    .append("This gene has been selected for mouse production and phenotyping as part of the IMPC initiative.\n");
+        if (gene.getAssignmentStatusPk() != geneSent.getAssignmentStatusPk()) {
+            if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatusPk() == STATUS_PRODUCTION_AND_PHENOTYPING_PLANNED_PK)) {
+                body
+                        .append("This gene has been selected for mouse production and phenotyping as part of the IMPC initiative.\n")
+                        .append("\n");
 
-        } else if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatusPk() == STATUS_WITHDRAWN_PK)) {
-            body
-                    .append("This gene has been withdrawn from mouse production and phenotyping as part of the IMPC initiative.\n");
+            } else if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatusPk() == STATUS_WITHDRAWN_PK)) {
+                body
+                        .append("This gene has been withdrawn from mouse production and phenotyping as part of the IMPC initiative.\n")
+                        .append("\n");
+                ;
 
-        } else if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatusPk() == STATUS_NOT_PLANNED_PK)) {
-            body
-                    .append("This gene has not been selected for mouse production and phenotyping as part of the IMPC initiative.")
-                    .append(" This gene will be considered for mouse production in the future by the IMPC.\n");
+            } else if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatusPk() == STATUS_NOT_PLANNED_PK)) {
+                body
+                        .append("This gene has not been selected for mouse production and phenotyping as part of the IMPC initiative.")
+                        .append(" This gene will be considered for mouse production in the future by the IMPC.\n")
+                        .append("\n");
+            }
         }
 
         if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatusPk() == STATUS_PRODUCTION_AND_PHENOTYPING_PLANNED_PK) &&
@@ -196,7 +240,8 @@ public class Application implements CommandLineRunner {
                     .append(gene.getAssignedTo())
                     .append(" if you are interested in the conditional allele. A fee for service maybe offered by ")
                     .append(gene.getAssignedTo())
-                    .append(" for producing more complex alleles such as point mutation alleles.\n");
+                    .append(" for producing more complex alleles such as point mutation alleles.\n")
+                    .append("\n");;
         }
 
         if ((gene.getNullAlleleProductionStatusPk() != null) && (gene.getNullAlleleProductionStatusPk() == STATUS_MOUSE_PRODUCTION_STARTED_PK) &&
@@ -206,7 +251,8 @@ public class Application implements CommandLineRunner {
             body
                     .append("Mouse Production for the null allele commenced on ")
                     .append(datePiece)
-                    .append(" for this gene.\n");
+                    .append(" for this gene.\n")
+                    .append("\n");;
         }
 
         if ((gene.getNullAlleleProductionStatusPk() != null) && (gene.getNullAlleleProductionStatusPk() == STATUS_MOUSE_PRODUCED_PK) &&
@@ -218,7 +264,8 @@ public class Application implements CommandLineRunner {
                     .append(gene.getNullAlleleProductionCentre())
                     .append(" on ")
                     .append(datePiece)
-                    .append(".\n");
+                    .append(".\n")
+                    .append("\n");;
         }
 
         if ((gene.getConditionalAlleleProductionStatusPk() != null) && (gene.getConditionalAlleleProductionStatusPk() == STATUS_MOUSE_PRODUCTION_STARTED_PK) &&
@@ -228,7 +275,8 @@ public class Application implements CommandLineRunner {
             body
                     .append("Mouse Production for the conditional allele commenced on ")
                     .append(datePiece)
-                    .append(" for this gene.\n");
+                    .append(" for this gene.\n")
+                    .append("\n");;
         }
 
         if ((gene.getConditionalAlleleProductionStatusPk() != null) && (gene.getConditionalAlleleProductionStatusPk() == STATUS_MOUSE_PRODUCED_PK) &&
@@ -236,51 +284,35 @@ public class Application implements CommandLineRunner {
 
             String datePiece = sdf.format(gene.getConditionalAlleleProductionStatusDate());
             body
-                    .append("Genotype confirmed mice  were produced at ")
+                    .append("Genotype confirmed mice were produced at ")
                     .append(gene.getConditionalAlleleProductionCentre())
                     .append(" on ")
                     .append(datePiece)
-                    .append(".\n");
+                    .append(".\n")
+                    .append("\n");
         }
 
-        if ((gene.getPhenotypingStatusPk() != null) && (gene.getPhenotypingStatusPk() > 0)) {
+        if ((gene.getPhenotypingStatusPk() == STATUS_PHENOTYPE_DATA_AVAILABLE_PK) && (gene.getNumberOfSignificantPhenotypes() > 0)) {
             body
-                    .append("You have registered interest in gene ")
-                    .append(gene.getSymbol())
-                    .append(" via the IMPC (")
-                    .append("<a href=www.mousephenotype.org>www.mousephenotype.org</a>).\n")
-                    .append("You are receiving this email because the IMPC phenotyping status of the gene has changed.\n");
-        }
+                    .append("Phenotype data for this gene is now available on the IMPC portal. The IMPC portal is now showing phenotype data ")
+                    .append("and has identified ")
+                    .append(gene.getNumberOfSignificantPhenotypes())
+                    .append(" significant phenotypes.\n")
+                    .append("\n");
 
-        if (gene.getPhenotypingStatusPk() == STATUS_PHENOTYPE_DATA_AVAILABLE_PK) {
+        } else if ((gene.getPhenotypingStatusPk() == STATUS_MORE_PHENOTYPE_DATA_AVAILABLE_PK) && (gene.getNumberOfSignificantPhenotypes() > 0)) {
             body
-                    .append("Phenotype data for this gene is now available on the IMPC portal. The IMPC portal is now showing phenotype data for ");
-
-        } else if (gene.getPhenotypingStatusPk() == STATUS_MORE_PHENOTYPE_DATA_AVAILABLE_PK) {
-            body
-                    .append("Additional phenotype data for this gene has become available on the IMPC portal. Phenotype data has been collected for ");
-        }
-
-        body
-                .append("Additional phenotype data for this gene has become available on the IMPC portal. Phenotype data has been collected ")
-                .append("and has identified ")
-                .append(gene.getNumberOfSignificantPhenotypes())
-                .append("significant phenotypes.\n");
-
-        if (gene.getAssignmentStatusPk() == STATUS_UNREGISTER_PK) {
-            body
-                    .append("You will no longer be notified about any future changes in this gene's status.\n");
-
-        } else {
-            body
-                    .append("You will be notified by email with any future changes in this gene's status.\n");
+                    .append("Additional phenotype data for this gene has become available on the IMPC portal. Phenotype data has been collected ")
+                    .append("and the IMPC portal has identified ")
+                    .append(gene.getNumberOfSignificantPhenotypes())
+                    .append(" significant phenotypes.\n")
+                    .append("\n");
         }
 
         body
-                .append("For further information / enquiries please write to ")
-                .append("<a href=mailto:mouse-helpdesk@ebi.ac.uk>mouse-helpdesk@ebi.ac.uk</a>).\n")
-                .append("Best Regards,\n")
-                .append("The MPI2 (KOMP2) informatics consortium\n");
+                .append("You will be notified by email with any future changes in this gene's status.\n")
+                .append("\n")
+                .append(getEpilogue());
 
         return body.toString();
     }
@@ -300,5 +332,49 @@ public class Application implements CommandLineRunner {
         subject = "IMPC Status update for " + gene.getSymbol();
 
         return subject;
+    }
+
+    public int generateUnregisterGeneEmail(Gene gene, GeneContact geneContact) throws InterestException {
+        GeneSent geneSent = new GeneSent();
+        StringBuilder body = new StringBuilder();
+
+        body
+                .append("Dear colleague,\n")
+                .append("\n")
+                .append("You have been unregistered for interest in gene ")
+                .append(gene.getSymbol())
+                .append(".\n")
+                .append("\n")
+                .append("You will no longer be notified about any future changes in this gene's status.\n")
+                .append("\n")
+                .append(getEpilogue());
+
+        String subject = "IMPC Gene unregistration for " + gene.getSymbol();
+
+        geneSent.setSentAt(null);
+        geneSent.setSubject(subject);
+        geneSent.setBody(body.toString());
+        geneSent.setGeneContactPk(geneContact.getPk());
+
+        geneSent = sqlUtils.updateOrInsertGeneEmailQueued(geneSent);
+
+        String message = "ri-generate: send unregister message";
+        sqlUtils.logGeneStatusChangeAction(geneSent, geneContact.getContactPk(), geneContact.getGenePk(), message);
+
+        return 1;
+    }
+
+    private String getEpilogue() {
+        StringBuilder body = new StringBuilder();
+
+        body
+                .append("For further information / enquiries please write to ")
+                .append("<a href=mailto:mouse-helpdesk@ebi.ac.uk>mouse-helpdesk@ebi.ac.uk</a>).\n")
+                .append("\n")
+                .append("Best Regards,\n")
+                .append("\n")
+                .append("The MPI2 (KOMP2) informatics consortium\n");
+
+        return body.toString();
     }
 }

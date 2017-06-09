@@ -7,7 +7,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import javax.inject.Inject;
@@ -15,6 +17,8 @@ import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
 
 import org.mousephenotype.ri.core.exceptions.InterestException;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -305,14 +309,14 @@ public class SqlUtils {
      *
      * @return A {@link Map} of all {@link GeneSent} instances, indexed by gene_contact_pk
      */
-    public Map<Integer, GeneSent> getSent() {
+    public Map<Integer, GeneSent> getGeneSent() {
 
         Map<Integer, GeneSent> sentMap = new HashMap<>();
 
         final String query = "SELECT * FROM gene_sent";
         Map<String, Object> parameterMap = new HashMap<>();
 
-        List<GeneSent> geneSentList = jdbcInterest.query(query, parameterMap, new SentRowMapper());
+        List<GeneSent> geneSentList = jdbcInterest.query(query, parameterMap, new GeneSentRowMapper());
         for (GeneSent geneSent : geneSentList) {
             sentMap.put(geneSent.getGeneContactPk(), geneSent);
         }
@@ -479,14 +483,49 @@ public class SqlUtils {
         return results;
     }
 
-    public void logWebServiceAction(int contact_pk, Integer gene_pk, String message) {
+    public void logGeneStatusChangeAction(GeneSent geneSent, int contactPk, Integer genePk, String message) {
+        final String query =
+                "INSERT INTO log (" +
+                    " contact_pk," +
+                    " assignment_status_pk," +
+                    " conditional_allele_production_status_pk," +
+                    " null_allele_production_status_pk," +
+                    " phenotyping_status_pk," +
+                    " gene_pk," +
+                    " gene_sent_pk," +
+                    " message)" +
+                " VALUES (" +
+                    " :contact_pk," +
+                    " :assignment_status_pk," +
+                    " :conditional_allele_production_status_pk," +
+                    " :null_allele_production_status_pk," +
+                    " :phenotyping_status_pk," +
+                    " :gene_pk," +
+                    " :gene_sent_pk," +
+                    " :message)";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        parameterMap.put("contact_pk", contactPk);
+        parameterMap.put("assignment_status_pk", geneSent.getAssignmentStatusPk());
+        parameterMap.put("conditional_allele_production_status_pk", geneSent.getConditionalAlleleProductionStatusPk());
+        parameterMap.put("null_allele_production_status_pk", geneSent.getNullAlleleProductionStatusPk());
+        parameterMap.put("phenotyping_status_pk", geneSent.getPhenotypingStatusPk());
+        parameterMap.put("gene_pk", genePk);
+        parameterMap.put("gene_sent_pk", geneSent.getPk());
+        parameterMap.put("message", message);
+
+        jdbcInterest.update(query, parameterMap);
+    }
+
+    public void logWebServiceAction(int contactPk, Integer genePk, String message) {
         final String query = "INSERT INTO log (contact_pk, gene_pk, message)" +
                             " VALUES (:contact_pk, :gene_pk, :message)";
 
         Map<String, Object> parameterMap = new HashMap<>();
 
-        parameterMap.put("contact_pk", contact_pk);
-        parameterMap.put("gene_pk", gene_pk);
+        parameterMap.put("contact_pk", contactPk);
+        parameterMap.put("gene_pk", genePk);
         parameterMap.put("message", message);
 
         jdbcInterest.update(query, parameterMap);
@@ -563,39 +602,38 @@ public class SqlUtils {
     }
 
     /**
-     * For every {@link GeneSent} in {@code geneSentList, first attempt to update it. If the update fails because it's missing,
+     * Attempts to update the given {@link GeneSent} instance. If the update fails because it's missing,
      * insert the record.
      *
-     * @param geneSentList the list of {@link GeneSent } instances to be used to update the database
+     * @param geneSent the {@link GeneSent } instance to be used to update the database
      *
-     * @return The number of instances inserted/updated
+     * @return The {@link GeneSent} instance containing the primary key
      *
      * @throws InterestException
      */
-    public int updateOrInsertSent(List<GeneSent> geneSentList) throws InterestException {
-        int count = 0;
+    public GeneSent updateOrInsertGeneEmailQueued(GeneSent geneSent) throws InterestException {
 
-        for (GeneSent geneSent : geneSentList) {
+        try {
 
-            try {
+            Map<String, Object> parameterMap = loadSentParameterMap(geneSent);
 
-                Map<String, Object> parameterMap = loadSentParameterMap(geneSent);
+            // Except for the initial load, most of the time the row will already exist.
+            // Try to update. If that fails because it doesn't yet exist, insert.
+            int updateCount = updateSent(parameterMap);
+            if (updateCount == 0) {
 
-                // Except for the initial load, most of the time the row will already exist.
-                // Try to update. If that fails because it doesn't yet exist, insert.
-                int updateCount = updateSent(parameterMap);
-                if (updateCount == 0) {
-                    updateCount = insertSent(parameterMap);
-                }
+                KeyHolder keyholder = new GeneratedKeyHolder();
+                SqlParameterSource parameterSource = new MapSqlParameterSource(parameterMap);
 
-                count += updateCount;
-
-            } catch (Exception e) {
-                logger.error(e.getLocalizedMessage());
+                int pk = insertSent(parameterSource, keyholder);
+                geneSent.setPk(pk);
             }
+
+        } catch (Exception e) {
+            logger.error(e.getLocalizedMessage());
         }
 
-        return count;
+        return geneSent;
     }
 
 
@@ -694,7 +732,7 @@ public class SqlUtils {
         return parameterMap;
     }
 
-    private int insertSent(Map<String, Object> parameterMap) throws InterestException {
+    private int insertSent(SqlParameterSource parameterSource, KeyHolder keyholder) throws InterestException {
 
         // Try to insert the row into gene_sent. If the gene_contact_pk already exists, the INSERT operation is ignored.
         final String columnNames =
@@ -709,9 +747,12 @@ public class SqlUtils {
 
         final String query = "INSERT INTO gene_sent(" + columnNames + ") VALUES (" + columnValues + ")";
 
-        int count = jdbcInterest.update(query, parameterMap);
+        int count = jdbcInterest.update(query, parameterSource, keyholder);
+        if (count > 0) {
+            return keyholder.getKey().intValue();
+        }
 
-        return count;
+        throw new InterestException("Unable to get primary key after INSERT.");
     }
 
     private int updateSent(Map<String, Object> parameterMap) {
@@ -720,6 +761,7 @@ public class SqlUtils {
                 // Omit gene_contact_pk in the UPDATE as it is used in the WHERE clause.
 
                 "subject = :subject, " +
+                "body = :body, " +
                 "gene_contact_pk = :gene_contact_pk, " +
 
                 "assignment_status_pk = :assignment_status_pk, " +

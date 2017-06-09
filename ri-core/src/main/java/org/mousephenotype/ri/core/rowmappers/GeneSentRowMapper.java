@@ -5,12 +5,13 @@ import org.springframework.jdbc.core.RowMapper;
 import org.mousephenotype.ri.core.entities.GeneSent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Date;
 
 /**
  * Created by mrelac on 12/05/2017.
  */
-public class SentRowMapper implements RowMapper<GeneSent> {
+public class GeneSentRowMapper implements RowMapper<GeneSent> {
 
     /**
      * Implementations must implement this method to map each row of data
@@ -33,13 +34,24 @@ public class SentRowMapper implements RowMapper<GeneSent> {
         geneSent.setBody((rs.getString("body")));
 
         geneSent.setGeneContactPk(rs.getInt("gene_contact_pk"));
-        geneSent.setAssignmentStatusPk(rs.getInt("assignment_status_pk"));
-        geneSent.setConditionalAlleleProductionStatusPk(rs.getInt("conditional_allele_production_status_pk"));
-        geneSent.setNullAlleleProductionStatusPk(rs.getInt("null_allele_production_status_pk"));
-        geneSent.setPhenotypingStatusPk(rs.getInt("phenotyping_status_pk"));
+
+        Integer i = rs.getInt("assignment_status_pk");
+        geneSent.setAssignmentStatusPk((i == null) || (i == 0) ? null : i);
+
+        i = rs.getInt("conditional_allele_production_status_pk");
+        geneSent.setConditionalAlleleProductionStatusPk((i == null) || (i == 0) ? null : i);
+
+        i = rs.getInt("null_allele_production_status_pk");
+        geneSent.setNullAlleleProductionStatusPk((i == null) || (i == 0) ? null : i);
+
+                i = rs.getInt("phenotyping_status_pk");
+        geneSent.setPhenotypingStatusPk((i == null) || (i == 0) ? null : i);
 
         geneSent.setCreatedAt(new Date(rs.getTimestamp("created_at").getTime()));
-        geneSent.setSentAt(new Date(rs.getTimestamp("sent_at").getTime()));
+
+        Timestamp ts = rs.getTimestamp("sent_at");
+        geneSent.setSentAt(ts == null ? null : new Date(ts.getTime()));
+
         geneSent.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));
 
         return geneSent;
