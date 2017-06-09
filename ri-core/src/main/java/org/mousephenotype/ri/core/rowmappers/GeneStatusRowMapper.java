@@ -29,7 +29,7 @@ public class GeneStatusRowMapper implements RowMapper<GeneStatus> {
 
         geneStatus.setPk(rs.getInt("pk"));
 
-        geneStatus.setStatus(rs.getString("geneStatus"));
+        geneStatus.setStatus(rs.getString("status"));
         int active = rs.getInt("active");
         geneStatus.setActive(active > 0 ? true : false);
 

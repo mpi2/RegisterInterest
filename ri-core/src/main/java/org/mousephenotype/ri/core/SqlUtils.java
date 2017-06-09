@@ -309,7 +309,7 @@ public class SqlUtils {
 
         Map<Integer, GeneSent> sentMap = new HashMap<>();
 
-        final String query = "SELECT * FROM sent";
+        final String query = "SELECT * FROM gene_sent";
         Map<String, Object> parameterMap = new HashMap<>();
 
         List<GeneSent> geneSentList = jdbcInterest.query(query, parameterMap, new SentRowMapper());
@@ -328,7 +328,7 @@ public class SqlUtils {
 
         Map<String, GeneStatus> statusMap = new HashMap<>();
 
-        final String query = "SELECT * FROM status";
+        final String query = "SELECT * FROM gene_status";
         Map<String, Object> parameterMap = new HashMap<>();
 
         List<GeneStatus> geneStatusList = jdbcInterest.query(query, parameterMap, new GeneStatusRowMapper());
@@ -696,7 +696,7 @@ public class SqlUtils {
 
     private int insertSent(Map<String, Object> parameterMap) throws InterestException {
 
-        // Try to insert the row into sent. If the gene_contact_pk already exists, the INSERT operation is ignored.
+        // Try to insert the row into gene_sent. If the gene_contact_pk already exists, the INSERT operation is ignored.
         final String columnNames =
                 "subject, body, gene_contact_pk, " +
                 "assignment_status_pk, conditional_allele_production_status_pk, null_allele_production_status_pk, phenotyping_status_pk, " +
@@ -707,7 +707,7 @@ public class SqlUtils {
                 ":assignment_status_pk, :conditional_allele_production_status_pk, :null_allele_production_status_pk, :phenotyping_status_pk, " +
                 ":created_at, :sent_at";
 
-        final String query = "INSERT INTO sent(" + columnNames + ") VALUES (" + columnValues + ")";
+        final String query = "INSERT INTO gene_sent(" + columnNames + ") VALUES (" + columnValues + ")";
 
         int count = jdbcInterest.update(query, parameterMap);
 
@@ -729,7 +729,7 @@ public class SqlUtils {
 
                 "sent_at = :sent_at";
 
-        final String query = "UPDATE sent SET " + colData + " WHERE gene_contact_pk = :gene_contact_pk";
+        final String query = "UPDATE gene_sent SET " + colData + " WHERE gene_contact_pk = :gene_contact_pk";
 
         int count = jdbcInterest.update(query, parameterMap);
 

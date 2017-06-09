@@ -16,6 +16,8 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -31,31 +33,20 @@ import java.util.Map;
 @Import( {AppConfig.class })
 public class Application implements CommandLineRunner {
 
-    public static void main(String[] args) throws Exception {
-        SpringApplication app = new SpringApplication(Application.class);
-        app.setBannerMode(Banner.Mode.OFF);
-        app.setLogStartupInfo(false);
-        app.run(args);
-    }
-
-    @Autowired
-    public NamedParameterJdbcTemplate jdbc;
-
     @Autowired
     private DataSource riDataSource;
 
-    private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
-    private SqlUtils sqlUtils = new SqlUtils(jdbc);
+    @Autowired
+    private SqlUtils sqlUtils;
 
+    private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private List<GeneContact> geneContacts;
     private Map<Integer, Gene> genesMap;
-    private Map<Integer, GeneSent> sentMap;
+    private Map<Integer, GeneSent> geneSentMap;
     private Map<String, GeneStatus> statusMap;      // keyed by status
 
     // These can't be marked final but they are only to be written to once. They are the primary keys.
-    private int COMPONENT_GENE_PK;
-
     private Integer STATUS_MORE_PHENOTYPE_DATA_AVAILABLE_PK;
     private Integer STATUS_MOUSE_PRODUCED_PK;
     private Integer STATUS_MOUSE_PRODUCTION_STARTED_PK;
@@ -69,11 +60,20 @@ public class Application implements CommandLineRunner {
 
     private SimpleDateFormat sdf = new SimpleDateFormat("dd MMMMM yyyy");
 
+
+    public static void main(String[] args) throws Exception {
+        SpringApplication app = new SpringApplication(Application.class);
+        app.setBannerMode(Banner.Mode.OFF);
+        app.setLogStartupInfo(false);
+        app.run(args);
+    }
+
+
     @PostConstruct
     public void initialise() {
         geneContacts = sqlUtils.getGeneContacts();
         genesMap = sqlUtils.getGenesByPk();
-        sentMap = sqlUtils.getSent();
+        geneSentMap = sqlUtils.getSent();
         statusMap = sqlUtils.getStatusMap();
 
         STATUS_MORE_PHENOTYPE_DATA_AVAILABLE_PK = statusMap.get("more_phenotyping_data_available").getPk();
@@ -90,87 +90,65 @@ public class Application implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
+        List<GeneSent> genesSent = new ArrayList<>();
 
         /**
          * For each geneContact:
-         *      - Get the GeneSent object from the sentMap using the contactGene primary key. If it is not found, create a
-         *        new GeneSent instance with 'register' status.
-         *      - Look up the Gene object from genesMap using the gene primary key (found in the contactGene object)
-         *      - Determine if the status has changed by calling createNewSent(). If the returned GeneSent object is null,
-         *        the status hasn't changed and we skip to the next contactGene; otherwise, put the GeneSent object in the
-         *        toBeSent list.
-         *
-         *  Walk the toBeSent list, sending each e-mail
+         *      - Look up the Gene object from genesMap using the gene primary key (found in the geneContact object)
+         *      - Get the GeneSent object from the geneSentMap using the geneContact primary key.
+         *      - If it is not found
+         *          - create a new GeneSent instance and load the welcome subject.
+         *      - Else
+         *        - Determine if the status has changed by comparing the geneSent statuses with the gene statuses.
+         *          If none have changed, skip this record and continue to the next geneContact
+         *          Else load the mouse produced subject
+         *      - Set the GeneSent statuses to the Gene statuses, build the body, and set the 'sent_at' field to null to
+         *        indicate the new gene email has not yet been sent.
+         *      - Write the GeneSent object to the gene_sent table.
          */
-        for (GeneContact contactGene : geneContacts) {
+        for (GeneContact geneContact : geneContacts) {
 
-            GeneSent geneSent = sentMap.get(contactGene.getPk());
+            Gene gene = genesMap.get(geneContact.getGenePk());
+
+            Date now = new Date();
+            GeneSent geneSent = geneSentMap.get(geneContact.getPk());
             if (geneSent == null) {
+
                 geneSent = new GeneSent();
-          //      geneSent.setContactGenePk(contactGene.getPk());
-          //      geneSent.setContactGenePk(COMPONENT_GENE_PK);
-          //      geneSent.setStatusPk(STATUS_REGISTER_PK);
+                geneSent.setSubject(getGeneWelcomeSubject(gene));
+                geneSent.setCreatedAt(now);
+
+            } else {
+
+                if ((geneSent.getAssignmentStatusPk() == gene.getAssignmentStatusPk()) &&
+                    (geneSent.getConditionalAlleleProductionStatusPk() == gene.getConditionalAlleleProductionStatusPk()) &&
+                    (geneSent.getNullAlleleProductionStatusPk() == gene.getNullAlleleProductionStatusPk()) &&
+                    (geneSent.getPhenotypingStatusPk() == gene.getPhenotypingStatusPk()))
+                {
+                    continue;       // The status hasn't changed. Continue with the next geneSent record.
+                }
+
+                geneSent.setSubject(getGeneMouseProductionSubject(gene));
             }
 
-            Gene gene = genesMap.get(contactGene.getGenePk());
+            // The status has changed.
 
-            GeneSent newGeneSent = createNewSent(geneSent, gene);
-            if (newGeneSent == null) {
-                continue;
-            }
+            // Fill in the geneSent fields and write the record.
+            geneSent.setGeneContactPk(geneContact.getPk());
+            geneSent.setAssignmentStatusPk(gene.getAssignmentStatusPk());
+            geneSent.setConditionalAlleleProductionStatusPk(gene.getConditionalAlleleProductionStatusPk());
+            geneSent.setNullAlleleProductionStatusPk(gene.getNullAlleleProductionStatusPk());
+            geneSent.setPhenotypingStatusPk(gene.getPhenotypingStatusPk());
+            geneSent.setBody(buildBody(gene));
+            geneSent.setSentAt(null);
+
+            genesSent.add(geneSent);
         }
+
+        int count = sqlUtils.updateOrInsertSent(genesSent);
     }
 
-    /**
-     * Using the {@link GeneSent} and {@link Gene} instances, determine if a n e-mail is to be geneSent and, if so, populate
-     * a new {@link GeneSent} object and return it. If not, return null.
-     *
-     * @param geneSent The {@link GeneSent} instance with the last geneSent state information
-     * @param gene The {@link Gene} instance with the new state information
-     *
-     * @return A fully-populated {@link GeneSent} instance, if an e-mail is to be geneSent; null otherwise
-     */
-    private GeneSent createNewSent(GeneSent geneSent, Gene gene) {
-
-        GeneSent newGeneSent = new GeneSent();
-      //  newGeneSent.setContactGenePk(geneSent.getContactGenePk());
-
-//        if (geneSent.getGeneStatusPk() == STATUS_REGISTER_PK) {
-//
-//            // Register Interest Gene State
-//            newGeneSent.setGeneStatusPk(gene.getAssignmentStatusPk());
-//            newGeneSent.setSubject("");
-//            newGeneSent.setBody(buildMouseProductionGeneBody(gene));
-//
-//            return newGeneSent;
-//
-//        } else if ((geneSent.getGeneStatusPk() == STATUS_NOT_PLANNED_PK) && (gene.getNullAlleleProductionStatusPk() == STATUS_PRODUCTION_AND_PHENOTYPING_PLANNED_PK) ||
-//                   (geneSent.getGeneStatusPk() == STATUS_NOT_PLANNED_PK) && (gene.getNullAlleleProductionStatusPk() == STATUS_PRODUCTION_AND_PHENOTYPING_PLANNED_PK) ||
-//                   (geneSent.getGeneStatusPk() == STATUS_NOT_PLANNED_PK) && (gene.getNullAlleleProductionStatusPk() == STATUS_PRODUCTION_AND_PHENOTYPING_PLANNED_PK) ||
-//                   (geneSent.getGeneStatusPk() == STATUS_NOT_PLANNED_PK) && (gene.getNullAlleleProductionStatusPk() == STATUS_PRODUCTION_AND_PHENOTYPING_PLANNED_PK) ||
-//                   ()) {
-//
-//            if (gene.getNullAlleleProductionStatusPk() == STATUS_PRODUCTION_AND_PHENOTYPING_PLANNED_PK) {
-//
-//            }
-//        }
-//
-//
-//
-//
-//
-//
-//        // GeneStatus has changed. e-mail is to be geneSent.
-//        newGeneSent =
-
-
-        return newGeneSent;
-    }
-
-
-
-
-    public String buildMouseProductionGeneBody(Gene gene) {
+    public String buildBody(Gene gene) {
         StringBuilder body = new StringBuilder("Dear colleague,\n");
 
         if (gene.getAssignmentStatusPk() == STATUS_REGISTER_PK) {
@@ -236,9 +214,7 @@ public class Application implements CommandLineRunner {
 
             String datePiece = sdf.format(gene.getNullAlleleProductionStatusDate());
             body
-                    .append("Genotype confirmed mice with the null allele ")
-//                    .append(gene.getNullAlleleSymbol())
-                    .append(" were produced at ")
+                    .append("Genotype confirmed mice were produced at ")
                     .append(gene.getNullAlleleProductionCentre())
                     .append(" on ")
                     .append(datePiece)
@@ -260,36 +236,12 @@ public class Application implements CommandLineRunner {
 
             String datePiece = sdf.format(gene.getConditionalAlleleProductionStatusDate());
             body
-                    .append("Genotype confirmed mice with the conditional allele ")
-//                    .append(gene.getConditionalAlleleSymbol())
-                    .append(" were produced at ")
+                    .append("Genotype confirmed mice  were produced at ")
                     .append(gene.getConditionalAlleleProductionCentre())
                     .append(" on ")
                     .append(datePiece)
                     .append(".\n");
         }
-
-        if (gene.getAssignmentStatusPk() == STATUS_UNREGISTER_PK) {
-            body
-                    .append("You will no longer be notified about any future changes in this gene's status.\n");
-
-        } else {
-            body
-                    .append("You will be notified by email with any future changes in this gene's status.\n");
-        }
-
-        body
-                .append("For further information / enquiries please write to ")
-                .append("<a href=mailto:mouse-helpdesk@ebi.ac.uk>mouse-helpdesk@ebi.ac.uk</a>).\n")
-                .append("Best Regards,\n")
-                .append("The MPI2 (KOMP2) informatics consortium\n");
-
-        return body.toString();
-    }
-
-
-    public String buildMousePhenotypeGeneBody(Gene gene) {
-        StringBuilder body = new StringBuilder("Dear colleague,\n");
 
         if ((gene.getPhenotypingStatusPk() != null) && (gene.getPhenotypingStatusPk() > 0)) {
             body
@@ -310,11 +262,19 @@ public class Application implements CommandLineRunner {
         }
 
         body
-                .append("Additional phenotype data for this gene has become available on the IMPC portal. Phenotype data has been collected for ")
-//                .append(gene.getProcedureCount())
-                .append(" procedures and has identified ")
+                .append("Additional phenotype data for this gene has become available on the IMPC portal. Phenotype data has been collected ")
+                .append("and has identified ")
                 .append(gene.getNumberOfSignificantPhenotypes())
                 .append("significant phenotypes.\n");
+
+        if (gene.getAssignmentStatusPk() == STATUS_UNREGISTER_PK) {
+            body
+                    .append("You will no longer be notified about any future changes in this gene's status.\n");
+
+        } else {
+            body
+                    .append("You will be notified by email with any future changes in this gene's status.\n");
+        }
 
         body
                 .append("For further information / enquiries please write to ")
@@ -322,16 +282,22 @@ public class Application implements CommandLineRunner {
                 .append("Best Regards,\n")
                 .append("The MPI2 (KOMP2) informatics consortium\n");
 
-
-
         return body.toString();
     }
 
-
-    public String getSubject() {
+    public String getGeneWelcomeSubject(Gene gene) {
         String subject;
 
-        subject = "SUBJECT GOES HERE";
+        subject = "IMPC Gene registration for " + gene.getSymbol();
+
+        return subject;
+    }
+
+
+    public String getGeneMouseProductionSubject(Gene gene) {
+        String subject;
+
+        subject = "IMPC Status update for " + gene.getSymbol();
 
         return subject;
     }
