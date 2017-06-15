@@ -102,7 +102,8 @@ CREATE TABLE gene_sent (
 DROP TABLE IF EXISTS log;
 CREATE TABLE log (
   pk                                      INT             NOT NULL      AUTO_INCREMENT PRIMARY KEY,
-  contact_pk                              INT             NOT NULL,
+  invoker                                 VARCHAR(64)     DEFAULT NULL,       -- This is the user that initiated the logged action (e.g. register, unregister)
+  contact_pk                              INT             DEFAULT NULL,
 
   assignment_status_pk                    INT             DEFAULT NULL,
   conditional_allele_production_status_pk INT             DEFAULT NULL,

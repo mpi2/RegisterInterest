@@ -1,5 +1,7 @@
 package org.mousephenotype.ri.core.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Date;
 
 /**
@@ -11,34 +13,75 @@ public class Gene {
 
     private String mgiAccessionId;
     private String symbol;
+
+    @JsonIgnore
     private String assignedTo;
+
+    @JsonIgnore
     private String assignmentStatus;
+
+    @JsonIgnore
     private Date assignmentStatusDate;
+
+    @JsonIgnore
     private String assignmentStatusDateString;
+
+    @JsonIgnore
     private Integer assignmentStatusPk;
 
+    @JsonIgnore
     private String conditionalAlleleProductionCentre;
+
+    @JsonIgnore
     private String conditionalAlleleProductionStatus;
+
+    @JsonIgnore
     private Date conditionalAlleleProductionStatusDate;
+
+    @JsonIgnore
     private String conditionalAlleleProductionStatusDateString;
+
+    @JsonIgnore
     private Integer conditionalAlleleProductionStatusPk;
 
+    @JsonIgnore
     private String nullAlleleProductionCentre;
+
+    @JsonIgnore
     private String nullAlleleProductionStatus;
+
+    @JsonIgnore
     private Date nullAlleleProductionStatusDate;
+
+    @JsonIgnore
     private String nullAlleleProductionStatusDateString;
+
+    @JsonIgnore
     private Integer nullAlleleProductionStatusPk;
 
+    @JsonIgnore
     private String phenotypingCentre;
+
+    @JsonIgnore
     private String phenotypingStatus;
+
+    @JsonIgnore
     private Date phenotypingStatusDate;
+
+    @JsonIgnore
     private String phenotypingStatusDateString;
+
+    @JsonIgnore
     private Integer phenotypingStatusPk;
 
+    @JsonIgnore
     private Integer numberOfSignificantPhenotypes;
+
+    @JsonIgnore
     private String numberOfSignificantPhenotypesString;
 
     private Date createdAt;
+
     private Date updatedAt;
 
     public int getPk() {

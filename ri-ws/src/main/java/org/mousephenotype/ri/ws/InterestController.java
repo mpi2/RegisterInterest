@@ -18,23 +18,23 @@ package org.mousephenotype.ri.ws;
 
 import org.apache.commons.validator.routines.EmailValidator;
 import org.mousephenotype.ri.core.SqlUtils;
-import org.mousephenotype.ri.core.entities.Contact;
-import org.mousephenotype.ri.core.entities.Gene;
+import org.mousephenotype.ri.core.entities.GeneContact;
 import org.mousephenotype.ri.core.entities.Interest;
 import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
+import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
@@ -48,148 +48,139 @@ public class InterestController {
         this.sqlUtils = sqlUtils;
     }
 
+    public final static String INTEREST_DISEASE = "disease";
+    public final static String INTEREST_GENE = "gene";
+    public final static String INTEREST_PHENOTYPE = "phenotype";
 
     @RequestMapping(method = GET, value = "/")
-    public ResponseEntity<List<Interest>> wsRoot(
+    public ResponseEntity<List<String>> apiDocs(
     ) {
 
-        List<Interest> list = new ArrayList<>();
-        list.add(new Interest("test@ebi.ac.uk", "MGI:0000000"));
+        List<String> list = new ArrayList<>();
+        list.add("API docs go here");
         HttpHeaders responseHeaders = new HttpHeaders();
         HttpStatus status = HttpStatus.OK;
 
         return new ResponseEntity<>(list, responseHeaders, status);
     }
 
-
-    // By default, spring interprets any parameter containing a dot as an extension. In the case of the emailAddress,
-    // this results in "mrelac@ebi.ac.uk" => "mrelac@ebi.ac". Adding ":.+" to the end of the parameter definition
-    // tells spring not to truncate.
-
-    @RequestMapping(method = GET, value = "/email/{emailAddress:.+}")
-    public ResponseEntity<List<Interest>> getGenesForContact(
-            @PathVariable("emailAddress") String emailAddress,
-            @RequestParam(value = "mgiAccessionId", required = false) String mgiAccessionId
+    
+    
+    @RequestMapping(method = GET, value = "/contacts")
+    public ResponseEntity<List<Interest>> getContacts(
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = INTEREST_GENE, required = false) String gene
     ) {
 
-        List<Interest> list = sqlUtils.getGenesForContact(emailAddress, mgiAccessionId);
+        List<Interest> list = sqlUtils.getInterests(email, type, gene);
         HttpHeaders responseHeaders = new HttpHeaders();
-        HttpStatus status = (list.isEmpty() ? HttpStatus.NOT_FOUND : HttpStatus.OK);
+        HttpStatus status = HttpStatus.OK;
 
         return new ResponseEntity<>(list, responseHeaders, status);
     }
+    
+    
 
-    @RequestMapping(method = GET, value = "/gene/{mgiAccessionId}")
-    public ResponseEntity<List<Interest>> getContactsForGene(
-            @PathVariable(value = "mgiAccessionId") String mgiAccessionId,
-            @RequestParam(value = "emailAddress", required = false) String emailAddress
+    @RequestMapping(method = POST, value = "/contacts")
+    public ResponseEntity<String> register(
+
+            @RequestParam(value = "email", required = true) String email,
+            @RequestParam(value = "type", required = true) String type,
+            @RequestParam(value = "gene", required = true) String gene
     ) {
 
-        List<Interest> list = sqlUtils.getContactsForGene(mgiAccessionId, emailAddress);
         HttpHeaders responseHeaders = new HttpHeaders();
-        HttpStatus status = (list.isEmpty() ? HttpStatus.NOT_FOUND : HttpStatus.OK);
+        List<Interest> interests;
+        String message = "";
 
-        return new ResponseEntity<>(list, responseHeaders, status);
-    }
-
-    @RequestMapping(method = POST, value = "/{emailAddress:.+}/{mgiAccessionId}")
-    public ResponseEntity<Interest> register(
-           @PathVariable("emailAddress")  String emailAddress,
-           @PathVariable("mgiAccessionId") String mgiAccessionId
-    ) {
-
-        int authorised_contact_pk = 1;
-        HttpHeaders responseHeaders = new HttpHeaders();
-        String message;
-
-        Interest interest = new Interest(emailAddress, mgiAccessionId);
-        Gene gene = sqlUtils.getGene(mgiAccessionId);
-        if (gene == null) {
-            message = "Register contact " + emailAddress + " for gene " + mgiAccessionId + " failed: Nonexisting gene";
-            sqlUtils.logWebServiceAction(authorised_contact_pk, null, message);
-            return new ResponseEntity<>(interest, responseHeaders, HttpStatus.BAD_REQUEST);
+        if (( ! type.equals(INTEREST_GENE)) && (! type.equals("disease")) && ( ! type.equals("phenotype"))) {
+            return new ResponseEntity<>("Invalid type. Expected one of: gene, disease, or phenotype", responseHeaders, HttpStatus.BAD_REQUEST);
         }
 
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String invoker = (auth == null ? "Unknown" : auth.getName());
+
+        // Validate the email address.
         EmailValidator validator = EmailValidator.getInstance(false);
-        if ( ! validator.isValid(emailAddress)) {
-            message = "Register contact " + emailAddress + " for gene " + mgiAccessionId + " failed: malformatted email address";
-            sqlUtils.logWebServiceAction(authorised_contact_pk, gene.getPk(), message);
-            return new ResponseEntity<>(interest, responseHeaders, HttpStatus.BAD_REQUEST);
+        if ( ! validator.isValid(email)) {
+            message = "Register contact " + email + " for gene " + gene + " failed: malformatted email address";
+            sqlUtils.logWebServiceAction(invoker, null, null, message);
+            return new ResponseEntity<>(message, responseHeaders, HttpStatus.BAD_REQUEST);
         }
 
-        try {
+        if (type.equals(INTEREST_GENE)) {
+            try {
 
-            Interest tempInterest = sqlUtils.getInterest(emailAddress, mgiAccessionId);
-            if (tempInterest != null) {
-                DateFormat inputDateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                message = "Register contact " + emailAddress + " for gene " + mgiAccessionId + ": already registered on " + inputDateFormatter.format(tempInterest.getUpdatedAt());
-                sqlUtils.logWebServiceAction(authorised_contact_pk, gene.getPk(), message);
-                return new ResponseEntity<>(tempInterest, responseHeaders, HttpStatus.OK);
+                int count = sqlUtils.insertInterestGene(invoker, gene, email);
+                if (count == 0) {
+                    DateFormat inputDateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    message = "Register contact " + email + " for gene " + gene + ": contact is already registered for that gene.";
+                    sqlUtils.logWebServiceAction(invoker, null, null, message);
+                    return new ResponseEntity<>(message, responseHeaders, HttpStatus.OK);
+                }
+
+                interests = sqlUtils.getInterests(email, INTEREST_GENE, gene);
+
+            } catch (InterestException e) {
+
+                return new ResponseEntity<>(e.getLocalizedMessage(), responseHeaders, e.getHttpStatus());
             }
-            sqlUtils.insertInterest(interest);
-            interest = sqlUtils.getInterest(emailAddress, mgiAccessionId);      // Update the Interest instance, which may not have primary keys, active, etc. set.
-            message = "Register contact " + emailAddress + " for gene " + mgiAccessionId + ": OK";
-            sqlUtils.logWebServiceAction(authorised_contact_pk, gene.getPk(), message);
 
-            return new ResponseEntity<>(interest, responseHeaders, HttpStatus.OK);
-
-        } catch (InterestException e) {
-
-            message = "Register contact " + emailAddress + " for gene " + mgiAccessionId + " failed: " + e.getLocalizedMessage();
-            sqlUtils.logWebServiceAction(authorised_contact_pk, gene.getPk(), message);
-
-            return new ResponseEntity<>(interest, responseHeaders, e.getHttpStatus());
+            message = "Register contact " + email + " for gene " + gene + ": OK";
+            if ( ! interests.isEmpty()) {
+                sqlUtils.logWebServiceAction(invoker, interests.get(0).getGenes().get(0).getPk(), interests.get(0).getContact().getPk(), message);
+            }
         }
+
+        return new ResponseEntity<>(message, responseHeaders, HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.DELETE, value = "/{emailAddress:.+}/{mgiAccessionId}")
-    public ResponseEntity<Interest> unregister(
-            @PathVariable("emailAddress") String emailAddress,
-            @PathVariable("mgiAccessionId") String mgiAccessionId
+
+
+    @RequestMapping(method = DELETE, value = "/contacts")
+    public ResponseEntity<String> unregister(
+
+            @RequestParam(value = "email", required = true) String email,
+            @RequestParam(value = "type", required = true) String type,
+            @RequestParam(value = "gene", required = true) String gene
     ) {
 
-        int authorised_contact_pk = 1;
         HttpHeaders responseHeaders = new HttpHeaders();
-        String message;
+        GeneContact gc;
+        String message = "";
 
-        Interest interest = new Interest();
-
-        Gene gene = sqlUtils.getGene(mgiAccessionId);
-        if (gene == null) {
-            message = "Unregister contact " + emailAddress + " for gene " + mgiAccessionId + " failed: Nonexisting gene";
-            sqlUtils.logWebServiceAction(authorised_contact_pk, null, message);
-
-            return new ResponseEntity<>(interest, responseHeaders, HttpStatus.BAD_REQUEST);
+        if (( ! type.equals(INTEREST_GENE)) && (! type.equals("disease")) && ( ! type.equals("phenotype"))) {
+            return new ResponseEntity<>("Invalid type. Expected one of: gene, disease, or phenotype", responseHeaders, HttpStatus.BAD_REQUEST);
         }
 
-        Contact contact = sqlUtils.getContact(emailAddress);
-        if (contact == null) {
-            message = "Unregister contact " + emailAddress + " for gene " + mgiAccessionId + " failed: Nonexisting email address";
-            sqlUtils.logWebServiceAction(authorised_contact_pk, gene.getPk(), message);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String invoker = (auth == null ? "Unknown" : auth.getName());
 
-            return new ResponseEntity<>(interest, responseHeaders, HttpStatus.BAD_REQUEST);
-        }
+        if (type.equals(INTEREST_GENE)) {
+            try {
 
-        try {
-            interest = sqlUtils.getInterest(emailAddress, mgiAccessionId);
-            if (interest == null) {
-                message = "Unregister contact " + emailAddress + " for gene " + mgiAccessionId + " failed: no such registration exists";
-                sqlUtils.logWebServiceAction(authorised_contact_pk, gene.getPk(), message);
-                return new ResponseEntity<>(interest, responseHeaders, HttpStatus.NOT_FOUND);
+                gc = sqlUtils.getGeneContact(gene, email);
+                if (gc == null) {
+                    message = "Unregister contact " + email + " for gene " + gene + " failed: no such registration exists";
+                    throw new InterestException(message, HttpStatus.NOT_FOUND);
+                }
+
+                int genePk = gc.getGenePk();
+                int contactPk = gc.getContactPk();
+
+                sqlUtils.removeInterestGene(gc);
+                message = "Unregister contact " + email + " for gene " + gene + ": OK";
+                sqlUtils.logWebServiceAction(invoker, genePk, contactPk, message);
+
+            } catch (InterestException e) {
+
+                sqlUtils.logWebServiceAction(invoker, null, null, message);
+
+                return new ResponseEntity<>(e.getLocalizedMessage(), responseHeaders, e.getHttpStatus());
             }
-
-            sqlUtils.removeInterest(interest);
-            message = "Unregister contact " + emailAddress + " for gene " + mgiAccessionId + ": OK";
-            sqlUtils.logWebServiceAction(authorised_contact_pk, gene.getPk(), message);
-
-            return new ResponseEntity<>(interest, responseHeaders, HttpStatus.OK);
-
-        } catch (InterestException e) {
-
-            message = "Unregister contact " + emailAddress + " for gene " + mgiAccessionId + " failed: " + e.getLocalizedMessage();
-            sqlUtils.logWebServiceAction(authorised_contact_pk, gene.getPk(), message);
-
-            return new ResponseEntity<>(interest, responseHeaders, e.getHttpStatus());
         }
+
+        return new ResponseEntity<>(message, responseHeaders, HttpStatus.OK);
     }
 }

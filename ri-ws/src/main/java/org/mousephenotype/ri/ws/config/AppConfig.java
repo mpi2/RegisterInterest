@@ -26,7 +26,6 @@ import javax.sql.DataSource;
  */
 @Configuration
 @PropertySource(value="file:${user.home}/configfiles/${profile}/ri.application.properties")
-//@ComponentScan({ "org.mousephenotype.ri.core", "org.mousephenotype.ri.ws" })
 @EnableAutoConfiguration(exclude = {
         JndiConnectionFactoryAutoConfiguration.class,
         DataSourceAutoConfiguration.class,
@@ -82,14 +81,4 @@ public class AppConfig {
 
         return ds;
     }
-
-//    @Bean(name = "sessionFactory")
-//    public SessionFactory getSessionFactory() {
-//
-//        LocalSessionFactoryBuilder sessionBuilder = new LocalSessionFactoryBuilder(riDataSource());
-//        sessionBuilder.scanPackages("org.mousephenotype.cda.db.entity");
-//        sessionBuilder.scanPackages("org.mousephenotype.cda.db.pojo");
-//
-//        return sessionBuilder.buildSessionFactory();
-//    }
 }

@@ -1,112 +1,34 @@
 package org.mousephenotype.ri.core.entities;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
- * Created by mrelac on 13/04/2017.
- *
- * This is an amalgam of gene and contact
+ * Created by mrelac on 13/04/2017
  */
 public class Interest {
-    private Integer contactPk;
-    private String address;
-    private boolean isActive;
-    private Integer genePk;
-    private String mgiAccessionId;
-    private Date createdAt;
-    private Date updatedAt;
+
+    private Contact contact;
+    private List<Gene> genes = new ArrayList<>();
 
     public Interest() {
 
     }
 
-    public Interest(String address, String mgiAccessionId) {
-        this.address = address;
-        this.mgiAccessionId = mgiAccessionId;
+    public Contact getContact() {
+        return contact;
     }
 
-    public Integer getContactPk() {
-        return contactPk;
+    public void setContact(Contact contact) {
+        this.contact = contact;
     }
 
-    public void setContactPk(Integer contactPk) {
-        this.contactPk = contactPk;
+    public List<Gene> getGenes() {
+        return genes;
     }
 
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public boolean isActive() {
-        return isActive;
-    }
-
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-
-    public Integer getGenePk() {
-        return genePk;
-    }
-
-    public void setGenePk(Integer genePk) {
-        this.genePk = genePk;
-    }
-
-    public String getMgiAccessionId() {
-        return mgiAccessionId;
-    }
-
-    public void setMgiAccessionId(String mgiAccessionId) {
-        this.mgiAccessionId = mgiAccessionId;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    @Override
-    public String toString() {
-        return "Interest{" +
-                "address='" + address + '\'' +
-                ", mgiAccessionId='" + mgiAccessionId + '\'' +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Interest interest = (Interest) o;
-
-
-
-        if (address != null ? !address.equals(interest.address) : interest.address != null) return false;
-        return mgiAccessionId != null ? mgiAccessionId.equals(interest.mgiAccessionId) : interest.mgiAccessionId == null;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = address != null ? address.hashCode() : 0;
-        result = 31 * result + (mgiAccessionId != null ? mgiAccessionId.hashCode() : 0);
-
-        return result;
+    public void setGenes(List<Gene> genes) {
+        this.genes = genes;
     }
 }

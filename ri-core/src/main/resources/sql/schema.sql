@@ -89,7 +89,7 @@ CREATE TABLE gene (
 
     created_at                                                  DATETIME     NOT NULL,
     updated_at                                                  TIMESTAMP    NOT NULL   DEFAULT CURRENT_TIMESTAMP
-    ON UPDATE CURRENT_TIMESTAMP,
+                                                                  ON UPDATE CURRENT_TIMESTAMP,
 
     FOREIGN KEY assignment_status_pk_fk                         (assignment_status_pk)                      REFERENCES gene_status(pk),
     FOREIGN KEY conditional_allele_production_status_pk_fk      (conditional_allele_production_status_pk)   REFERENCES gene_status(pk),
@@ -127,7 +127,8 @@ CREATE TABLE gene_sent (
 DROP TABLE IF EXISTS log;
 CREATE TABLE log (
     pk                                      INT             NOT NULL      AUTO_INCREMENT PRIMARY KEY,
-    contact_pk                              INT             NOT NULL,
+    invoker                                 VARCHAR(64)     DEFAULT NULL,       -- This is the user that initiated the logged action (e.g. register, unregister)
+    contact_pk                              INT             DEFAULT NULL,
 
     assignment_status_pk                    INT             DEFAULT NULL,
     conditional_allele_production_status_pk INT             DEFAULT NULL,
@@ -148,7 +149,8 @@ CREATE TABLE log (
     FOREIGN KEY phenotyping_status_pk_fk                    (phenotyping_status_pk)                     REFERENCES gene_status(pk),
 
     FOREIGN KEY gene_pk_fk              (gene_pk)           REFERENCES gene(pk),
-    FOREIGN KEY gene_sent_pk_fk         (gene_sent_pk)      REFERENCES gene_sent(pk)
+    FOREIGN KEY gene_sent_pk_fk         (gene_sent_pk)      REFERENCES gene_sent(pk),
+    KEY         invoker_idx             (invoker)
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 
