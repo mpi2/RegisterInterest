@@ -19,21 +19,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 @PropertySource("file:${user.home}/configfiles/${profile:dev}/ri.test.properties")
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
+    @Value("${mi-admin-password}")
+    String miAdmninPassword;
 
-    @Value("${ws-reader}")
-    String wsReader;
-
-    @Value("${ws-reader-password}")
-    String wsReaderPassword;
-
-    @Value("${ws-admin}")
-    String wsAdmin;
-
-    @Value("${ws-admin-password}")
-    String wsAdmninPassword;
-
-    public static final String ROLE_READER = "READER";
-    public static final String ROLE_ADMIN = "ADMIN";
+    public static final String ROLE_USER = "mi-user";
+    public static final String ROLE_ADMIN = "mi-admin";
 
 
     @Override
@@ -73,9 +63,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         auth
                 .inMemoryAuthentication()
-                .withUser(wsReader).password(wsReaderPassword).roles(ROLE_READER)
+                .withUser(ROLE_USER).password(miAdmninPassword).roles(ROLE_USER)
         .and()
-                .withUser(wsAdmin).password(wsAdmninPassword).roles(ROLE_ADMIN)
+                .withUser(ROLE_ADMIN).password(miAdmninPassword).roles(ROLE_ADMIN)
         ;
     }
 }
