@@ -57,7 +57,7 @@ public class InterestController {
     ) {
 
         List<String> list = new ArrayList<>();
-        list.add("API docs go here");
+        list.add("API docs go here.");
         HttpHeaders responseHeaders = new HttpHeaders();
         HttpStatus status = HttpStatus.OK;
 
