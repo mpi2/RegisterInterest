@@ -102,7 +102,7 @@ public class Application implements CommandLineRunner {
         }
 
         Job[] jobs = new Job[]{
-//                downloaderJob(),
+                downloaderJob(),
                 imitsLoaderJob()
         };
         DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");

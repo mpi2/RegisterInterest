@@ -46,6 +46,10 @@ public class ExtractGeneConfigBeans {
     private Map<String, Gene> genesMap;                     // key = mgi accession id
 
     @NotNull
+    @Value("${GeneStatusChangeUrl}")
+    protected String geneStatusChangeUrl;
+
+    @NotNull
     @Value("${download.workspace}")
     protected String downloadWorkspace;
 
@@ -71,7 +75,7 @@ public class ExtractGeneConfigBeans {
 
     public DownloadFilename[] filenames;
     private enum DownloadFileEnum {
-        EBI_genes
+        GENE_STATUS_CHANGE
     }
 
 
@@ -80,7 +84,7 @@ public class ExtractGeneConfigBeans {
 
         filenames = new DownloadFilename[]{
 
-                new DownloadFilename(DownloadFileEnum.EBI_genes, "http://i-dcc.org/imits/v2/reports/mp2_load_phenotyping_colonies_report.tsv", downloadWorkspace + "/EBI_genes.csv")
+                new DownloadFilename(DownloadFileEnum.GENE_STATUS_CHANGE, geneStatusChangeUrl, downloadWorkspace + "/GeneStatusChange.tsv")
         };
 
         for (DownloadFilename downloadFilename : filenames) {
@@ -111,7 +115,7 @@ public class ExtractGeneConfigBeans {
     @Bean(name = "geneLoader")
     public GeneLoader geneLoader() throws InterestException {
         Map<GeneLoader.FilenameKeys, String> filenameKeys = new HashMap<>();
-        filenameKeys.put(GeneLoader.FilenameKeys.EBI_Gene, downloadFilenameMap.get(DownloadFileEnum.EBI_genes).targetFilename);
+        filenameKeys.put(GeneLoader.FilenameKeys.EBI_Gene, downloadFilenameMap.get(DownloadFileEnum.GENE_STATUS_CHANGE).targetFilename);
 
         return new GeneLoader(filenameKeys);
     }
