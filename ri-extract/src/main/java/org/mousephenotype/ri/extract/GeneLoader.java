@@ -104,7 +104,7 @@ public class GeneLoader implements InitializingBean, Step {
         geneReader.setComments(new String[] {"#" });
         geneReader.setRecordSeparatorPolicy(new BlankLineRecordSeparatorPolicy());
         DefaultLineMapper<Gene> lineMapperPhenotypedColony = new DefaultLineMapper<>();
-        DelimitedLineTokenizer              tokenizerPhenotypedColony  = new DelimitedLineTokenizer(",");
+        DelimitedLineTokenizer              tokenizerPhenotypedColony  = new DelimitedLineTokenizer("\t");
         tokenizerPhenotypedColony.setStrict(false);     // Relax token count. Some lines have more tokens; others, less, causing a parsing exception.
         tokenizerPhenotypedColony.setNames(geneColumnNames);
         lineMapperPhenotypedColony.setLineTokenizer(tokenizerPhenotypedColony);
