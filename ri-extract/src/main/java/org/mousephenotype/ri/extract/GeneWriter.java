@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.SqlUtils;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by mrelac on 26/04/16.
@@ -36,8 +37,8 @@ public class GeneWriter implements ItemWriter {
     @Qualifier("sqlUtils")
     private SqlUtils sqlUtils;
 
-    private int count = 0;
-
+    private int insertCount = 0;
+    private int updateCount = 0;
 
     /**
      * Process the supplied data element. Will not be called with any null items
@@ -49,10 +50,16 @@ public class GeneWriter implements ItemWriter {
      */
     @Override
     public void write(List items) throws Exception {
-        count += sqlUtils.updateOrInsertGene((List<Gene>)items);
+        Map<String, Integer> results = sqlUtils.updateOrInsertGene((List<Gene>)items);
+        insertCount += results.get("insertCount");
+        updateCount += results.get("updateCount");
     }
 
-    public int getCount() {
-        return count;
+    public int getInsertCount() {
+        return insertCount;
+    }
+
+    public int getUpdateCount() {
+        return updateCount;
     }
 }

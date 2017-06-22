@@ -486,13 +486,20 @@ public class SqlUtils {
      *
      * @param genes the list of {@link Gene} instances to be used to update the database
      *
-     * @return The number of instances inserted/updated
+     * @return A {@link Map} containing two keyed results:
+     * <ul>
+     *     <li>
+     *         key: "insertCount" ({@Link Integer}) - the number of rows inserted
+     *         key: "updateCount" ({@link Integer}) - the number of rows updated
+     *      </li>
+     * </ul>
      *
      * @throws InterestException
      */
-    public int updateOrInsertGene(List<Gene> genes) throws InterestException {
-        int count = 0;
-
+    public Map<String, Integer> updateOrInsertGene(List<Gene> genes) throws InterestException {
+        Map<String, Integer> results = new HashMap<>();
+        int insertCount = 0;
+        int updateCount = 0;
         Date createdAt = new Date();
 
         for (Gene gene : genes) {
@@ -505,19 +512,22 @@ public class SqlUtils {
 
                 // Except for the initial load, most of the time the gene will already exist.
                 // Try to update. If that fails because it doesn't yet exist, insert.
-                int updateCount = updateGene(parameterMap);
-                if (updateCount == 0) {
-                    updateCount = insertGene(parameterMap);
+                int count = updateGene(parameterMap);
+                if (count > 0) {
+                    updateCount += count;
+                } else {
+                    insertCount += insertGene(parameterMap);
                 }
-
-                count += updateCount;
 
             } catch (Exception e) {
                 logger.error(e.getLocalizedMessage());
             }
         }
 
-        return count;
+        results.put("insertCount", insertCount);
+        results.put("updateCount", updateCount);
+
+        return results;
     }
 
     /**

@@ -26,6 +26,7 @@ import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.mousephenotype.ri.core.ParseUtils;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,6 +38,7 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
 
     private Map<String, Gene> genesMap;
     private Map<String, ImitsStatus> imitsStatusMap;
+    private Set<String> accessionIds = new HashSet<>();
     private int lineNumber = 0;
 
     private ParseUtils parseUtils = new ParseUtils();
@@ -120,6 +122,14 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
             return null;
         }
 
+        // According to Peter Matthews, the mgi accession ids in the iMits input file should all be unique. I found at least one that reappears in the same file. Check for that condition here.
+        if (accessionIds.contains(gene.getMgiAccessionId())) {
+            logger.info("Line " + lineNumber + ": MGI accession id " + gene.getMgiAccessionId() + " appears earlier in the file.");
+            return null;
+        } else {
+            accessionIds.add(gene.getMgiAccessionId());
+        }
+
         // statuses
         if ((gene.getAssignmentStatus() != null) && ( ! gene.getAssignmentStatus().trim().isEmpty())) {
             if ( ! imitsStatusMap.containsKey(gene.getAssignmentStatus())) {
@@ -149,7 +159,7 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
         }
 
         // date
-        SimpleDateFormat sdf = new SimpleDateFormat("d/M/y h:m:s");
+        SimpleDateFormat sdf = new SimpleDateFormat("y-M-d h:m:s");
         if ((gene.getAssignmentStatusDateString() != null) && ( ! gene.getAssignmentStatusDateString().trim().isEmpty())) {
             Date date = parseUtils.tryParseDate(sdf, gene.getAssignmentStatusDateString());
             if (date == null) {

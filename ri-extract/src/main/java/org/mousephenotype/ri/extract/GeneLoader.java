@@ -104,7 +104,8 @@ public class GeneLoader implements InitializingBean, Step {
         geneReader.setComments(new String[] {"#" });
         geneReader.setRecordSeparatorPolicy(new BlankLineRecordSeparatorPolicy());
         DefaultLineMapper<Gene> lineMapperPhenotypedColony = new DefaultLineMapper<>();
-        DelimitedLineTokenizer              tokenizerPhenotypedColony  = new DelimitedLineTokenizer("\t");
+        String delimiter = (imitsKeys.get(FilenameKeys.EBI_Gene).toLowerCase().endsWith("tsv") ? "\t" : ",");
+        DelimitedLineTokenizer              tokenizerPhenotypedColony  = new DelimitedLineTokenizer(delimiter);
         tokenizerPhenotypedColony.setStrict(false);     // Relax token count. Some lines have more tokens; others, less, causing a parsing exception.
         tokenizerPhenotypedColony.setNames(geneColumnNames);
         lineMapperPhenotypedColony.setLineTokenizer(tokenizerPhenotypedColony);
@@ -241,8 +242,9 @@ public class GeneLoader implements InitializingBean, Step {
 
         @Override
         protected Set<String> logStatus() {
-            logger.info("GENE LOADER: Added {} new gene records to database from file {} in {}.",
-                    ((GeneWriter) writer).getCount(),
+            logger.info("GENE LOADER: Inserted {} new gene records and updated {} gene records in database from file {} in {}.",
+                    ((GeneWriter) writer).getInsertCount(),
+                    ((GeneWriter) writer).getUpdateCount(),
                     imitsKeys.get(FilenameKeys.EBI_Gene),
                     dateUtils.formatDateDifference(start, stop));
 
