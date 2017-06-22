@@ -51,6 +51,7 @@ public class Application implements CommandLineRunner {
         SpringApplication app = new SpringApplication(Application.class);
         app.setBannerMode(Banner.Mode.OFF);
         app.setLogStartupInfo(false);
+        app.setWebEnvironment(false);
         app.run(args);
     }
 
