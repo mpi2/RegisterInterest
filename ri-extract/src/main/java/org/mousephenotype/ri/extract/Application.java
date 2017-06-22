@@ -44,7 +44,7 @@ import java.util.concurrent.Executors;
  * iMits Gene GeneStatus Change Report.
  */
 @EnableBatchProcessing
-@ComponentScan({"org.mousephenotype.ri.core", "org.mousephenotype.ri.extract"})
+@ComponentScan({"org.mousephenotype.ri.extract"})
 @Import( {ExtractGeneConfigBeans.class })
 public class Application implements CommandLineRunner {
 

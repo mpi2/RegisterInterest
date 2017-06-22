@@ -28,7 +28,7 @@ import java.util.Map;
  * for insterest in specific genes whose status indicates the gene state has changed.
  */
 @SpringBootApplication
-@ComponentScan({"org.mousephenotype.ri.core", "org.mousephenotype.ri.generate"})
+@ComponentScan({"org.mousephenotype.ri.generate"})
 @Import( {AppConfig.class })
 public class Application implements CommandLineRunner {
 
