@@ -160,9 +160,9 @@ public class InterestController {
         if (type.equals(INTEREST_GENE)) {
             try {
 
-                gc = sqlUtils.getGeneContact(gene, email);
+                gc = sqlUtils.getGeneContact(gene, email, 1);
                 if (gc == null) {
-                    message = "Unregister contact " + email + " for gene " + gene + " failed: no such registration exists";
+                    message = "Unregister contact " + email + " for gene " + gene + " failed: no such active registration exists";
                     throw new InterestException(message, HttpStatus.NOT_FOUND);
                 }
 

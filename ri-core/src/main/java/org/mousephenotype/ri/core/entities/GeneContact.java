@@ -9,6 +9,7 @@ public class GeneContact {
     private int pk;
     private int contactPk;
     private int genePk;
+    private int active;
     private Date createdAt;
     private Date updatedAt;
 
@@ -34,6 +35,14 @@ public class GeneContact {
 
     public void setGenePk(int genePk) {
         this.genePk = genePk;
+    }
+
+    public int getActive() {
+        return active;
+    }
+
+    public void setActive(int active) {
+        this.active = active;
     }
 
     public Date getCreatedAt() {

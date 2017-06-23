@@ -165,23 +165,23 @@ public class SqlUtils {
 
         List<Interest> interests = new ArrayList<>();
 
-        StringBuilder queryContacts = new StringBuilder("SELECT * FROM contact ");
+        StringBuilder queryContacts = new StringBuilder("SELECT * FROM contact");
         Map<String, Object> parameterMap = new HashMap<>();
 
         if (email != null) {
-            queryContacts.append("WHERE address = :email");
+            queryContacts.append(" WHERE address = :email");
             parameterMap.put("email", email);
         }
 
         List<Contact> contacts = jdbcInterest.query(queryContacts.toString(), parameterMap, new ContactRowMapper());
 
         for (Contact contact : contacts) {
-            List<Gene> genes = new ArrayList<>();
+            List<Gene> genes;
             if ((type == null) || (type.equals("gene"))) {
                 String queryGenes =
                         "SELECT * FROM gene g\n" +
-                                "JOIN gene_contact gc ON gc.gene_pk = g.pk\n" +
-                                "WHERE gc.contact_pk = :contact_pk";
+                        "JOIN gene_contact gc ON gc.gene_pk = g.pk\n" +
+                        "WHERE gc.contact_pk = :contact_pk AND gc.active = 1";
                 parameterMap.put("contact_pk", contact.getPk());
 
                 if (gene != null) {
@@ -189,6 +189,9 @@ public class SqlUtils {
                     parameterMap.put("mgi_accession_id", gene);
                 }
                 genes = jdbcInterest.query(queryGenes, parameterMap, new GeneRowMapper());
+                if (genes.isEmpty()) {
+                    continue;
+                }
             } else {
                 continue;
             }
@@ -240,10 +243,11 @@ public class SqlUtils {
      *
      * @param gene The mgi accession id of the gene of interest
      * @param email the email address of interest
+     * @param active if 1, filter by active only; if 0; filter by inactive only; if null, ignore active flag
      * @return the {@link GeneContact} instance, if found; null otherwise
      */
-    public GeneContact getGeneContact(String gene, String email) {
-        final String query =
+    public GeneContact getGeneContact(String gene, String email, Integer active) {
+        String query =
                 "SELECT * FROM gene_contact gc\n" +
                 "JOIN gene g ON g.pk = gc.gene_pk\n" +
                 "JOIN contact c ON c.pk = gc.contact_pk\n" +
@@ -252,6 +256,10 @@ public class SqlUtils {
         Map<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("gene", gene);
         parameterMap.put("email", email);
+        if (active != null) {
+            query += " AND gc.active = 1";
+            parameterMap.put("active", (active > 0 ? 1 : 0));
+        }
 
         List<GeneContact> list = jdbcInterest.query(query, parameterMap, new GeneContactRowMapper());
 
@@ -329,21 +337,21 @@ public class SqlUtils {
     }
 
     /**
-     * Try to insert {@link Gene} and {@link Contact} into the gene_contact table. Return the count of inserted rows.
+     *Insert or activate {@link Gene} and {@link Contact} into the gene_contact table. Return the count of inserted rows.
      *
      * @param gene The gene to be inserted
      * @param contact The contact to be inserted
      *
-     * @return the count of inserted geneContacts.
+     * @return the count of inserted/activated geneContacts.
      */
     public int insertGeneContact(Gene gene, Contact contact) throws InterestException {
         int count = 0;
-        final String query = "INSERT INTO gene_contact(contact_pk, gene_pk, created_at) " +
-                "VALUES (:contact_pk, :gene_pk, :created_at)";
+        String query = "INSERT INTO gene_contact(contact_pk, gene_pk, created_at, active) " +
+                       "VALUES (:contact_pk, :gene_pk, :created_at, 1)";
 
-        // Insert gene_contact. Ignore any duplicates.
+        // Insert/activate gene_contact.
+        Map<String, Object> parameterMap = new HashMap<>();
         try {
-            Map<String, Object> parameterMap = new HashMap<>();
             parameterMap.put("contact_pk", contact.getPk());
             parameterMap.put("gene_pk", gene.getPk());
             parameterMap.put("created_at", new Date());
@@ -351,6 +359,9 @@ public class SqlUtils {
             count += jdbcInterest.update(query, parameterMap);
 
         } catch (DuplicateKeyException e) {
+            query = "UPDATE gene_contact SET active = 1 WHERE contact_pk = :contact_pk AND gene_pk = :gene_pk";
+
+            count += jdbcInterest.update(query, parameterMap);
 
         } catch (Exception e) {
 
@@ -364,7 +375,7 @@ public class SqlUtils {
     }
 
     /**
-     * Try to insert the {@link Interest} object.
+     * Activate interest described by {@code gene} and {@code email}.
      *
      * @param invoker The authorised invoker of this request
      * @param gene The mgi accession id of the gene being registgered
@@ -392,8 +403,8 @@ public class SqlUtils {
             throw new InterestException(message, HttpStatus.NOT_FOUND);
         }
 
-        // Check that the mapping doesn't already exist.
-        if (getGeneContact(gene, email) != null) {
+        // Check that an active mapping doesn't already exist.
+        if (getGeneContact(gene, email,1) != null) {
             return count;
         }
 
@@ -456,16 +467,16 @@ public class SqlUtils {
     }
 
     /**
-     * Try to remove the {@link Interest} object.
+     * Remove interest described by {@link GeneContact}.
      *
-     * @param gc The {@link GeneContact} to be deleted
-     * @return The removed {@link GeneContact} instance
+     * @param gc The {@link GeneContact} instance
+     *
      * @throws InterestException if the gene does not exist
      */
     public void removeInterestGene(GeneContact gc) throws InterestException {
 
         String message;
-        final String query = "DELETE FROM gene_contact WHERE pk = :pk";
+        final String query = "UPDATE gene_contact SET active = 0 WHERE pk = :pk";
 
         try {
 

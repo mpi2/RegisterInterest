@@ -25,16 +25,17 @@ public class GeneContactRowMapper implements RowMapper<GeneContact> {
      */
     @Override
     public GeneContact mapRow(ResultSet rs, int rowNum) throws SQLException {
-        GeneContact contactGene = new GeneContact();
+        GeneContact geneContact = new GeneContact();
 
-        contactGene.setPk(rs.getInt("pk"));
+        geneContact.setPk(rs.getInt("pk"));
 
-        contactGene.setContactPk(rs.getInt("contact_pk"));
-        contactGene.setGenePk(rs.getInt("gene_pk"));
+        geneContact.setContactPk(rs.getInt("contact_pk"));
+        geneContact.setGenePk(rs.getInt("gene_pk"));
+        geneContact.setActive(rs.getInt("active"));
 
-        contactGene.setCreatedAt(new Date(rs.getTimestamp("created_at").getTime()));
-        contactGene.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));
+        geneContact.setCreatedAt(new Date(rs.getTimestamp("created_at").getTime()));
+        geneContact.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));
 
-        return contactGene;
+        return geneContact;
     }
 }

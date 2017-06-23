@@ -36,7 +36,7 @@ DROP TABLE IF EXISTS contact;
 CREATE TABLE contact (
   pk              INT          NOT NULL      IDENTITY PRIMARY KEY,
   address         VARCHAR(256) NOT NULL,
-  active          INT          NOT NULL      DEFAULT 1,                   -- 1 = active; 0 = inactive
+  active          INT          NOT NULL      DEFAULT 1,                      -- 1 = active; 0 = inactive
   created_at      DATETIME     NOT NULL,
   updated_at      TIMESTAMP    NOT NULL      DEFAULT CURRENT_TIMESTAMP
 
@@ -48,6 +48,7 @@ CREATE TABLE gene_contact (
   pk          INT       NOT NULL      IDENTITY PRIMARY KEY,
   contact_pk  INT       NOT NULL,
   gene_pk     INT       NOT NULL,
+  active      INT       NOT NULL      DEFAULT 1,                             -- 1 = active; 0 = inactive
   created_at  DATETIME  NOT NULL,
   updated_at  TIMESTAMP NOT NULL      DEFAULT CURRENT_TIMESTAMP,
 
@@ -61,7 +62,7 @@ CREATE TABLE imits_status (
   pk                  INT          NOT NULL      IDENTITY PRIMARY KEY,
   gene_status_pk      INT                        DEFAULT NULL,
   status              VARCHAR(64)  NOT NULL,     UNIQUE(status),
-  active              INT          NOT NULL      DEFAULT 1,                   -- 1 = active; 0 = inactive
+  active              INT          NOT NULL      DEFAULT 1,                  -- 1 = active; 0 = inactive
   created_at          DATETIME     NOT NULL,
   updated_at          TIMESTAMP    NOT NULL      DEFAULT CURRENT_TIMESTAMP
 
@@ -72,7 +73,7 @@ DROP TABLE IF EXISTS gene_status;
 CREATE TABLE gene_status (
   pk             INT          NOT NULL      IDENTITY PRIMARY KEY,
   status         VARCHAR(64)  NOT NULL,     UNIQUE(status),
-  active         INT          NOT NULL      DEFAULT 1,                   -- 1 = active; 0 = inactive
+  active         INT          NOT NULL      DEFAULT 1,                       -- 1 = active; 0 = inactive
   created_at     DATETIME     NOT NULL,
   updated_at     TIMESTAMP    NOT NULL      DEFAULT CURRENT_TIMESTAMP
 

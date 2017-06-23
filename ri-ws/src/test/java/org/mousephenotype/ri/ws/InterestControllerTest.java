@@ -15,7 +15,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -48,7 +47,6 @@ public class InterestControllerTest {
     @After
     public void tearDown() throws Exception {
     }
-
 
     // Test for malformed / nonexisting email
 
@@ -84,16 +82,11 @@ public class InterestControllerTest {
     @Test
     public void queryEmailWithEmailAndNonexistentGene() throws Exception {
 
-        String url = "/contacts?user1@ebi.ac.uk&gene=junk";
-
+        String url = "/contacts?email=user1@ebi.ac.uk&gene=junk";
         this.mockMvc.perform(
                 get(url)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].contact.address", Matchers.comparesEqualTo("user1@ebi.ac.uk")))
-                .andExpect(jsonPath("$[0].contact.active", Matchers.comparesEqualTo(true)))
-
-                .andExpect(jsonPath("$[0].genes.length()", Matchers.comparesEqualTo(0)))
+                .andExpect(jsonPath("$.length()", Matchers.comparesEqualTo(0)))
         ;
     }
 
@@ -157,7 +150,6 @@ public class InterestControllerTest {
         ;
     }
 
-@Ignore
     @Test
     public void testGetGenes() throws Exception {
 
@@ -198,20 +190,6 @@ public class InterestControllerTest {
                 .andExpect(jsonPath("$[2].genes.length()", Matchers.comparesEqualTo(1)))
                 .andExpect(jsonPath("$[2].genes[0].mgiAccessionId", Matchers.comparesEqualTo("MGI:0000010")))
                 .andExpect(jsonPath("$[2].genes[0].symbol", Matchers.comparesEqualTo("gene-10")))
-
-
-
-
-
-//
-//                .andExpect(jsonPath("$[3].genes.length()", Matchers.comparesEqualTo(1)))
-                .andExpect(jsonPath("$[3].contact.address", Matchers.comparesEqualTo("newuser2@ebi.ac.uk")))
-                .andExpect(jsonPath("$[3].contact.active", Matchers.comparesEqualTo(true)))
-
-
-//                .andExpect(jsonPath("$[3].genes.length()", Matchers.comparesEqualTo(1)))
-                .andExpect(jsonPath("$[3].genes[0].mgiAccessionId", Matchers.comparesEqualTo("MGI:0000020")))
-                .andExpect(jsonPath("$[3].genes[0].symbol", Matchers.comparesEqualTo("gene-20")))
         ;
     }
 
@@ -387,7 +365,7 @@ public class InterestControllerTest {
                 delete(url)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$", Matchers.comparesEqualTo("Unregister contact junk for gene MGI:0000060 failed: no such registration exists")))
+                .andExpect(jsonPath("$", Matchers.comparesEqualTo("Unregister contact junk for gene MGI:0000060 failed: no such active registration exists")))
         ;
     }
 
@@ -400,7 +378,7 @@ public class InterestControllerTest {
                 delete(url)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$", Matchers.comparesEqualTo("Unregister contact user1@ebi.ac.uk for gene junk failed: no such registration exists")))
+                .andExpect(jsonPath("$", Matchers.comparesEqualTo("Unregister contact user1@ebi.ac.uk for gene junk failed: no such active registration exists")))
         ;
     }
 
@@ -413,7 +391,7 @@ public class InterestControllerTest {
                 delete(url)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$", Matchers.comparesEqualTo("Unregister contact junk@ebi.ac.uk for gene MGI:0000020 failed: no such registration exists")))
+                .andExpect(jsonPath("$", Matchers.comparesEqualTo("Unregister contact junk@ebi.ac.uk for gene MGI:0000020 failed: no such active registration exists")))
         ;
     }
 
@@ -426,7 +404,7 @@ public class InterestControllerTest {
                 delete(url)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$", Matchers.comparesEqualTo("Unregister contact user1@ebi.ac.uk for gene MGI:0000060 failed: no such registration exists")))
+                .andExpect(jsonPath("$", Matchers.comparesEqualTo("Unregister contact user1@ebi.ac.uk for gene MGI:0000060 failed: no such active registration exists")))
         ;
     }
 
