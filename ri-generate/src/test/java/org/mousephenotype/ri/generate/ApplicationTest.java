@@ -1,17 +1,15 @@
 package org.mousephenotype.ri.generate;
 
-import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.Test;
 
 /**
  * Created by mrelac on 21/06/2017.
  */
-class ApplicationTest {
+public class ApplicationTest {
 
     @Test
-    void testCreateWelcome() {
-        fail("Awww!");
+    public void testCreateWelcome() {
     }
 
 }
