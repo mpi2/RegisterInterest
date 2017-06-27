@@ -28,7 +28,7 @@
 
     <properties>
         <ri-version>1.0.0-SNAPSHOT</ri-version>
-        <asciidoctor.version>1.5.2</asciidoctor.version>
+        <asciidoctor.version>1.5.3</asciidoctor.version>
         <commons-cli.version>1.2</commons-cli.version>
         <commons-net.version>2.0</commons-net.version>
         <mockito.version>1.10.19</mockito.version>
@@ -77,23 +77,8 @@
 
             <!-- Spring -->
 
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-jdbc</artifactId>
-                <version>4.3.8.RELEASE</version>
-            </dependency>
+            <!-- spring boot takes care of making sure the versions are all compatible. -->
 
-            <dependency>
-                <groupId>org.springframework.batch</groupId>
-                <artifactId>spring-batch-core</artifactId>
-                <version>3.0.7.RELEASE</version>
-            </dependency>
-
-            <dependency>
-                <groupId>commons-dbcp</groupId>
-                <artifactId>commons-dbcp</artifactId>
-                <version>1.4</version>
-            </dependency>
 
 
             <!-- org.mousephenotype -->

@@ -1,10 +1,7 @@
 package org.mousephenotype.ri.ws;
 
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mousephenotype.ri.ws.config.TestConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,14 +31,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class InterestControllerTest {
 
     @Autowired
-    private WebApplicationContext wac;
+    private WebApplicationContext context;
 
     private MockMvc mockMvc;
 
 
     @Before
     public void setUp() throws Exception {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context).build();
     }
 
     @After
@@ -57,7 +54,7 @@ public class InterestControllerTest {
 
         this.mockMvc.perform(
                 get(url)
-                        .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
+                .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()", Matchers.comparesEqualTo(0)))
         ;

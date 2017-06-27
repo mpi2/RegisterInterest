@@ -1,0 +1,53 @@
+= REGISTER INTEREST API Guide
+:doctype: book
+:toc: left
+:toc-title: REGISTER INTEREST API
+:sectanchors:
+:sectlinks:
+:toclevels: 4
+:source-highlighter: highlightjs
+
+[[overview]]
+= Overview
+
+[[overview-http-verbs]]
+== HTTP verbs
+
+This API supports the following HTTP verbs.
+
+|===
+| Verb | Usage
+
+| `GET`
+| Used to retrieve contacts. May be filtered by: type (gene, disease, phenotype), email (email address),
+and/or gene (MGI accession id)
+
+| `POST`
+| Used to register a user's interest in a specific gene, phenotype, or disease
+
+| `DELETE`
+| Used to unregister a user's interest in a specific gene, phenotype, or disease
+|===
+
+[[overview-http-status-codes]]
+== HTTP status codes
+
+This API tries to adhere as closely as possible to standard HTTP and REST conventions in its
+use of HTTP status codes.
+
+|===
+| Status code | Usage
+
+| `200 OK`
+| The request completed successfully
+
+| `400 Bad Request`
+| The server cannot or will not process the request due to an apparent client error (e.g., malformed request syntax,
+ size too large, invalid request message framing, or deceptive request routing)
+
+| `404 Not Found`
+| The requested resource could not be found
+|===
+
+[[resources]]
+= Resources
