@@ -3,6 +3,8 @@ package org.mousephenotype.ri.generate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.entities.Gene;
+import org.mousephenotype.ri.core.entities.GeneContact;
 import org.mousephenotype.ri.core.entities.GeneSent;
 import org.mousephenotype.ri.generate.config.TestConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +57,11 @@ public class ApplicationTest {
         context.getAutowireCapableBeanFactory().autowireBean(app);
         context.getAutowireCapableBeanFactory().initializeBean(app, "application");
         app.run();
+
+        // Unregister
+        Gene unregisterGene = sqlUtils.getGene("MGI:0000120");
+        GeneContact unregisterGeneContact = sqlUtils.getGeneContact("MGI:0000120", "user4@ebi.ac.uk", 1);
+        app.generateUnregisterGeneEmail(unregisterGene, unregisterGeneContact);
 
         // Write to csv: Everything but the body
         jdbc.getJdbcOperations().execute("CALL CSVWRITE('gene_sent1.csv', 'SELECT pk, gene_contact_pk, assignment_status_pk, conditional_allele_production_status_pk, null_allele_production_status_pk, phenotyping_status_pk, created_at, sent_at, updated_at, subject FROM gene_sent WHERE sent_at IS NULL', 'charset=UTF-8 fieldSeparator=,')");

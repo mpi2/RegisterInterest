@@ -14,7 +14,9 @@ SET @PK_W = (SELECT pk FROM gene_status WHERE status = 'withdrawn');
 INSERT INTO contact (address, active, created_at) VALUES
   ('user1@ebi.ac.uk', 1, @now),
   ('user2@ebi.ac.uk', 1, @now),
-  ('user3@ebi.ac.uk', 1, @now);
+  ('user3@ebi.ac.uk', 1, @now),
+  ('user4@ebi.ac.uk', 1, @now)
+;
 
 INSERT INTO gene
   (mgi_accession_id,   symbol,     assigned_to,  assignment_status, assignment_status_date, assignment_status_pk, conditional_allele_production_centre,  conditional_allele_production_status, conditional_allele_production_status_date, conditional_allele_production_status_pk,  null_allele_production_centre,  null_allele_production_status, null_allele_production_status_date, null_allele_production_status_pk,  phenotyping_centre, phenotyping_status, phenotyping_status_date, phenotyping_status_pk, number_of_significant_phenotypes, created_at) VALUES
@@ -28,7 +30,8 @@ INSERT INTO gene
   ('MGI:0000080',     'gene-080', 'c-08',       'PAPP',             @now,                   @PK_PAPP,            'caps-08',                             'mouse_produced',                      @nowplus1,                                 @PK_MP,                                  'naps-08',                      'mouse_production_started',     @nowplus2,                          @PK_MPS,                          'ps-08',             @PK_xx,             @nowplus3,               NULL,                  7,                                @now),
   ('MGI:0000090',     'gene-090', 'c-09',       'PAPP',             @now,                   @PK_PAPP,            'caps-09',                             'mouse_production_started',            @nowplus1,                                 @PK_MPS,                                 'naps-09',                      'mouse_produced',               @nowplus2,                          @PK_MP,                           'ps-09',             @PK_xx,             @nowplus3,               NULL,                  8,                                @now),
   ('MGI:0000100',     'gene-100', 'c-10',       'PAPP',             @now,                   @PK_PAPP,            'caps-10',                             'mouse_produced',                      @nowplus1,                                 @PK_MP,                                  'naps-10',                      'mouse_production_started',     @nowplus2,                          @PK_MPS,                          'ps-10',             @PK_xx,             @nowplus3,               @PK_PDA,               9,                                @now),
-  ('MGI:0000110',     'gene-110', 'c-11',       'PAPP',             @now,                   @PK_PAPP,            'caps-11',                             'mouse_production_started',            @nowplus1,                                 @PK_MPS,                                 'naps-11',                      'mouse_produced',               @nowplus2,                          @PK_MP,                           'ps-11',             @PK_xx,             @nowplus3,               @PK_PDA,              10,                                @now)
+  ('MGI:0000110',     'gene-110', 'c-11',       'PAPP',             @now,                   @PK_PAPP,            'caps-11',                             'mouse_production_started',            @nowplus1,                                 @PK_MPS,                                 'naps-11',                      'mouse_produced',               @nowplus2,                          @PK_MP,                           'ps-11',             @PK_xx,             @nowplus3,               @PK_PDA,              10,                                @now),
+  ('MGI:0000120',     'gene-120', 'c-12',       'PAPP',             @now,                   @PK_PAPP,            'caps-12',                             'mouse_production_started',            @nowplus1,                                 @PK_MPS,                                 'naps-12',                      'mouse_produced',               @nowplus2,                          @PK_MP,                           'ps-12',             @PK_xx,             @nowplus3,               @PK_PDA,              11,                                @now)
 ;
 
 insert into gene_contact(contact_pk, gene_pk, created_at) VALUES
@@ -42,7 +45,8 @@ insert into gene_contact(contact_pk, gene_pk, created_at) VALUES
   (2,  8, @now),
   (3,  9, @now),
   (3, 10, @now),
-  (3, 11, @now)
+  (3, 11, @now),
+  (4, 12, @now)
 ;
 
 INSERT INTO gene_sent
@@ -54,5 +58,6 @@ INSERT INTO gene_sent
   ('my subject', 'my body',   8,               @PK_PAPP,             @PK_MP,                                  @PK_MP,                           NULL,                  @now,       @now),
   ('my subject', 'my body',   9,               @PK_PAPP,             @PK_MP,                                  @PK_MP,                           NULL,                  @now,       @now),
   ('my subject', 'my body',  10,               @PK_PAPP,             @PK_MP,                                  @PK_MPS,                          NULL,                  @now,       @now),
-  ('my subject', 'my body',  11,               @PK_PAPP,             @PK_MPS,                                 @PK_MP,                           NULL,                  @now,       @now)
+  ('my subject', 'my body',  11,               @PK_PAPP,             @PK_MPS,                                 @PK_MP,                           NULL,                  @now,       @now),
+  ('my subject', 'my body',  12,               @PK_PAPP,             @PK_MPS,                                 @PK_MP,                           NULL,                  @now,       @now)
 ;
