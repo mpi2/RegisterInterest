@@ -1,17 +1,17 @@
 package org.mousephenotype.ri.generate;
 
 import org.mousephenotype.ri.core.SqlUtils;
-import org.mousephenotype.ri.core.entities.*;
+import org.mousephenotype.ri.core.entities.Gene;
+import org.mousephenotype.ri.core.entities.GeneContact;
+import org.mousephenotype.ri.core.entities.GeneSent;
+import org.mousephenotype.ri.core.entities.GeneStatus;
 import org.mousephenotype.ri.core.exceptions.InterestException;
-import org.mousephenotype.ri.generate.config.AppConfig;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
@@ -28,7 +28,6 @@ import java.util.Map;
  * for insterest in specific genes whose status indicates the gene state has changed.
  */
 @SpringBootApplication
-@Import( {AppConfig.class })
 public class Application implements CommandLineRunner {
 
     @Autowired
@@ -72,7 +71,7 @@ public class Application implements CommandLineRunner {
     public void initialise() {
         geneContacts = sqlUtils.getGeneContacts();
         genesMap = sqlUtils.getGenesByPk();
-        geneSentMap = sqlUtils.getGeneSent();
+        geneSentMap = sqlUtils.getGenesSent();
         statusMap = sqlUtils.getStatusMap();
 
         STATUS_MORE_PHENOTYPE_DATA_AVAILABLE_PK = statusMap.get("more_phenotyping_data_available").getPk();

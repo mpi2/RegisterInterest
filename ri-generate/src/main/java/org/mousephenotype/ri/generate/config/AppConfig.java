@@ -73,8 +73,6 @@ public class AppConfig {
                 .type(BasicDataSource.class)
                 .driverClassName("com.mysql.jdbc.Driver").build();
         ((BasicDataSource) ds).setInitialSize(4);
-
-
         ((BasicDataSource) ds).setLogAbandoned(false);
         ((BasicDataSource) ds).setRemoveAbandoned(false);
 

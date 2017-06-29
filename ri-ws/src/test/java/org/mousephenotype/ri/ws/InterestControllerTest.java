@@ -25,7 +25,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = TestConfig.class)
-
 @ComponentScan("org.mousephenotype.ri.ws")
 @TestPropertySource("file:${user.home}/configfiles/${profile:dev}/ri.test.properties")
 public class InterestControllerTest {
