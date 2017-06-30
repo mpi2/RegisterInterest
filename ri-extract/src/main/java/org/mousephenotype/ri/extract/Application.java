@@ -44,7 +44,6 @@ import java.util.concurrent.Executors;
  * iMits Gene GeneStatus Change Report.
  */
 @EnableBatchProcessing
-@Import( {ExtractGeneConfigBeans.class })
 public class Application implements CommandLineRunner {
 
     public static void main(String[] args) throws Exception {

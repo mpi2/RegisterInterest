@@ -1,6 +1,7 @@
 package org.mousephenotype.ri.core;
 
 import org.mousephenotype.ri.core.entities.*;
+import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.mousephenotype.ri.core.rowmappers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,15 +12,12 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
-
-import org.mousephenotype.ri.core.exceptions.InterestException;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -74,6 +72,24 @@ public class SqlUtils {
         org.springframework.core.io.Resource r = new ClassPathResource("org/springframework/batch/core/schema-mysql.sql");
         ResourceDatabasePopulator p = new ResourceDatabasePopulator(r);
         p.execute(datasource);
+    }
+
+    public Map<Integer, String> getEmailAddressesByGeneContactPk() {
+        Map<Integer, String> results = new HashMap<>();
+        final String query =
+                "SELECT gc.pk, c.address\n" +
+                "FROM contact c\n" +
+                "JOIN gene_contact gc ON gc.contact_pk      = c. pk\n" +
+                "JOIN gene_sent    gs ON gs.gene_contact_pk = gc.pk";
+
+        List<Map<String, Object>> listMap = jdbcInterest.queryForList(query, new HashMap<String, Object>());
+        for (Map<String, Object> map : listMap) {
+            int pk = (Integer)map.get("pk");
+            String address = map.get("address").toString();
+            results.put(pk, address);
+        }
+
+        return results;
     }
 
     /**
@@ -283,6 +299,16 @@ public class SqlUtils {
         }
 
         return sentMap;
+    }
+
+    public List<GeneSent> getGenesScheduledForSending() {
+
+        final String query = "SELECT * FROM gene_sent WHERE sent_at IS NULL";
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        List<GeneSent> genesSentList = jdbcInterest.query(query, parameterMap, new GeneSentRowMapper());
+
+        return genesSentList;
     }
 
     /**

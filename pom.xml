@@ -18,6 +18,7 @@
         <module>ri-extract</module>
         <module>ri-ws</module>
         <module>ri-generate</module>
+        <module>ri-send</module>
     </modules>
 
 </project>

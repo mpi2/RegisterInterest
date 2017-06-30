@@ -38,7 +38,6 @@ import java.util.*;
  * Created by mrelac on 03/05/16.
  */
 @Configuration
-@Import(AppConfig.class)
 public class ExtractGeneConfigBeans {
 
     private Map<DownloadFileEnum, DownloadFilename> downloadFilenameMap = new HashMap<>();
