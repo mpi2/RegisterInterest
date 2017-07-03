@@ -16,7 +16,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,9 +30,6 @@ import java.util.List;
 @WebAppConfiguration
 @ContextConfiguration(classes = TestConfig.class)
 public class ApplicationTest {
-
-
-    private Connection connection;
 
     @Autowired
     private ApplicationContext context;
@@ -64,9 +60,9 @@ public class ApplicationTest {
         app.generateUnregisterGeneEmail(unregisterGene, unregisterGeneContact);
 
         // Write to csv: Everything but the body
-        jdbc.getJdbcOperations().execute("CALL CSVWRITE('gene_sent1.csv', 'SELECT pk, gene_contact_pk, assignment_status_pk, conditional_allele_production_status_pk, null_allele_production_status_pk, phenotyping_status_pk, created_at, sent_at, updated_at, subject FROM gene_sent WHERE sent_at IS NULL', 'charset=UTF-8 fieldSeparator=,')");
+        jdbc.getJdbcOperations().execute("CALL CSVWRITE('target/gene_sent1.csv', 'SELECT pk, gene_contact_pk, assignment_status_pk, conditional_allele_production_status_pk, null_allele_production_status_pk, phenotyping_status_pk, created_at, sent_at, updated_at, subject FROM gene_sent WHERE sent_at IS NULL', 'charset=UTF-8 fieldSeparator=,')");
         //               body
-        jdbc.getJdbcOperations().execute("CALL CSVWRITE('gene_sent2.csv', 'SELECT body FROM gene_sent WHERE sent_at IS NULL', 'charset=UTF-8 fieldSeparator=,')");
+        jdbc.getJdbcOperations().execute("CALL CSVWRITE('target/gene_sent2.csv', 'SELECT body FROM gene_sent WHERE sent_at IS NULL', 'charset=UTF-8 fieldSeparator=,')");
 
         List<GeneSent> genesSent = new ArrayList(sqlUtils.getGenesSent().values());
         int i = 0;

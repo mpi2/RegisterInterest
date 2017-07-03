@@ -14,7 +14,7 @@ import javax.sql.DataSource;
 @Configuration
 @PropertySource(value="file:${user.home}/configfiles/${profile}/ri.test.properties")
 @ComponentScan(value = "org.mousephenotype.ri", excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = AppConfig.class)})
-public class TestConfig {    // ri
+public class TestConfig {
     @Bean
     public DataSource riDataSource() {
 
