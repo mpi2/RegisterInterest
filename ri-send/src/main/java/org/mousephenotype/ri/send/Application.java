@@ -78,9 +78,9 @@ public class Application implements CommandLineRunner {
         int sent = 0;
         Message message;
 
-        for (GeneSent gene : genesScheduledForSending) {
-            String email = emailAddressesByGeneContactPk.get(gene.getGeneContactPk());
-            message = buildEmail(gene, email);
+        for (GeneSent geneSent : genesScheduledForSending) {
+            String email = emailAddressesByGeneContactPk.get(geneSent.getGeneContactPk());
+            message = buildEmail(geneSent, email);
             built++;
 
 //            sendEmail(message);
@@ -128,7 +128,7 @@ public class Application implements CommandLineRunner {
         return message;
     }
 
-    private void sendEmail(Message message) throws InterestException {
+    private void sendEmail(GeneSent geneSent, Message message) throws InterestException {
 
         String recipient = null;
 
@@ -136,6 +136,8 @@ public class Application implements CommandLineRunner {
             recipient = message.getRecipients(Message.RecipientType.TO)[0].toString();
 
             Transport.send(message);
+            geneSent.setSentAt(new Date());
+            sqlUtils.updateOrInsertGeneSent(geneSent);
 
         } catch (MessagingException e) {
 

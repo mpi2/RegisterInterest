@@ -577,7 +577,7 @@ public class SqlUtils {
      *
      * @throws InterestException
      */
-    public GeneSent updateOrInsertGeneEmailQueued(GeneSent geneSent) throws InterestException {
+    public GeneSent updateOrInsertGeneSent(GeneSent geneSent) throws InterestException {
 
         try {
 
@@ -585,13 +585,13 @@ public class SqlUtils {
 
             // Except for the initial load, most of the time the row will already exist.
             // Try to update. If that fails because it doesn't yet exist, insert.
-            int updateCount = updateSent(parameterMap);
+            int updateCount = updateGeneSent(parameterMap);
             if (updateCount == 0) {
 
                 KeyHolder keyholder = new GeneratedKeyHolder();
                 SqlParameterSource parameterSource = new MapSqlParameterSource(parameterMap);
 
-                int pk = insertSent(parameterSource, keyholder);
+                int pk = insertGeneSent(parameterSource, keyholder);
                 geneSent.setPk(pk);
             }
 
@@ -698,7 +698,7 @@ public class SqlUtils {
         return parameterMap;
     }
 
-    private int insertSent(SqlParameterSource parameterSource, KeyHolder keyholder) throws InterestException {
+    private int insertGeneSent(SqlParameterSource parameterSource, KeyHolder keyholder) throws InterestException {
 
         // Try to insert the row into gene_sent. If the gene_contact_pk already exists, the INSERT operation is ignored.
         final String columnNames =
@@ -721,7 +721,7 @@ public class SqlUtils {
         throw new InterestException("Unable to get primary key after INSERT.");
     }
 
-    private int updateSent(Map<String, Object> parameterMap) {
+    private int updateGeneSent(Map<String, Object> parameterMap) {
 
         final String colData =
                 // Omit gene_contact_pk in the UPDATE as it is used in the WHERE clause.
