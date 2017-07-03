@@ -1,6 +1,7 @@
 package org.mousephenotype.ri.send;
 
 import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.entities.GeneContact;
 import org.mousephenotype.ri.core.entities.GeneSent;
 import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,8 @@ import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
@@ -58,6 +61,7 @@ public class Application implements CommandLineRunner {
 
     private Map<Integer, String> emailAddressesByGeneContactPk;
     private List<GeneSent> genesScheduledForSending;
+    private Map<Integer, GeneContact> geneContacts;
 
 
 
@@ -74,6 +78,10 @@ public class Application implements CommandLineRunner {
 
         emailAddressesByGeneContactPk = sqlUtils.getEmailAddressesByGeneContactPk();
         genesScheduledForSending = sqlUtils.getGenesScheduledForSending();
+        List<GeneContact> geneContactList = sqlUtils.getGeneContacts();
+        for (GeneContact gc : geneContactList) {
+            geneContacts.put(gc.getPk(), gc);
+        }
         int built = 0;
         int sent = 0;
         Message message;
@@ -131,13 +139,19 @@ public class Application implements CommandLineRunner {
     private void sendEmail(GeneSent geneSent, Message message) throws InterestException {
 
         String recipient = null;
+        GeneContact gc = geneContacts.get(geneSent.getGeneContactPk());
 
         try {
             recipient = message.getRecipients(Message.RecipientType.TO)[0].toString();
 
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String invoker = (auth == null ? "Unknown" : auth.getName());
+
             Transport.send(message);
             geneSent.setSentAt(new Date());
             sqlUtils.updateOrInsertGeneSent(geneSent);
+            String logMessage = "email scheduled for transport " + geneSent.getSentAt() + " for genePk " + gc.getGenePk() + ", contactPk " + gc.getContactPk() + ": OK";
+            sqlUtils.logSendAction(invoker, gc.getGenePk(), gc.getContactPk(), logMessage);
 
         } catch (MessagingException e) {
 

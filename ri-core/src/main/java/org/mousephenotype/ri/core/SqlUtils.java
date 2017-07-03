@@ -354,7 +354,7 @@ public class SqlUtils {
 
         } catch (Exception e) {
             String message = "Error inserting contact '" + email + "': " + e.getLocalizedMessage() + ".";
-            logWebServiceAction(invoker, null, null, message);
+            logSendAction(invoker, null, null, message);
             logger.error(message);
             throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -425,7 +425,7 @@ public class SqlUtils {
         Gene geneInstance = getGene(gene);
         if (geneInstance == null) {
             message = "Register contact " + email + " for gene " + gene + " failed: Nonexisting gene";
-            logWebServiceAction(invoker, null, null, message);
+            logSendAction(invoker, null, null, message);
             throw new InterestException(message, HttpStatus.NOT_FOUND);
         }
 
@@ -478,7 +478,7 @@ public class SqlUtils {
         jdbcInterest.update(query, parameterMap);
     }
 
-    public void logWebServiceAction(String invoker, Integer genePk, Integer contactPk, String message) {
+    public void logSendAction(String invoker, Integer genePk, Integer contactPk, String message) {
         final String query = "INSERT INTO log (invoker, contact_pk, gene_pk, message)" +
                             " VALUES (:invoker, :contact_pk, :gene_pk, :message)";
 

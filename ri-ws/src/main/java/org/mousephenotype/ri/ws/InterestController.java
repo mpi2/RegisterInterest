@@ -105,7 +105,7 @@ public class InterestController {
         EmailValidator validator = EmailValidator.getInstance(false);
         if ( ! validator.isValid(email)) {
             message = "Register contact " + email + " for gene " + gene + " failed: malformatted email address";
-            sqlUtils.logWebServiceAction(invoker, null, null, message);
+            sqlUtils.logSendAction(invoker, null, null, message);
             return new ResponseEntity<>(message, responseHeaders, HttpStatus.BAD_REQUEST);
         }
 
@@ -116,7 +116,7 @@ public class InterestController {
                 if (count == 0) {
                     DateFormat inputDateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     message = "Register contact " + email + " for gene " + gene + ": contact is already registered for that gene.";
-                    sqlUtils.logWebServiceAction(invoker, null, null, message);
+                    sqlUtils.logSendAction(invoker, null, null, message);
                     return new ResponseEntity<>(message, responseHeaders, HttpStatus.OK);
                 }
 
@@ -129,7 +129,7 @@ public class InterestController {
 
             message = "Register contact " + email + " for gene " + gene + ": OK";
             if ( ! interests.isEmpty()) {
-                sqlUtils.logWebServiceAction(invoker, interests.get(0).getGenes().get(0).getPk(), interests.get(0).getContact().getPk(), message);
+                sqlUtils.logSendAction(invoker, interests.get(0).getGenes().get(0).getPk(), interests.get(0).getContact().getPk(), message);
             }
         }
 
@@ -171,11 +171,11 @@ public class InterestController {
 
                 sqlUtils.removeInterestGene(gc);
                 message = "Unregister contact " + email + " for gene " + gene + ": OK";
-                sqlUtils.logWebServiceAction(invoker, genePk, contactPk, message);
+                sqlUtils.logSendAction(invoker, genePk, contactPk, message);
 
             } catch (InterestException e) {
 
-                sqlUtils.logWebServiceAction(invoker, null, null, message);
+                sqlUtils.logSendAction(invoker, null, null, message);
 
                 return new ResponseEntity<>(e.getLocalizedMessage(), responseHeaders, e.getHttpStatus());
             }

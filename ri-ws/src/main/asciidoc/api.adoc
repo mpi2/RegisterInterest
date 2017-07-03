@@ -51,3 +51,54 @@ use of HTTP status codes.
 
 [[resources]]
 = Resources
+
+[[resources-api]]
+== API
+The api endpoint provides the entry point into the service.
+
+
+[[resources-discover-contacts]]
+=== Accessing the API
+
+A `GET` request is used to query the resource for contacts
+
+==== Example request
+
+include::generated-snippets/filtered-contact-get/curl-request.adoc[]
+
+==== Response structure
+
+include::generated-snippets/filtered-contact-get/response-fields.adoc[]
+
+==== Example response
+
+include::generated-snippets/filtered-contact-get/http-response.adoc[]
+
+
+
+[[resources-register]]
+=== Accessing the API
+
+A `POST` request is used to register interest
+
+==== Example request
+
+include::generated-snippets/register/curl-request.adoc[]
+
+==== Example response
+
+include::generated-snippets/register/http-response.adoc[]
+
+
+[[resources-unregister]]
+=== Accessing the API
+
+A `DELETE` request is used to register interest
+
+==== Example request
+
+include::generated-snippets/unregister/curl-request.adoc[]
+
+==== Example response
+
+include::generated-snippets/unregister/http-response.adoc[]
