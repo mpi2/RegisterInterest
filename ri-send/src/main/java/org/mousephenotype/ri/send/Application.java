@@ -36,11 +36,11 @@ public class Application implements CommandLineRunner {
     private SqlUtils sqlUtils;
 
 
-    @Value("${mail.smtp.auth}")
-    private Boolean smtpAuth;
-
-    @Value("${mail.smtp.starttls.enable}")
-    private Boolean smtpStarttlsEnable;
+//    @Value("${mail.smtp.auth}")
+//    private Boolean smtpAuth;
+//
+//    @Value("${mail.smtp.starttls.enable}")
+//    private Boolean smtpStarttlsEnable;
 
     @Value("${mail.smtp.host}")
     private String smtpHost;
@@ -48,11 +48,11 @@ public class Application implements CommandLineRunner {
     @Value("${mail.smtp.port}")
     private Integer smtpPort;
 
-    @Value("${mail.smtp.username}")
-    private String smtpUsername;
-
-    @Value("${mail.smtp.password}")
-    private String smtpPassword;
+//    @Value("${mail.smtp.username}")
+//    private String smtpUsername;
+//
+//    @Value("${mail.smtp.password}")
+//    private String smtpPassword;
 
     @Value("${mail.smtp.from}")
     private String smtpFrom;
@@ -61,7 +61,7 @@ public class Application implements CommandLineRunner {
 
     private Map<Integer, String> emailAddressesByGeneContactPk;
     private List<GeneSent> genesScheduledForSending;
-    private Map<Integer, GeneContact> geneContacts;
+    private Map<Integer, GeneContact> geneContacts = new HashMap<>();
 
 
 
@@ -91,8 +91,8 @@ public class Application implements CommandLineRunner {
             message = buildEmail(geneSent, email);
             built++;
 
-//            sendEmail(message);
-//            sent++;
+            sendEmail(geneSent, message);
+            sent++;
         }
 
         System.out.println("Built " + built + " emails.");
@@ -106,17 +106,18 @@ public class Application implements CommandLineRunner {
     private Message buildEmail(GeneSent gene, String email) {
 
         Properties smtpProperties = new Properties();
-        smtpProperties.put("mail.smtp.auth", smtpAuth);
-        smtpProperties.put("mail.smtp.starttls.enable", smtpStarttlsEnable);
+//        smtpProperties.put("mail.smtp.auth", smtpAuth);
+//        smtpProperties.put("mail.smtp.starttls.enable", smtpStarttlsEnable);
         smtpProperties.put("mail.smtp.host", smtpHost);
         smtpProperties.put("mail.smtp.port", smtpPort);
 
-        Session session = Session.getInstance(smtpProperties,
-                new javax.mail.Authenticator() {
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(smtpUsername, smtpPassword);
-                    }
-                });
+        Session session = Session.getInstance(smtpProperties);
+//        Session session = Session.getInstance(smtpProperties,
+//                new javax.mail.Authenticator() {
+//                    protected PasswordAuthentication getPasswordAuthentication() {
+//                        return new PasswordAuthentication(smtpUsername, smtpPassword);
+//                    }
+//                });
 
         Message message = new MimeMessage(session);
 

@@ -8,7 +8,6 @@ import org.springframework.context.annotation.ComponentScan;
 
 
 @SpringBootApplication
-@ComponentScan("org.mousephenotype")
 public class Application extends SpringBootServletInitializer {
 
 	@Override

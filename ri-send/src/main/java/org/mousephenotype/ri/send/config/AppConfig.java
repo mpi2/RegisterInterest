@@ -28,7 +28,6 @@ import javax.sql.DataSource;
  */
 @Configuration
 @PropertySource(value="file:${user.home}/configfiles/${profile}/ri.application.properties")
-@ComponentScan({"org.mousephenotype"})
 @EnableAutoConfiguration(exclude = {
         JndiConnectionFactoryAutoConfiguration.class,
         DataSourceAutoConfiguration.class,
