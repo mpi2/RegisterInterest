@@ -1,7 +1,10 @@
 package org.mousephenotype.ri.send.config;
 
 import org.mousephenotype.ri.core.SqlUtils;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
@@ -12,7 +15,9 @@ import javax.sql.DataSource;
  * Created by mrelac on 27/06/2017.
  */
 @Configuration
-@ComponentScan(value = "org.mousephenotype.ri", excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = AppConfig.class)})
+@ComponentScan(value = {"org.mousephenotype.ri"},
+        excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = AppConfig.class)}
+)
 public class TestConfig {
     @Bean
     public DataSource riDataSource() {
@@ -24,6 +29,7 @@ public class TestConfig {
                 .build();
     }
 
+    @Bean
     public NamedParameterJdbcTemplate jdbc() {
         return new NamedParameterJdbcTemplate(riDataSource());
     }

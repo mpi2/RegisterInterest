@@ -38,7 +38,7 @@ import java.util.concurrent.Executors;
  */
 @EnableBatchProcessing
 @ComponentScan({"org.mousephenotype.ri.extract"})
-public class Application implements CommandLineRunner {
+public class ApplicationExtract implements CommandLineRunner {
 
     private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -52,7 +52,7 @@ public class Application implements CommandLineRunner {
 
 
     public static void main(String[] args) throws Exception {
-        SpringApplication app = new SpringApplication(Application.class);
+        SpringApplication app = new SpringApplication(ApplicationExtract.class);
         app.setBannerMode(Banner.Mode.OFF);
         app.setLogStartupInfo(false);
         app.setWebEnvironment(false);
@@ -61,7 +61,7 @@ public class Application implements CommandLineRunner {
 
 
     @Inject
-    public Application(
+    public ApplicationExtract(
             JobBuilderFactory jobBuilderFactory,
             StepBuilderFactory stepBuilderFactory,
             JobRepository jobRepository,

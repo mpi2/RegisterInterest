@@ -19,6 +19,7 @@
         <module>ri-ws</module>
         <module>ri-generate</module>
         <module>ri-send</module>
+        <module>ri-test</module>
     </modules>
 
 </project>

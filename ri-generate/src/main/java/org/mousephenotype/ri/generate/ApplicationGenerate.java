@@ -14,7 +14,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import javax.annotation.PostConstruct;
-import javax.sql.DataSource;
+import javax.inject.Inject;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -28,15 +28,13 @@ import java.util.Map;
  * for insterest in specific genes whose status indicates the gene state has changed.
  */
 @SpringBootApplication
-public class Application implements CommandLineRunner {
-
-    @Autowired
-    private DataSource riDataSource;
-
-    @Autowired
-    private SqlUtils sqlUtils;
+public class ApplicationGenerate implements CommandLineRunner {
 
     private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private SimpleDateFormat sdf = new SimpleDateFormat("dd MMMMM yyyy");
+
+    private SqlUtils sqlUtils;
 
     private List<GeneContact> geneContacts;
     private Map<Integer, Gene> genesMap;
@@ -55,15 +53,9 @@ public class Application implements CommandLineRunner {
     private Integer STATUS_WITHDRAWN_PK;
 
 
-    private SimpleDateFormat sdf = new SimpleDateFormat("dd MMMMM yyyy");
-
-
-    public static void main(String[] args) throws Exception {
-        SpringApplication app = new SpringApplication(Application.class);
-        app.setBannerMode(Banner.Mode.OFF);
-        app.setLogStartupInfo(false);
-        app.setWebEnvironment(false);
-        app.run(args);
+    @Inject
+    public ApplicationGenerate(SqlUtils sqlUtils) {
+        this.sqlUtils = sqlUtils;
     }
 
 
@@ -84,6 +76,16 @@ public class Application implements CommandLineRunner {
         STATUS_UNREGISTER_PK = statusMap.get("unregister").getPk();
         STATUS_WITHDRAWN_PK = statusMap.get("withdrawn").getPk();
     }
+
+
+    public static void main(String[] args) throws Exception {
+        SpringApplication app = new SpringApplication(ApplicationGenerate.class);
+        app.setBannerMode(Banner.Mode.OFF);
+        app.setLogStartupInfo(false);
+        app.setWebEnvironment(false);
+        app.run(args);
+    }
+
 
     @Override
     public void run(String... args) throws Exception {

@@ -14,10 +14,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import javax.mail.*;
+import javax.inject.Inject;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.sql.DataSource;
+import javax.validation.constraints.NotNull;
 import java.util.*;
 
 /**
@@ -27,37 +31,30 @@ import java.util.*;
  * contacts registered for insterest in specific genes, diseases, or phenotypes whose status indicates the state has changed.
  */
 @SpringBootApplication
-public class Application implements CommandLineRunner {
+public class ApplicationSend implements CommandLineRunner {
 
-    @Autowired
-    private DataSource riDataSource;
+    private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
     private SqlUtils sqlUtils;
 
-
-//    @Value("${mail.smtp.auth}")
-//    private Boolean smtpAuth;
-//
-//    @Value("${mail.smtp.starttls.enable}")
-//    private Boolean smtpStarttlsEnable;
-
+    @NotNull
     @Value("${mail.smtp.host}")
     private String smtpHost;
 
+    @NotNull
     @Value("${mail.smtp.port}")
     private Integer smtpPort;
 
-//    @Value("${mail.smtp.username}")
-//    private String smtpUsername;
-//
-//    @Value("${mail.smtp.password}")
-//    private String smtpPassword;
-
+    @NotNull
     @Value("${mail.smtp.from}")
     private String smtpFrom;
 
-    private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @Inject
+    public ApplicationSend(SqlUtils sqlUtils) {
+        this.sqlUtils = sqlUtils;
+    }
+
 
     private Map<Integer, String> emailAddressesByGeneContactPk;
     private List<GeneSent> genesScheduledForSending;
@@ -66,7 +63,7 @@ public class Application implements CommandLineRunner {
 
 
     public static void main(String[] args) throws Exception {
-        SpringApplication app = new SpringApplication(Application.class);
+        SpringApplication app = new SpringApplication(ApplicationSend.class);
         app.setBannerMode(Banner.Mode.OFF);
         app.setLogStartupInfo(false);
         app.setWebEnvironment(false);
@@ -106,19 +103,11 @@ public class Application implements CommandLineRunner {
     private Message buildEmail(GeneSent gene, String email) {
 
         Properties smtpProperties = new Properties();
-//        smtpProperties.put("mail.smtp.auth", smtpAuth);
-//        smtpProperties.put("mail.smtp.starttls.enable", smtpStarttlsEnable);
+
         smtpProperties.put("mail.smtp.host", smtpHost);
         smtpProperties.put("mail.smtp.port", smtpPort);
 
         Session session = Session.getInstance(smtpProperties);
-//        Session session = Session.getInstance(smtpProperties,
-//                new javax.mail.Authenticator() {
-//                    protected PasswordAuthentication getPasswordAuthentication() {
-//                        return new PasswordAuthentication(smtpUsername, smtpPassword);
-//                    }
-//                });
-
         Message message = new MimeMessage(session);
 
         try {

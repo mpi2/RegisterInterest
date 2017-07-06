@@ -29,7 +29,7 @@ import java.util.List;
 @RunWith(SpringRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = TestConfig.class)
-public class ApplicationTest {
+public class ApplicationGenerateTest {
 
     @Autowired
     private ApplicationContext context;
@@ -49,7 +49,7 @@ public class ApplicationTest {
 //        Resource r = context.getResource("classpath:sql/h2/generate-data.sql");
 //        ScriptUtils.executeSqlScript(ds.getConnection(), r);
 
-        Application app = new Application();
+        ApplicationGenerate app = new ApplicationGenerate(sqlUtils);
         context.getAutowireCapableBeanFactory().autowireBean(app);
         context.getAutowireCapableBeanFactory().initializeBean(app, "application");
         app.run();
