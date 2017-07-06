@@ -18,6 +18,10 @@
         <relativePath>../ri-parent/pom.xml</relativePath>
     </parent>
 
+    <properties>
+        <snippetsDirectory>src/main/asciidoc/generated-snippets</snippetsDirectory>
+    </properties>
+
     <dependencies>
 
 
@@ -135,7 +139,30 @@
                             <doctype>book</doctype>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>output-html</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>process-asciidoc</goal>
+                        </goals>
+                    </execution>
                 </executions>
+
+                <configuration>
+                    <sourceDirectory>src/main/asciidoc</sourceDirectory>
+                    <outputDirectory>src/main/resources/static/documents/</outputDirectory>
+                    <backend>html</backend>
+                    <doctype>book</doctype>
+                    <attributes>
+                        <!--<toc/>-->
+                        <!--<imagesdir>img</imagesdir>-->
+                        <snippets>${snippetsDirectory}</snippets>
+                    </attributes>
+                    <!--<headerFooter>false</headerFooter>-->
+                    <!--<preserveDirectories>true</preserveDirectories>-->
+                </configuration>
+
+
                 <dependencies>
                     <dependency>
                         <groupId>org.springframework.restdocs</groupId>
