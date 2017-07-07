@@ -34,7 +34,7 @@ INSERT INTO gene
   ('MGI:0000120',     'gene-120', 'c-12',       'PAPP',             @now,                   @PK_PAPP,            'caps-12',                             'mouse_production_started',            @nowplus1,                                 @PK_MPS,                                 'naps-12',                      'mouse_produced',               @nowplus2,                          @PK_MP,                           'ps-12',             @PK_xx,             @nowplus3,               @PK_PDA,              11,                                @now)
 ;
 
-SET @gcUserPk = 4;
+SET @gcUserPk = 1;
 insert into gene_contact(contact_pk, gene_pk, created_at) VALUES
   (@gcUserPk,  1, @now),
   (@gcUserPk,  2, @now),

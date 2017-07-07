@@ -1,13 +1,13 @@
 package org.mousephenotype.ri.generate;
 
 import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.Validator;
 import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.entities.GeneContact;
 import org.mousephenotype.ri.core.entities.GeneSent;
 import org.mousephenotype.ri.core.entities.GeneStatus;
 import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -19,6 +19,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -36,21 +38,11 @@ public class ApplicationGenerate implements CommandLineRunner {
 
     private SqlUtils sqlUtils;
 
+    public final Set<String> errorMessages = ConcurrentHashMap.newKeySet();
     private List<GeneContact> geneContacts;
     private Map<Integer, Gene> genesMap;
     private Map<Integer, GeneSent> geneSentMap;
     private Map<String, GeneStatus> statusMap;      // keyed by status
-
-    // These can't be marked final but they are only to be written to once. They are the primary keys.
-    private Integer STATUS_MORE_PHENOTYPE_DATA_AVAILABLE_PK;
-    private Integer STATUS_MOUSE_PRODUCED_PK;
-    private Integer STATUS_MOUSE_PRODUCTION_STARTED_PK;
-    private Integer STATUS_NOT_PLANNED_PK;
-    private Integer STATUS_PHENOTYPE_DATA_AVAILABLE_PK;
-    private Integer STATUS_PRODUCTION_AND_PHENOTYPING_PLANNED_PK;
-    private Integer STATUS_REGISTER_PK;
-    private Integer STATUS_UNREGISTER_PK;
-    private Integer STATUS_WITHDRAWN_PK;
 
 
     @Inject
@@ -65,16 +57,6 @@ public class ApplicationGenerate implements CommandLineRunner {
         genesMap = sqlUtils.getGenesByPk();
         geneSentMap = sqlUtils.getGenesSent();
         statusMap = sqlUtils.getStatusMap();
-
-        STATUS_MORE_PHENOTYPE_DATA_AVAILABLE_PK = statusMap.get("more_phenotyping_data_available").getPk();
-        STATUS_MOUSE_PRODUCED_PK = statusMap.get("mouse_produced").getPk();
-        STATUS_MOUSE_PRODUCTION_STARTED_PK = statusMap.get("mouse_production_started").getPk();
-        STATUS_NOT_PLANNED_PK = statusMap.get("not_planned").getPk();
-        STATUS_PHENOTYPE_DATA_AVAILABLE_PK = statusMap.get("phenotyping_data_available").getPk();
-        STATUS_PRODUCTION_AND_PHENOTYPING_PLANNED_PK = statusMap.get("production_and_phenotyping_planned").getPk();
-        STATUS_REGISTER_PK = statusMap.get("register").getPk();
-        STATUS_UNREGISTER_PK = statusMap.get("unregister").getPk();
-        STATUS_WITHDRAWN_PK = statusMap.get("withdrawn").getPk();
     }
 
 
@@ -111,6 +93,13 @@ public class ApplicationGenerate implements CommandLineRunner {
         for (GeneContact geneContact : geneContacts) {
 
             Gene gene = genesMap.get(geneContact.getGenePk());
+
+            // Validate the gene. If it fails, log the error and continue to the next gene.
+            gene = Validator.validate(gene, errorMessages);
+            if (gene == null) {
+                continue;
+            }
+
             boolean shouldWelcome = false;
 
             Date now = new Date();
@@ -179,6 +168,13 @@ public class ApplicationGenerate implements CommandLineRunner {
             count++;
         }
 
+        if ( ! errorMessages.isEmpty()) {
+            logger.warn("WARNINGS:");
+            for (String s : errorMessages) {
+                logger.warn("\t" + s);
+            }
+        }
+
         logger.info("Run ri-generate: " + count + " emails queued for gene status changes");
     }
 
@@ -205,25 +201,24 @@ public class ApplicationGenerate implements CommandLineRunner {
             body
                     .append("You have registered interest in gene ")
                     .append(gene.getSymbol())
-                    .append(" via the IMPC (")
-                    .append("<a href=www.mousephenotype.org>www.mousephenotype.org</a>). ")
+                    .append(" via the IMPC (www.mousephenotype.org>www.mousephenotype.org). ")
                     .append("You are receiving this email because the IMPC production status of the gene has changed.\n")
                     .append("\n");
         }
 
         if (gene.getAssignmentStatusPk() != geneSent.getAssignmentStatusPk()) {
-            if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatusPk() == STATUS_PRODUCTION_AND_PHENOTYPING_PLANNED_PK)) {
+            if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatus().equals(GeneStatus.PRODUCTION_AND_PHENOTYPING_PLANNED))) {
                 body
                         .append("This gene has been selected for mouse production and phenotyping as part of the IMPC initiative.\n")
                         .append("\n");
 
-            } else if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatusPk() == STATUS_WITHDRAWN_PK)) {
+            } else if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatus().equals(GeneStatus.WITHDRAWN))) {
                 body
                         .append("This gene has been withdrawn from mouse production and phenotyping as part of the IMPC initiative.\n")
                         .append("\n");
                 ;
 
-            } else if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatusPk() == STATUS_NOT_PLANNED_PK)) {
+            } else if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatus().equals(GeneStatus.NOT_PLANNED))) {
                 body
                         .append("This gene has not been selected for mouse production and phenotyping as part of the IMPC initiative.")
                         .append(" This gene will be considered for mouse production in the future by the IMPC.\n")
@@ -231,7 +226,7 @@ public class ApplicationGenerate implements CommandLineRunner {
             }
         }
 
-        if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatusPk() == STATUS_PRODUCTION_AND_PHENOTYPING_PLANNED_PK) &&
+        if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatus().equals(GeneStatus.PRODUCTION_AND_PHENOTYPING_PLANNED)) &&
            ((gene.getNullAlleleProductionStatusPk() == null) || (gene.getNullAlleleProductionStatusPk() == 0)) &&
            ((gene.getConditionalAlleleProductionStatusPk() == null) || (gene.getConditionalAlleleProductionStatusPk() == 0))) {
 
@@ -245,7 +240,7 @@ public class ApplicationGenerate implements CommandLineRunner {
                     .append("\n");;
         }
 
-        if ((gene.getNullAlleleProductionStatusPk() != null) && (gene.getNullAlleleProductionStatusPk() == STATUS_MOUSE_PRODUCTION_STARTED_PK) &&
+        if ((gene.getNullAlleleProductionStatusPk() != null) && (gene.getNullAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCTION_STARTED)) &&
             (gene.getNullAlleleProductionStatusDate() != null)) {
 
             String datePiece = sdf.format(gene.getNullAlleleProductionStatusDate());
@@ -256,7 +251,7 @@ public class ApplicationGenerate implements CommandLineRunner {
                     .append("\n");;
         }
 
-        if ((gene.getNullAlleleProductionStatusPk() != null) && (gene.getNullAlleleProductionStatusPk() == STATUS_MOUSE_PRODUCED_PK) &&
+        if ((gene.getNullAlleleProductionStatusPk() != null) && (gene.getNullAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCED)) &&
                 (gene.getNullAlleleProductionStatusDate() != null)) {
 
             String datePiece = sdf.format(gene.getNullAlleleProductionStatusDate());
@@ -269,7 +264,7 @@ public class ApplicationGenerate implements CommandLineRunner {
                     .append("\n");;
         }
 
-        if ((gene.getConditionalAlleleProductionStatusPk() != null) && (gene.getConditionalAlleleProductionStatusPk() == STATUS_MOUSE_PRODUCTION_STARTED_PK) &&
+        if ((gene.getConditionalAlleleProductionStatusPk() != null) && (gene.getConditionalAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCTION_STARTED)) &&
             (gene.getConditionalAlleleProductionStatusDate() != null)) {
 
             String datePiece = sdf.format(gene.getConditionalAlleleProductionStatusDate());
@@ -280,7 +275,7 @@ public class ApplicationGenerate implements CommandLineRunner {
                     .append("\n");;
         }
 
-        if ((gene.getConditionalAlleleProductionStatusPk() != null) && (gene.getConditionalAlleleProductionStatusPk() == STATUS_MOUSE_PRODUCED_PK) &&
+        if ((gene.getConditionalAlleleProductionStatusPk() != null) && (gene.getConditionalAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCED)) &&
                 (gene.getConditionalAlleleProductionStatusDate() != null)) {
 
             String datePiece = sdf.format(gene.getConditionalAlleleProductionStatusDate());
@@ -293,21 +288,23 @@ public class ApplicationGenerate implements CommandLineRunner {
                     .append("\n");
         }
 
-        if ((gene.getPhenotypingStatusPk() == STATUS_PHENOTYPE_DATA_AVAILABLE_PK) && (gene.getNumberOfSignificantPhenotypes() > 0)) {
-            body
-                    .append("Phenotype data for this gene is now available on the IMPC portal. The IMPC portal is now showing phenotype data ")
-                    .append("and has identified ")
-                    .append(gene.getNumberOfSignificantPhenotypes())
-                    .append(" significant phenotypes.\n")
-                    .append("\n");
+        if (gene.getPhenotypingStatus() != null) {
+            if ((gene.getPhenotypingStatus().equals(GeneStatus.PHENOTYPING_DATA_AVAILABLE)) && (gene.getNumberOfSignificantPhenotypes() > 0)) {
+                body
+                        .append("Phenotype data for this gene is now available on the IMPC portal. The IMPC portal is now showing phenotype data ")
+                        .append("and has identified ")
+                        .append(gene.getNumberOfSignificantPhenotypes())
+                        .append(" significant phenotypes.\n")
+                        .append("\n");
 
-        } else if ((gene.getPhenotypingStatusPk() == STATUS_MORE_PHENOTYPE_DATA_AVAILABLE_PK) && (gene.getNumberOfSignificantPhenotypes() > 0)) {
-            body
-                    .append("Additional phenotype data for this gene has become available on the IMPC portal. Phenotype data has been collected ")
-                    .append("and the IMPC portal has identified ")
-                    .append(gene.getNumberOfSignificantPhenotypes())
-                    .append(" significant phenotypes.\n")
-                    .append("\n");
+            } else if ((gene.getPhenotypingStatus().equals(GeneStatus.MORE_PHENOTYPING_DATA_AVAILABLE)) && (gene.getNumberOfSignificantPhenotypes() > 0)) {
+                body
+                        .append("Additional phenotype data for this gene has become available on the IMPC portal. Phenotype data has been collected ")
+                        .append("and the IMPC portal has identified ")
+                        .append(gene.getNumberOfSignificantPhenotypes())
+                        .append(" significant phenotypes.\n")
+                        .append("\n");
+            }
         }
 
         body
@@ -370,7 +367,7 @@ public class ApplicationGenerate implements CommandLineRunner {
 
         body
                 .append("For further information / enquiries please write to ")
-                .append("<a href=mailto:mouse-helpdesk@ebi.ac.uk>mouse-helpdesk@ebi.ac.uk</a>).\n")
+                .append("mouse-helpdesk@ebi.ac.uk>mouse-helpdesk@ebi.ac.uk.\n")
                 .append("\n")
                 .append("Best Regards,\n")
                 .append("\n")

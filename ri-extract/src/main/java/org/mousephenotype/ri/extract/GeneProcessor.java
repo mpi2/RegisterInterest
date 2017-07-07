@@ -16,14 +16,15 @@
 
 package org.mousephenotype.ri.extract;
 
+import org.mousephenotype.ri.core.ParseUtils;
+import org.mousephenotype.ri.core.Validator;
 import org.mousephenotype.ri.core.entities.Gene;
+import org.mousephenotype.ri.core.entities.ImitsStatus;
+import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
 
-import org.mousephenotype.ri.core.entities.ImitsStatus;
-import org.mousephenotype.ri.core.exceptions.InterestException;
-import org.mousephenotype.ri.core.ParseUtils;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
@@ -193,13 +194,17 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
             gene.setPhenotypingStatusDate(date);
         }
 
-        // number
-        Integer number = parseUtils.tryParseInt(gene.getNumberOfSignificantPhenotypesString());
-        if (number == null) {
-            errMessages.add("Invalid number '" + gene.getNumberOfSignificantPhenotypes() + "'");
-            return null;
+        // 'number'. Optional. If specified, it must be an integer. Reject it if it is not. If null, set it to 0.
+        if (gene.getNumberOfSignificantPhenotypes() == null) {
+            gene.setNumberOfSignificantPhenotypes(0);
+        } else {
+            Integer number = parseUtils.tryParseInt(gene.getNumberOfSignificantPhenotypesString());
+            if (number == null) {
+                errMessages.add("Invalid number '" + gene.getNumberOfSignificantPhenotypes() + "'");
+                return null;
+            }
+            gene.setNumberOfSignificantPhenotypes(number);
         }
-        gene.setNumberOfSignificantPhenotypes(number);
 
         // Populate the ri status fields based on imits status string.
         if ((gene.getAssignmentStatus() != null) && ( ! gene.getAssignmentStatus().trim().isEmpty())) {
@@ -230,6 +235,9 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
                 return null;
             }
         }
+
+        // Further iMits validation rules from Peter Matthews
+        gene = Validator.validate(gene, errMessages);
 
         return gene;
     }
