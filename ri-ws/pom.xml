@@ -150,7 +150,7 @@
 
                 <configuration>
                     <sourceDirectory>src/main/asciidoc</sourceDirectory>
-                    <outputDirectory>src/main/resources/static/documents/</outputDirectory>
+                    <outputDirectory>src/main/webapp/documents/</outputDirectory>
                     <backend>html</backend>
                     <doctype>book</doctype>
                     <attributes>

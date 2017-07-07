@@ -52,20 +52,7 @@ public class InterestController {
     public final static String INTEREST_GENE = "gene";
     public final static String INTEREST_PHENOTYPE = "phenotype";
 
-    @RequestMapping(method = GET, value = "/")
-    public ResponseEntity<List<String>> apiDocs(
-    ) {
 
-        List<String> list = new ArrayList<>();
-        list.add("API docs go here.");
-        HttpHeaders responseHeaders = new HttpHeaders();
-        HttpStatus status = HttpStatus.OK;
-
-        return new ResponseEntity<>(list, responseHeaders, status);
-    }
-
-    
-    
     @RequestMapping(method = GET, value = "/contacts")
     public ResponseEntity<List<Interest>> getContacts(
             @RequestParam(value = "email", required = false) String email,

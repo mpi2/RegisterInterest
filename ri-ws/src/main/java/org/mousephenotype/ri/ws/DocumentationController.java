@@ -13,14 +13,6 @@ public class DocumentationController {
 
     @RequestMapping(value = {"/"})
     public String showDocsIndex(Model model) {
-        return "docs/index";
-    }
-
-    @RequestMapping({"docs/{page}"})
-    public String showDocs(@PathVariable("page") String pageName, Model model) {
-
-
-        model.addAttribute("page", pageName);
-        return "docs-template";
+        return "redirect:docs/api.html";
     }
 }
