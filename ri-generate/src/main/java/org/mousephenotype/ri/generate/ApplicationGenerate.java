@@ -194,14 +194,14 @@ public class ApplicationGenerate implements CommandLineRunner {
                     .append("You have registered interest in gene ")
                     .append(gene.getSymbol())
                     .append(" via the IMPC (")
-                    .append("<a href=www.mousephenotype.org>www.mousephenotype.org</a>). ")
+                    .append("www.mousephenotype.org). ")
                     .append("You are receiving this email because the IMPC phenotyping status of the gene has changed.\n")
                     .append("\n");
         } else if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatusPk() > 0)) {
             body
                     .append("You have registered interest in gene ")
                     .append(gene.getSymbol())
-                    .append(" via the IMPC (www.mousephenotype.org>www.mousephenotype.org). ")
+                    .append(" via the IMPC (www.mousephenotype.org). ")
                     .append("You are receiving this email because the IMPC production status of the gene has changed.\n")
                     .append("\n");
         }
@@ -367,7 +367,7 @@ public class ApplicationGenerate implements CommandLineRunner {
 
         body
                 .append("For further information / enquiries please write to ")
-                .append("mouse-helpdesk@ebi.ac.uk>mouse-helpdesk@ebi.ac.uk.\n")
+                .append("mouse-helpdesk@ebi.ac.uk.\n")
                 .append("\n")
                 .append("Best Regards,\n")
                 .append("\n")
