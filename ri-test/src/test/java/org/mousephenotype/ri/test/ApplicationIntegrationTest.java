@@ -4,6 +4,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.entities.Gene;
+import org.mousephenotype.ri.core.entities.GeneContact;
 import org.mousephenotype.ri.generate.ApplicationGenerate;
 import org.mousephenotype.ri.send.ApplicationSend;
 import org.mousephenotype.ri.test.config.AppConfig;
@@ -31,7 +33,7 @@ public class ApplicationIntegrationTest {
     private SqlUtils sqlutils;
 
 
-    @Ignore
+//    @Ignore
     @Test
     public void testGenerateAndSendRegisterInterest() throws Exception {
 
@@ -40,6 +42,8 @@ public class ApplicationIntegrationTest {
         generateContext.getAutowireCapableBeanFactory().autowireBean(generateApp);
         generateContext.getAutowireCapableBeanFactory().initializeBean(generateApp, "generateApp");
 
+        Gene gene = sqlutils.getGene("MGI:0000220");
+        GeneContact geneContact = sqlutils.getGeneContact("MGI:0000220", "mrelac@ebi.ac.uk", 1);
 
 
         ApplicationSend sendApp = new ApplicationSend(sqlutils);
@@ -47,6 +51,7 @@ public class ApplicationIntegrationTest {
         sendContext.getAutowireCapableBeanFactory().initializeBean(sendApp, "sendApp");
 
         generateApp.run();
+        generateApp.generateUnregisterGeneEmail(gene, geneContact);
         sendApp.run();
     }
 }

@@ -187,8 +187,7 @@ public class ApplicationGenerate implements CommandLineRunner {
             body
                     .append("Thank you for registering interest in gene ")
                     .append(gene.getSymbol())
-                    .append(".\n")
-                    .append("\n");
+                    .append(".\n");
 
         } else {
 
@@ -197,8 +196,7 @@ public class ApplicationGenerate implements CommandLineRunner {
                     .append("You have registered interest in gene ")
                     .append(gene.getSymbol())
                     .append(" via the IMPC (www.mousephenotype.org). ")
-                    .append("You are receiving this email because either the IMPC production or phenotyping status of the gene has changed.\n")
-                    .append("\n");
+                    .append("You are receiving this email because either the IMPC production or phenotyping status of the gene has changed.\n");
 
         }
 
@@ -207,24 +205,24 @@ public class ApplicationGenerate implements CommandLineRunner {
 
                 // 2.1
                 body
-                        .append("This gene has been selected for mouse production and phenotyping as part of the IMPC initiative.\n")
-                        .append("\n");
+                        .append("\n")
+                        .append("This gene has been selected for mouse production and phenotyping as part of the IMPC initiative.\n");
 
             } else if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatus().equals(GeneStatus.WITHDRAWN))) {
 
                 // 2.2
                 body
-                        .append("This gene has been withdrawn from mouse production and phenotyping as part of the IMPC initiative.\n")
-                        .append("\n");
+                        .append("\n")
+                        .append("This gene has been withdrawn from mouse production and phenotyping as part of the IMPC initiative.\n");
                 ;
 
             } else if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatus().equals(GeneStatus.NOT_PLANNED))) {
 
                 // 2.3
                 body
+                        .append("\n")
                         .append("This gene has not been selected for mouse production and phenotyping as part of the IMPC initiative.")
-                        .append(" This gene will be considered for mouse production in the future by the IMPC.\n")
-                        .append("\n");
+                        .append(" This gene will be considered for mouse production in the future by the IMPC.\n");
             }
         }
 
@@ -234,7 +232,8 @@ public class ApplicationGenerate implements CommandLineRunner {
 
             // 3.1
             body
-                    .append("The IMPC initiative will aim to produce a null allele for this gene, which will enter the IMPC phenotyping pipeline.\n");;
+                    .append("\n")
+                    .append("The IMPC initiative will aim to produce a null allele for this gene, which will enter the IMPC phenotyping pipeline.\n");
         }
 
         if ((gene.getNullAlleleProductionStatusPk() != null) && (gene.getNullAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCTION_STARTED)) &&
@@ -243,25 +242,26 @@ public class ApplicationGenerate implements CommandLineRunner {
             // 4.1
             String startDate = sdf.format(gene.getNullAlleleProductionStatusDate());
             body
+                    .append("\n")
                     .append("Mouse Production for the null allele commenced on ")
                     .append(startDate)
-                    .append(" for this gene.\n")
-                    .append("\n");;
+                    .append(" for this gene.\n");
+
         } else if ((gene.getNullAlleleProductionStatusPk() != null) && (gene.getNullAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCED)) &&
-                (gene.getNullAlleleProductionStatusDate() != null)) {
+                   (gene.getNullAlleleProductionStatusDate() != null)) {
 
             // 4.2
             String startDate = sdf.format(gene.getNullAlleleProductionStatusDate());
             String producedDate = sdf.format(gene.getNullAlleleProductionStatusDate());             // FIXME FIXME FIXME
             body
+                    .append("\n")
                     .append("Mouse Production for the null allele commenced on ")
                     .append(startDate)
                     .append(" and ")
                     .append(gene.getNullAlleleProductionCentre())
                     .append(" produced genotype confirmed mice on ")
                     .append(producedDate)
-                    .append(".\n")
-                    .append("\n");;
+                    .append(".\n");
         }
 
         if ((gene.getConditionalAlleleProductionStatusPk() != null) && (gene.getConditionalAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCTION_STARTED)) &&
@@ -270,10 +270,11 @@ public class ApplicationGenerate implements CommandLineRunner {
             // 5.1
             String startDate = sdf.format(gene.getConditionalAlleleProductionStatusDate());
             body
+                    .append("\n")
                     .append("Mouse Production for the conditional allele commenced on ")
                     .append(startDate)
-                    .append(" for this gene.\n")
-                    .append("\n");;
+                    .append(" for this gene.\n");
+
         } else if ((gene.getConditionalAlleleProductionStatusPk() != null) && (gene.getConditionalAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCED)) &&
                 (gene.getConditionalAlleleProductionStatusDate() != null)) {
 
@@ -281,13 +282,13 @@ public class ApplicationGenerate implements CommandLineRunner {
             String startDate = sdf.format(gene.getConditionalAlleleProductionStatusDate());
             String producedDate = sdf.format(gene.getConditionalAlleleProductionStatusDate());      // FIXME FIXME FIXME
             body
+                    .append("\n")
                     .append("Mouse Production for the conditional allele commenced on ")
                     .append(startDate)
                     .append(" and ")
                     .append(gene.getConditionalAlleleProductionCentre())
                     .append(" produced genotype confirmed mice on ")
                     .append(producedDate)
-                    .append(".\n")
                     .append("\n");
         }
 
@@ -296,25 +297,26 @@ public class ApplicationGenerate implements CommandLineRunner {
 
                 // 6.1
                 body
+                        .append("\n")
                         .append("Phenotype data for this gene is now available on the IMPC portal. The IMPC portal is now showing phenotype data ")
                         .append("and has identified ")
                         .append(gene.getNumberOfSignificantPhenotypes())
-                        .append(" significant phenotypes.\n")
-                        .append("\n");
+                        .append(" significant phenotypes.\n");
 
             } else if ((gene.getPhenotypingStatus().equals(GeneStatus.MORE_PHENOTYPING_DATA_AVAILABLE)) && (gene.getNumberOfSignificantPhenotypes() > 0)) {
 
                 // 6.2
                 body
+                        .append("\n")
                         .append("Additional phenotype data for this gene has become available on the IMPC portal. Phenotype data has been collected ")
                         .append("and the IMPC portal has identified ")
                         .append(gene.getNumberOfSignificantPhenotypes())
-                        .append(" significant phenotypes.\n")
-                        .append("\n");
+                        .append(" significant phenotypes.\n");
             }
         }
 
         body
+                .append("\n")
                 .append("You will be notified by email with any future changes in this gene's status.\n")
                 .append("\n")
                 .append(getEpilogue());

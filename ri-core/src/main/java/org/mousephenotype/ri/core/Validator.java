@@ -38,7 +38,7 @@ public class Validator {
             }
         }
 
-        // if assignment_status == Production And Phenotyping Planned (PAPP) AND phenotyping_status NOT empty
+        // if assignment_status == Production And Phenotyping Planned (PAPP) AND phenotyping_status NOT empty AND MOUSE_PRODUCED
         if ((gene.getAssignmentStatus().equals(GeneStatus.PRODUCTION_AND_PHENOTYPING_PLANNED)) &&
                 (gene.getPhenotypingStatusPk() != null)) {
             if (((gene.getConditionalAlleleProductionStatusPk() != null) && (gene.getConditionalAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCED))) ||
