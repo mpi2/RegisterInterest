@@ -33,7 +33,7 @@ public class ApplicationIntegrationTest {
     private SqlUtils sqlutils;
 
 
-//    @Ignore
+    @Ignore
     @Test
     public void testGenerateAndSendRegisterInterest() throws Exception {
 
