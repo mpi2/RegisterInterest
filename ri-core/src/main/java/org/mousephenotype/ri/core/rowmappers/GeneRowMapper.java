@@ -41,15 +41,19 @@ public class GeneRowMapper implements RowMapper<Gene> {
 
         gene.setConditionalAlleleProductionCentre(rs.getString("conditional_allele_production_centre"));
         gene.setConditionalAlleleProductionStatus(rs.getString("conditional_allele_production_status"));
-        ts = rs.getTimestamp("conditional_allele_production_status_date");
-        gene.setConditionalAlleleProductionStatusDate(ts == null ? null : new Date(ts.getTime()));
+        ts = rs.getTimestamp("conditional_allele_production_start_date");
+        gene.setConditionalAlleleProductionStartDate(ts == null ? null : new Date(ts.getTime()));
+        ts = rs.getTimestamp("conditional_allele_production_completed_date");
+        gene.setConditionalAlleleProductionCompletedDate(ts == null ? null : new Date(ts.getTime()));
         i = rs.getInt("conditional_allele_production_status_pk");
         gene.setConditionalAlleleProductionStatusPk((i == null) || (i == 0) ? null : i);
 
         gene.setNullAlleleProductionCentre(rs.getString("null_allele_production_centre"));
         gene.setNullAlleleProductionStatus(rs.getString("null_allele_production_status"));
-        ts = rs.getTimestamp("null_allele_production_status_date");
-        gene.setNullAlleleProductionStatusDate(ts == null ? null : new Date(ts.getTime()));
+        ts = rs.getTimestamp("null_allele_production_start_date");
+        gene.setNullAlleleProductionStartDate(ts == null ? null : new Date(ts.getTime()));
+        ts = rs.getTimestamp("null_allele_production_completed_date");
+        gene.setNullAlleleProductionCompletedDate(ts == null ? null : new Date(ts.getTime()));
         i = rs.getInt("null_allele_production_status_pk");
         gene.setNullAlleleProductionStatusPk((i == null) || (i == 0) ? null : i);
 

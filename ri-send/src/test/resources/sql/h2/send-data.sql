@@ -24,7 +24,7 @@ INSERT INTO contact (address, active, created_at) VALUES
 ;
 
 INSERT INTO gene
-  (mgi_accession_id,   symbol,     assigned_to,  assignment_status, assignment_status_date, assignment_status_pk, conditional_allele_production_centre,  conditional_allele_production_status, conditional_allele_production_status_date, conditional_allele_production_status_pk,  null_allele_production_centre,  null_allele_production_status, null_allele_production_status_date, null_allele_production_status_pk,  phenotyping_centre, phenotyping_status, phenotyping_status_date, phenotyping_status_pk, number_of_significant_phenotypes, created_at) VALUES
+  (mgi_accession_id,   symbol,     assigned_to,  assignment_status, assignment_status_date, assignment_status_pk, conditional_allele_production_centre,  conditional_allele_production_status, conditional_allele_production_start_date, conditional_allele_production_status_pk,  null_allele_production_centre,  null_allele_production_status, null_allele_production_status_date, null_allele_production_status_pk,  phenotyping_centre, phenotyping_status, phenotyping_status_date, phenotyping_status_pk, number_of_significant_phenotypes, created_at) VALUES
   ('MGI:0000010',      'gene-010', 'c-010',      @NP,               @now,                   @PK_NP,               'caps-010',                            @MP,                                  @nowplus1,                                 @PK_MP,                                   'naps-010',                     @MP,                           @nowplus2,                          @PK_MP,                           'ps-01',             @PK_xx,             @nowplus3,               @PK_PDA,               0,                                @now)
 ;
 

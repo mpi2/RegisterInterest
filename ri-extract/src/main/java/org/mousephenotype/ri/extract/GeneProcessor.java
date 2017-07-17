@@ -89,11 +89,11 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
 
                   , gene.getConditionalAlleleProductionStatus()
                   , gene.getConditionalAlleleProductionCentre()
-                  , gene.getConditionalAlleleProductionStatusDateString()
+                  , gene.getConditionalAlleleProductionStartDateString()
 
                   , gene.getNullAlleleProductionStatus()
                   , gene.getNullAlleleProductionCentre()
-                  , gene.getNullAlleleProductionStatusDateString()
+                  , gene.getNullAlleleProductionStartDateString()
 
                   , gene.getPhenotypingStatus()
                   , gene.getPhenotypingCentre()
@@ -169,21 +169,37 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
             }
             gene.setAssignmentStatusDate(date);
         }
-        if ((gene.getConditionalAlleleProductionStatusDateString() != null) && ( ! gene.getConditionalAlleleProductionStatusDateString().trim().isEmpty())) {
-            Date date = parseUtils.tryParseDate(sdf, gene.getConditionalAlleleProductionStatusDateString());
+        if ((gene.getConditionalAlleleProductionStartDateString() != null) && ( ! gene.getConditionalAlleleProductionStartDateString().trim().isEmpty())) {
+            Date date = parseUtils.tryParseDate(sdf, gene.getConditionalAlleleProductionStartDateString());
             if (date == null) {
-                errMessages.add("Invalid date '" + gene.getConditionalAlleleProductionStatusDate() + "'");
+                errMessages.add("Invalid date '" + gene.getConditionalAlleleProductionStartDate() + "'");
                 return null;
             }
-            gene.setConditionalAlleleProductionStatusDate(date);
+            gene.setConditionalAlleleProductionStartDate(date);
         }
-        if ((gene.getNullAlleleProductionStatusDateString() != null) && ( ! gene.getNullAlleleProductionStatusDateString().trim().isEmpty())) {
-            Date date = parseUtils.tryParseDate(sdf, gene.getNullAlleleProductionStatusDateString());
+        if ((gene.getConditionalAlleleProductionCompletedDateString() != null) && ( ! gene.getConditionalAlleleProductionCompletedDateString().trim().isEmpty())) {
+            Date date = parseUtils.tryParseDate(sdf, gene.getConditionalAlleleProductionCompletedDateString());
             if (date == null) {
-                errMessages.add("Invalid date '" + gene.getNullAlleleProductionStatusDate() + "'");
+                errMessages.add("Invalid date '" + gene.getConditionalAlleleProductionCompletedDate() + "'");
                 return null;
             }
-            gene.setNullAlleleProductionStatusDate(date);
+            gene.setConditionalAlleleProductionCompletedDate(date);
+        }
+        if ((gene.getNullAlleleProductionStartDateString() != null) && ( ! gene.getNullAlleleProductionStartDateString().trim().isEmpty())) {
+            Date date = parseUtils.tryParseDate(sdf, gene.getNullAlleleProductionStartDateString());
+            if (date == null) {
+                errMessages.add("Invalid date '" + gene.getNullAlleleProductionStartDate() + "'");
+                return null;
+            }
+            gene.setNullAlleleProductionStartDate(date);
+        }
+        if ((gene.getNullAlleleProductionCompletedDateString() != null) && (!gene.getNullAlleleProductionCompletedDateString().trim().isEmpty())) {
+            Date date = parseUtils.tryParseDate(sdf, gene.getNullAlleleProductionCompletedDateString());
+            if (date == null) {
+                errMessages.add("Invalid date '" + gene.getNullAlleleProductionCompletedDate() + "'");
+                return null;
+            }
+            gene.setNullAlleleProductionCompletedDate(date);
         }
         if ((gene.getPhenotypingStatusDateString() != null) && ( ! gene.getPhenotypingStatusDateString().trim().isEmpty())) {
             Date date = parseUtils.tryParseDate(sdf, gene.getPhenotypingStatusDateString());

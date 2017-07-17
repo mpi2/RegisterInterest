@@ -147,8 +147,11 @@ public class GeneLoader implements InitializingBean, Step {
             s = fs.readString("conditional_allele_production_status");
             gene.setConditionalAlleleProductionStatus((s != null) && ( ! s.trim().isEmpty()) ? s : null);
 
-            s = fs.readString("conditional_allele_status_date");
-            gene.setConditionalAlleleProductionStatusDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
+            s = fs.readString("conditional_allele_start_date");
+            gene.setConditionalAlleleProductionStartDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
+
+            s = fs.readString("conditional_allele_completed_date");
+            gene.setConditionalAlleleProductionCompletedDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
 
 
             s = fs.readString("null_allele_production_centre");
@@ -157,8 +160,11 @@ public class GeneLoader implements InitializingBean, Step {
             s = fs.readString("null_allele_production_status");
             gene.setNullAlleleProductionStatus((s != null) && ( ! s.trim().isEmpty()) ? s : null);
 
-            s = fs.readString("null_allele_status_date");
-            gene.setNullAlleleProductionStatusDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
+            s = fs.readString("null_allele_start_date");
+            gene.setNullAlleleProductionStartDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
+
+            s = fs.readString("null_allele_completed_date");
+            gene.setNullAlleleProductionCompletedDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
 
 
             s = fs.readString("phenotyping_centre");

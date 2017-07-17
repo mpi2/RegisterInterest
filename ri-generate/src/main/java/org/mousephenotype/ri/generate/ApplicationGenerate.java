@@ -236,23 +236,21 @@ public class ApplicationGenerate implements CommandLineRunner {
                     .append("The IMPC initiative will aim to produce a null allele for this gene, which will enter the IMPC phenotyping pipeline.\n");
         }
 
-        if ((gene.getNullAlleleProductionStatusPk() != null) && (gene.getNullAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCTION_STARTED)) &&
-            (gene.getNullAlleleProductionStatusDate() != null)) {
+        if ((gene.getNullAlleleProductionStatusPk() != null) && (gene.getNullAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCTION_STARTED))) {
 
             // 4.1
-            String startDate = sdf.format(gene.getNullAlleleProductionStatusDate());
+            String startDate = (gene.getNullAlleleProductionStartDate() == null ? "<Unknown>" : sdf.format(gene.getNullAlleleProductionStartDate()));
             body
                     .append("\n")
                     .append("Mouse Production for the null allele commenced on ")
                     .append(startDate)
                     .append(" for this gene.\n");
 
-        } else if ((gene.getNullAlleleProductionStatusPk() != null) && (gene.getNullAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCED)) &&
-                   (gene.getNullAlleleProductionStatusDate() != null)) {
+        } else if ((gene.getNullAlleleProductionStatusPk() != null) && (gene.getNullAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCED))) {
 
             // 4.2
-            String startDate = sdf.format(gene.getNullAlleleProductionStatusDate());
-            String producedDate = sdf.format(gene.getNullAlleleProductionStatusDate());             // FIXME FIXME FIXME
+            String startDate = (gene.getNullAlleleProductionStartDate() == null ? "<Unknown>" : sdf.format(gene.getNullAlleleProductionStartDate()));
+            String producedDate = (gene.getNullAlleleProductionCompletedDate() == null ? "<Unknown>" : sdf.format(gene.getNullAlleleProductionCompletedDate()));
             body
                     .append("\n")
                     .append("Mouse Production for the null allele commenced on ")
@@ -264,23 +262,21 @@ public class ApplicationGenerate implements CommandLineRunner {
                     .append(".\n");
         }
 
-        if ((gene.getConditionalAlleleProductionStatusPk() != null) && (gene.getConditionalAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCTION_STARTED)) &&
-            (gene.getConditionalAlleleProductionStatusDate() != null)) {
+        if ((gene.getConditionalAlleleProductionStatusPk() != null) && (gene.getConditionalAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCTION_STARTED)) ) {
 
             // 5.1
-            String startDate = sdf.format(gene.getConditionalAlleleProductionStatusDate());
+            String startDate = (gene.getConditionalAlleleProductionStartDate() == null ? "<Unknown>" : sdf.format(gene.getConditionalAlleleProductionStartDate()));
             body
                     .append("\n")
                     .append("Mouse Production for the conditional allele commenced on ")
                     .append(startDate)
                     .append(" for this gene.\n");
 
-        } else if ((gene.getConditionalAlleleProductionStatusPk() != null) && (gene.getConditionalAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCED)) &&
-                (gene.getConditionalAlleleProductionStatusDate() != null)) {
+        } else if ((gene.getConditionalAlleleProductionStatusPk() != null) && (gene.getConditionalAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCED))) {
 
             // 5.2
-            String startDate = sdf.format(gene.getConditionalAlleleProductionStatusDate());
-            String producedDate = sdf.format(gene.getConditionalAlleleProductionStatusDate());      // FIXME FIXME FIXME
+            String startDate = (gene.getConditionalAlleleProductionStartDate() == null ? "<Unknown>" : sdf.format(gene.getConditionalAlleleProductionStartDate()));
+            String producedDate = (gene.getConditionalAlleleProductionCompletedDate() == null ? "<Unknown" : sdf.format(gene.getConditionalAlleleProductionCompletedDate()));
             body
                     .append("\n")
                     .append("Mouse Production for the conditional allele commenced on ")

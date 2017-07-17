@@ -611,15 +611,17 @@ public class SqlUtils {
         // Try to insert the row into gene. If the mgi accession id already exists, the INSERT operation is ignored.
         final String columnNames =
                 "mgi_accession_id, symbol, assigned_to, assignment_status, assignment_status_date, assignment_status_pk, " +
-                "conditional_allele_production_centre, conditional_allele_production_status, conditional_allele_production_status_date, conditional_allele_production_status_pk, " +
-                "null_allele_production_centre, null_allele_production_status, null_allele_production_status_date, null_allele_production_status_pk, " +
+                "conditional_allele_production_centre, conditional_allele_production_status, conditional_allele_production_start_date, conditional_allele_production_completed_date, " +
+                "conditional_allele_production_status_pk, " +
+                "null_allele_production_centre, null_allele_production_status, null_allele_production_start_date, null_allele_production_completed_date, null_allele_production_status_pk, " +
                 "phenotyping_centre, phenotyping_status, phenotyping_status_date, phenotyping_status_pk, " +
                 "number_of_significant_phenotypes, created_at";
 
         final String columnValues =
                 ":mgi_accession_id, :symbol, :assigned_to, :assignment_status, :assignment_status_date, :assignment_status_pk, " +
-                ":conditional_allele_production_centre, :conditional_allele_production_status, :conditional_allele_production_status_date, :conditional_allele_production_status_pk, " +
-                ":null_allele_production_centre, :null_allele_production_status, :null_allele_production_status_date, :null_allele_production_status_pk, " +
+                ":conditional_allele_production_centre, :conditional_allele_production_status, :conditional_allele_production_start_date, :conditional_allele_production_completed_date," +
+                ":conditional_allele_production_status_pk, " +
+                ":null_allele_production_centre, :null_allele_production_status, :null_allele_production_start_date, :null_allele_production_completed_date, :null_allele_production_status_pk, " +
                 ":phenotyping_centre, :phenotyping_status, :phenotyping_status_date, :phenotyping_status_pk, " +
                 ":number_of_significant_phenotypes, :created_at";
 
@@ -643,12 +645,13 @@ public class SqlUtils {
 
                 "conditional_allele_production_centre = :conditional_allele_production_centre, " +
                 "conditional_allele_production_status = :conditional_allele_production_status, " +
-                "conditional_allele_production_status_date = :conditional_allele_production_status_date, " +
+                "conditional_allele_production_start_date = :conditional_allele_production_start_date, " +
+                "conditional_allele_production_completed_date = :conditional_allele_production_completedt_date, " +
                 "conditional_allele_production_status_pk = :conditional_allele_production_status_pk, " +
 
                 "null_allele_production_centre = :null_allele_production_centre, " +
                 "null_allele_production_status = :null_allele_production_status, " +
-                "null_allele_production_status_date = :null_allele_production_status_date, " +
+                "null_allele_production_completed_date = :null_allele_production_completed_date, " +
                 "null_allele_production_status_pk = :null_allele_production_status_pk, " +
 
                 "phenotyping_centre = :phenotyping_centre, " +
@@ -678,12 +681,14 @@ public class SqlUtils {
 
         parameterMap.put("conditional_allele_production_centre", gene.getConditionalAlleleProductionCentre());
         parameterMap.put("conditional_allele_production_status", gene.getConditionalAlleleProductionStatus());
-        parameterMap.put("conditional_allele_production_status_date", gene.getConditionalAlleleProductionStatusDate());
+        parameterMap.put("conditional_allele_production_start_date", gene.getConditionalAlleleProductionStartDate());
+        parameterMap.put("conditional_allele_production_completed_date", gene.getConditionalAlleleProductionCompletedDate());
         parameterMap.put("conditional_allele_production_status_pk", gene.getConditionalAlleleProductionStatusPk());
 
         parameterMap.put("null_allele_production_centre", gene.getNullAlleleProductionCentre());
         parameterMap.put("null_allele_production_status", gene.getNullAlleleProductionStatus());
-        parameterMap.put("null_allele_production_status_date", gene.getNullAlleleProductionStatusDate());
+        parameterMap.put("null_allele_production_start_date", gene.getNullAlleleProductionStartDate());
+        parameterMap.put("null_allele_production_completed_date", gene.getNullAlleleProductionCompletedDate());
         parameterMap.put("null_allele_production_status_pk", gene.getNullAlleleProductionStatusPk());
 
         parameterMap.put("phenotyping_centre", gene.getPhenotypingCentre());
