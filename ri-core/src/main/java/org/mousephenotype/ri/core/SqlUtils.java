@@ -646,7 +646,7 @@ public class SqlUtils {
                 "conditional_allele_production_centre = :conditional_allele_production_centre, " +
                 "conditional_allele_production_status = :conditional_allele_production_status, " +
                 "conditional_allele_production_start_date = :conditional_allele_production_start_date, " +
-                "conditional_allele_production_completed_date = :conditional_allele_production_completedt_date, " +
+                "conditional_allele_production_completed_date = :conditional_allele_production_completed_date, " +
                 "conditional_allele_production_status_pk = :conditional_allele_production_status_pk, " +
 
                 "null_allele_production_centre = :null_allele_production_centre, " +

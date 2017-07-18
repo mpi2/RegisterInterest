@@ -104,7 +104,7 @@ public class Downloader implements Tasklet, InitializingBean {
             logger.info(source + " -> " + target + "(" + dateUtils.msToHms(new Date().getTime() - start) + ")");
 
         } catch (IOException e) {
-            logger.error(source + " -> " + target + "(" + dateUtils.msToHms(new Date().getTime() - start) + "). Reason: " + e.getLocalizedMessage());
+            logger.warn(source + " -> " + target + "(" + dateUtils.msToHms(new Date().getTime() - start) + "). Reason: " + e.getLocalizedMessage());
         }
 
         logger.debug("Total steps elapsed time: " + dateUtils.msToHms(new Date().getTime() - startStep));

@@ -113,6 +113,7 @@ public class ApplicationExtract implements CommandLineRunner {
                 JobInstance instance = jobRepository.createJobInstance("flow_" + now + "_" + i, new JobParameters());
                 JobExecution execution = jobRepository.createJobExecution(instance, new JobParameters(), "jobExec_" + now + "_" + i);
                 job.execute(execution);
+
             } catch (Exception e) {
 
                 throw new InterestException(e);
