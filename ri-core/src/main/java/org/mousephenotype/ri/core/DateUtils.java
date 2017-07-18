@@ -1,5 +1,8 @@
 package org.mousephenotype.ri.core;
 
+import org.mousephenotype.ri.core.exceptions.InterestException;
+
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -7,6 +10,8 @@ import java.util.concurrent.TimeUnit;
  * Created by mrelac on 22/05/2017.
  */
 public class DateUtils {
+
+    public ParseUtils parseUtils = new ParseUtils();
 
     /**
      * Given two dates (in any order), returns a <code>String</code> in the
@@ -48,5 +53,19 @@ public class DateUtils {
                         TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(milliseconds)));
 
         return result;
+    }
+
+    public Date convertToDate(String dateString) throws InterestException {
+        Date date = null;
+
+        SimpleDateFormat sdf = new SimpleDateFormat("y-M-d H:m:s.S");
+        if ((dateString != null) && ( ! dateString.trim().isEmpty())) {
+            date = parseUtils.tryParseDate(sdf, dateString.trim());
+            if (date == null) {
+                throw new InterestException("Invalid date: '" + dateString.trim() + "'");
+            }
+        }
+
+        return date;
     }
 }

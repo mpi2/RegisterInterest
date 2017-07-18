@@ -14,7 +14,7 @@
  * License.
  ******************************************************************************/
 
-package org.mousephenotype.ri.extract;
+package org.mousephenotype.ri.extract.support;
 
 import org.springframework.batch.item.file.separator.SimpleRecordSeparatorPolicy;
 

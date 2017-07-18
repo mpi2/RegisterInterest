@@ -20,6 +20,8 @@ package org.mousephenotype.ri.extract;
  ******************************************************************************/
 
 import org.mousephenotype.ri.core.entities.Gene;
+import org.mousephenotype.ri.extract.support.BlankLineRecordSeparatorPolicy;
+import org.mousephenotype.ri.extract.support.LogStatusStepListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.*;
@@ -147,25 +149,29 @@ public class GeneLoader implements InitializingBean, Step {
             s = fs.readString("conditional_allele_production_status");
             gene.setConditionalAlleleProductionStatus((s != null) && ( ! s.trim().isEmpty()) ? s : null);
 
-            s = fs.readString("conditional_allele_start_date");
-            gene.setConditionalAlleleProductionStartDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
 
-            s = fs.readString("conditional_allele_completed_date");
-            gene.setConditionalAlleleProductionCompletedDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
 
+//            s = fs.readString("conditional_allele_start_date");
+//            gene.setConditionalAlleleProductionStartDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
+//
+//            s = fs.readString("conditional_allele_completed_date");
+//            gene.setConditionalAlleleProductionCompletedDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
+            gene.setConditionalAlleleProductionStartDate(null);
+            gene.setConditionalAlleleProductionCompletedDate(null);
 
             s = fs.readString("null_allele_production_centre");
             gene.setNullAlleleProductionCentre((s != null) && ( ! s.trim().isEmpty()) ? s : null);
 
             s = fs.readString("null_allele_production_status");
             gene.setNullAlleleProductionStatus((s != null) && ( ! s.trim().isEmpty()) ? s : null);
-
-            s = fs.readString("null_allele_start_date");
-            gene.setNullAlleleProductionStartDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
-
-            s = fs.readString("null_allele_completed_date");
-            gene.setNullAlleleProductionCompletedDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
-
+//
+//            s = fs.readString("null_allele_start_date");
+//            gene.setNullAlleleProductionStartDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
+//
+//            s = fs.readString("null_allele_completed_date");
+//            gene.setNullAlleleProductionCompletedDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
+            gene.setNullAlleleProductionStartDate(null);
+            gene.setNullAlleleProductionCompletedDate(null);
 
             s = fs.readString("phenotyping_centre");
             gene.setPhenotypingCentre((s != null) && ( ! s.trim().isEmpty()) ? s : null);
@@ -249,8 +255,8 @@ public class GeneLoader implements InitializingBean, Step {
         @Override
         protected Set<String> logStatus() {
             logger.info("GENE LOADER: Inserted {} new gene records and updated {} gene records in database from file {} in {}.",
-                    ((GeneWriter) writer).getInsertCount(),
-                    ((GeneWriter) writer).getUpdateCount(),
+                    writer.getInsertCount(),
+                    writer.getUpdateCount(),
                     imitsKeys.get(FilenameKeys.EBI_Gene),
                     dateUtils.formatDateDifference(start, stop));
 

@@ -331,56 +331,29 @@ public class SqlUtils {
     }
 
     /**
-     * Try to insert the contact. Return the contact (pk is guaranteed to be set)
-     *
-     * @param email The e-mail address of the contact to be inserted
-     *
-     * @return the {@link Contact}
-     */
-    public Contact insertContact(String invoker, String email) throws InterestException {
-        int count = 0;
-        final String query = "INSERT INTO contact(address, active, created_at) " +
-                "VALUES (:email, 1, :created_at)";
-
-        // Insert contact. Ignore any duplicates.
-        try {
-            Map<String, Object> parameterMap = new HashMap<>();
-            parameterMap.put("email", email);
-            parameterMap.put("created_at", new Date());
-
-            jdbcInterest.update(query, parameterMap);
-
-        } catch (DuplicateKeyException e) {
-
-        } catch (Exception e) {
-            String message = "Error inserting contact '" + email + "': " + e.getLocalizedMessage() + ".";
-            logSendAction(invoker, null, null, message);
-            logger.error(message);
-            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return getContact(email);
-    }
-
-    /**
      *Insert or activate {@link Gene} and {@link Contact} into the gene_contact table. Return the count of inserted rows.
      *
      * @param gene The gene to be inserted
      * @param contact The contact to be inserted
+     * @param createdAt The @link GeneContact} creation date. If NULL, the current time and date is used.
      *
      * @return the count of inserted/activated geneContacts.
      */
-    public int insertGeneContact(Gene gene, Contact contact) throws InterestException {
+    public int insertGeneContact(Gene gene, Contact contact, Date createdAt) throws InterestException {
         int count = 0;
         String query = "INSERT INTO gene_contact(contact_pk, gene_pk, created_at, active) " +
                        "VALUES (:contact_pk, :gene_pk, :created_at, 1)";
+
+        if (createdAt == null) {
+            createdAt = new Date();
+        }
 
         // Insert/activate gene_contact.
         Map<String, Object> parameterMap = new HashMap<>();
         try {
             parameterMap.put("contact_pk", contact.getPk());
             parameterMap.put("gene_pk", gene.getPk());
-            parameterMap.put("created_at", new Date());
+            parameterMap.put("created_at", createdAt);
 
             count += jdbcInterest.update(query, parameterMap);
 
@@ -415,7 +388,7 @@ public class SqlUtils {
      *
      *         @throws InterestException if the gene does not exist
      */
-    public int insertInterestGene(String invoker, String gene, String email) throws InterestException {
+    public GeneContact insertInterestGene(String invoker, String gene, String email, Date contactCreatedAt, Date geneContactCreatedAt) throws InterestException {
 
         int count = 0;
         Map<String, Integer> results = new HashMap<>();
@@ -429,18 +402,12 @@ public class SqlUtils {
             throw new InterestException(message, HttpStatus.NOT_FOUND);
         }
 
-        // Check that an active mapping doesn't already exist.
-        if (getGeneContact(gene, email,1) != null) {
-            return count;
-        }
-
-        // If the contact doesn't yet exist, create it.
-        Contact contact = insertContact(invoker, email);
+        Contact contact = updateOrInsertContact(invoker, email, 1, contactCreatedAt);
 
         // Insert into the gene_contact table.
-        count = insertGeneContact(geneInstance, contact);
+        insertGeneContact(geneInstance, contact, geneContactCreatedAt);
 
-        return count;
+        return getGeneContact(gene, email, 1);
     }
 
     public void logGeneStatusChangeAction(GeneSent geneSent, int contactPk, Integer genePk, String message) {
@@ -518,6 +485,46 @@ public class SqlUtils {
     }
 
     /**
+     * Try to update the contact. If the update fails because it doesn't exist, insert it.
+     *
+     * Return the contact (pk is guaranteed to be set)
+     *
+     * @param email The e-mail address of the contact to be inserted
+     *
+     * @return the {@link Contact}
+     */
+    public Contact updateOrInsertContact(String invoker, String email, int active, Date createdAt) throws InterestException {
+
+        final String update = "UPDATE contact SET address = :address, active = :active, created_at = :createdAt WHERE address = :address";
+        final String insert = "INSERT INTO contact(address, active, created_at) " +
+                "VALUES (:email, :active, :createdAt)";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("address", email);
+        parameterMap.put("active", active <= 0 ? 0 : 1);
+        parameterMap.put("createdAt", createdAt);
+
+        try {
+
+            // Try to update. If that fails, insert.
+            int updateCount = jdbcInterest.update(update, parameterMap);
+            if (updateCount == 0) {
+
+                jdbcInterest.update(insert, parameterMap);
+            }
+
+        } catch (Exception e) {
+
+            String message = "Error inserting contact '" + email + "': " + e.getLocalizedMessage() + ".";
+            logSendAction(invoker, null, null, message);
+            logger.error(message);
+            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return getContact(email);
+    }
+
+    /**
      * For every {@link Gene} in {@code genes, first attempt to update it. If the update fails because it's missing,
      * insert the record.
      *
@@ -568,7 +575,7 @@ public class SqlUtils {
     }
 
     /**
-     * Attempts to update the given {@link GeneSent} instance. If the update fails because it's missing,
+     * Try to update the given {@link GeneSent} instance. If the update fails because it's missing,
      * insert the record.
      *
      * @param geneSent the {@link GeneSent } instance to be used to update the database

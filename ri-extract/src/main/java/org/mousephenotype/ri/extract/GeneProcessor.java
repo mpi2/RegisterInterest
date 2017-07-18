@@ -80,33 +80,33 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
 
         // Validate the file using the heading names and initialize any collections.
         if (lineNumber == 1) {
-            String[] actualHeadings = new String[] {
-                    gene.getMgiAccessionId()
-                  , gene.getSymbol()
-                  , gene.getAssignmentStatus()
-                  , gene.getAssignedTo()
-                  , gene.getAssignmentStatusDateString()
-
-                  , gene.getConditionalAlleleProductionStatus()
-                  , gene.getConditionalAlleleProductionCentre()
-                  , gene.getConditionalAlleleProductionStartDateString()
-
-                  , gene.getNullAlleleProductionStatus()
-                  , gene.getNullAlleleProductionCentre()
-                  , gene.getNullAlleleProductionStartDateString()
-
-                  , gene.getPhenotypingStatus()
-                  , gene.getPhenotypingCentre()
-                  , gene.getPhenotypingStatusDateString()
-
-                  , gene.getNumberOfSignificantPhenotypesString()
-            };
-
-            for (int i = 0; i < expectedHeadings.length; i++) {
-                if ( ! expectedHeadings[i].equals(actualHeadings[i])) {
-                    throw new InterestException("Expected heading '" + expectedHeadings[i] + "' but found '" + actualHeadings[i] + "'.");
-                }
-            }
+//            String[] actualHeadings = new String[] {
+//                    gene.getMgiAccessionId()
+//                  , gene.getSymbol()
+//                  , gene.getAssignmentStatus()
+//                  , gene.getAssignedTo()
+//                  , gene.getAssignmentStatusDateString()
+//
+//                  , gene.getConditionalAlleleProductionStatus()
+//                  , gene.getConditionalAlleleProductionCentre()
+//                  , gene.getConditionalAlleleProductionStartDateString()
+//
+//                  , gene.getNullAlleleProductionStatus()
+//                  , gene.getNullAlleleProductionCentre()
+//                  , gene.getNullAlleleProductionStartDateString()
+//
+//                  , gene.getPhenotypingStatus()
+//                  , gene.getPhenotypingCentre()
+//                  , gene.getPhenotypingStatusDateString()
+//
+//                  , gene.getNumberOfSignificantPhenotypesString()
+//            };
+//
+//            for (int i = 0; i < expectedHeadings.length; i++) {
+//                if ( ! expectedHeadings[i].equals(actualHeadings[i])) {
+//                    throw new InterestException("Expected heading '" + expectedHeadings[i] + "' but found '" + actualHeadings[i] + "'.");
+//                }
+//            }
 
             return null;
         }
