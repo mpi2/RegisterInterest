@@ -331,18 +331,19 @@ public class SqlUtils {
     }
 
     /**
-     *Insert or activate {@link Gene} and {@link Contact} into the gene_contact table. Return the count of inserted rows.
+     *Insert or update {@link Gene} and {@link Contact} into the gene_contact table. Return the count of inserted rows.
      *
-     * @param gene The gene to be inserted
-     * @param contact The contact to be inserted
+     * @param genePk The primary key gene to be inserted/updated
+     * @param contactPk The primary key of the contact to be inserted/updated
      * @param createdAt The @link GeneContact} creation date. If NULL, the current time and date is used.
      *
      * @return the count of inserted/activated geneContacts.
      */
-    public int insertGeneContact(Gene gene, Contact contact, Date createdAt) throws InterestException {
+    public int insertOrUpdateGeneContact(int genePk, int contactPk, Date createdAt) throws InterestException {
         int count = 0;
-        String query = "INSERT INTO gene_contact(contact_pk, gene_pk, created_at, active) " +
-                       "VALUES (:contact_pk, :gene_pk, :created_at, 1)";
+        String insert = "INSERT INTO gene_contact(contact_pk, gene_pk, created_at, active) " +
+                        "VALUES (:contact_pk, :gene_pk, :created_at, 1)";
+        String update = "UPDATE gene_contact SET active = 1 WHERE contact_pk = :contact_pk AND gene_pk = :gene_pk";
 
         if (createdAt == null) {
             createdAt = new Date();
@@ -351,20 +352,19 @@ public class SqlUtils {
         // Insert/activate gene_contact.
         Map<String, Object> parameterMap = new HashMap<>();
         try {
-            parameterMap.put("contact_pk", contact.getPk());
-            parameterMap.put("gene_pk", gene.getPk());
+            parameterMap.put("contact_pk", contactPk);
+            parameterMap.put("gene_pk", genePk);
             parameterMap.put("created_at", createdAt);
 
-            count += jdbcInterest.update(query, parameterMap);
+            count += jdbcInterest.update(insert, parameterMap);
 
         } catch (DuplicateKeyException e) {
-            query = "UPDATE gene_contact SET active = 1 WHERE contact_pk = :contact_pk AND gene_pk = :gene_pk";
 
-            count += jdbcInterest.update(query, parameterMap);
+            count += jdbcInterest.update(update, parameterMap);
 
         } catch (Exception e) {
 
-            String message = "Error inserting gene_contact for " + gene.toString() + ", " + contact.toString() + ": " + e.getLocalizedMessage();
+            String message = "Error inserting gene_contact for genePk" + genePk + ", contactPk " + contactPk + ": " + e.getLocalizedMessage();
             logger.error(message);
             throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -404,7 +404,7 @@ public class SqlUtils {
         Contact contact = updateOrInsertContact(invoker, email, 1, contactCreatedAt);
 
         // Insert into the gene_contact table.
-        insertGeneContact(geneInstance, contact, geneContactCreatedAt);
+        insertOrUpdateGeneContact(geneInstance.getPk(), contact.getPk(), geneContactCreatedAt);
 
         return getGeneContact(gene, email, 1);
     }
