@@ -380,8 +380,7 @@ public class SqlUtils {
      * @param gene The mgi accession id of the gene being registgered
      * @param email The email address being registered
      *
-     * @return a map containing the count of inserted contacts (key = contactsInsertedCount) and the count of inserted
-     *         gene_contact rows (key = geneContactInsertedCount).
+     * @return The newly-inserted {@link GeneContact} instance.
      *
      *         <i>NOTE:</i>If the contact and gene has already been registered, geneContactInsertedCount is 0. If
      *         the contact has already been registered, contactsInsertedCount is 0.
@@ -497,7 +496,7 @@ public class SqlUtils {
 
         final String update = "UPDATE contact SET address = :address, active = :active, created_at = :createdAt WHERE address = :address";
         final String insert = "INSERT INTO contact(address, active, created_at) " +
-                "VALUES (:email, :active, :createdAt)";
+                              "VALUES (:address, :active, :createdAt)";
 
         Map<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("address", email);

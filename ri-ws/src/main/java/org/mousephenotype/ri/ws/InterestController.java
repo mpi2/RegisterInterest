@@ -26,17 +26,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.inject.Inject;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 @RestController
 public class InterestController {
@@ -80,6 +80,7 @@ public class InterestController {
         HttpHeaders responseHeaders = new HttpHeaders();
         List<Interest> interests;
         String message = "";
+        Date now = new Date();
 
         if (( ! type.equals(INTEREST_GENE)) && (! type.equals("disease")) && ( ! type.equals("phenotype"))) {
             return new ResponseEntity<>("Invalid type. Expected one of: gene, disease, or phenotype", responseHeaders, HttpStatus.BAD_REQUEST);
@@ -99,8 +100,10 @@ public class InterestController {
         if (type.equals(INTEREST_GENE)) {
             try {
 
-                int count = sqlUtils.insertInterestGene(invoker, gene, email);
-                if (count == 0) {
+                GeneContact geneContact = sqlUtils.getGeneContact(gene, email, 1);
+                if (geneContact == null) {
+                    sqlUtils.insertInterestGene(invoker, gene, email, now, now);
+                } else {
                     DateFormat inputDateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     message = "Register contact " + email + " for gene " + gene + ": contact is already registered for that gene.";
                     sqlUtils.logSendAction(invoker, null, null, message);
