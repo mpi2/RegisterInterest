@@ -51,11 +51,13 @@ CREATE TABLE imits_status (
     pk              INT          NOT NULL           AUTO_INCREMENT PRIMARY KEY,
     gene_status_pk  INT                             DEFAULT NULL,
     status          VARCHAR(64)  NOT NULL UNIQUE,
-active          INT          NOT NULL           DEFAULT 1,                           -- 1 = active; 0 = inactive
+    active          INT          NOT NULL           DEFAULT 1,                      -- 1 = active; 0 = inactive
 
     created_at      DATETIME     NOT NULL,
     updated_at      TIMESTAMP    NOT NULL           DEFAULT CURRENT_TIMESTAMP
-                      ON UPDATE CURRENT_TIMESTAMP
+                      ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY gene_status_pk_fk   (gene_status_pk) REFERENCES gene_status(pk)
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 

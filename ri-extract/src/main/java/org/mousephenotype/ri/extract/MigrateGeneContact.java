@@ -4,7 +4,6 @@ import org.mousephenotype.ri.core.DateUtils;
 import org.mousephenotype.ri.core.SqlUtils;
 import org.mousephenotype.ri.core.entities.Contact;
 import org.mousephenotype.ri.core.entities.Gene;
-import org.mousephenotype.ri.core.entities.ImitsStatus;
 import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,18 +46,18 @@ public class MigrateGeneContact implements CommandLineRunner {
     @Value("${download.workspace}")
     protected String downloadWorkspace;
 
+    @NotNull
+    @Value("${GeneContact}")
+    protected String geneContact;
+
     @Autowired
     private SqlUtils sqlUtils;
 
     private DateUtils dateUtils = new DateUtils();
     private Logger logger      = LoggerFactory.getLogger(this.getClass());
 
-    private String sourceUrl = "https://www.i-dcc.org/dev/imits/v2/reports/XXX_Download_Gene_Contact_XXX.tsv";
-//    private String sourceUrl = "https://www.i-dcc.org/dev/imits/v2/reports/mp2_load_gene_interest_report.tsv";
+    private String sourceUrl = geneContact;
     private String targetFilename;
-
-
-   private Map<String, ImitsStatus> imitsStatusMap;
 
 
     public static void main(String[] args) throws Exception {
@@ -73,7 +72,6 @@ public class MigrateGeneContact implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         targetFilename = downloadWorkspace + "/GeneContact.tsv";
-        imitsStatusMap = sqlUtils.getImitsStatusMap();
         long start;
 
         try {

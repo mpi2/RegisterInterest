@@ -47,14 +47,17 @@ public class MigrateGeneContactSent implements CommandLineRunner {
     @Value("${download.workspace}")
     protected String downloadWorkspace;
 
+    @NotNull
+    @Value("${GeneContactSent}")
+    protected String geneContactSent;
+
     @Autowired
     private SqlUtils sqlUtils;
 
     private DateUtils dateUtils = new DateUtils();
     private Logger logger      = LoggerFactory.getLogger(this.getClass());
 
-    private String sourceUrl = "https://www.i-dcc.org/dev/imits/v2/reports/XXX_Download_Gene_Contact_Sent_XXX.tsv";
-    //    private String sourceUrl = "https://www.i-dcc.org/dev/imits/v2/reports/mp2_load_gene_interest_report.tsv";
+    private String sourceUrl = geneContactSent;
     private String targetFilename;
 
 
