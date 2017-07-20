@@ -42,7 +42,6 @@ public class ApplicationGenerate implements CommandLineRunner {
     private List<GeneContact> geneContacts;
     private Map<Integer, Gene> genesMap;
     private Map<Integer, GeneSent> geneSentMap;
-    private Map<String, GeneStatus> statusMap;      // keyed by status
 
 
     @Inject
@@ -56,7 +55,6 @@ public class ApplicationGenerate implements CommandLineRunner {
         geneContacts = sqlUtils.getGeneContacts();
         genesMap = sqlUtils.getGenesByPk();
         geneSentMap = sqlUtils.getGenesSent();
-        statusMap = sqlUtils.getStatusMap();
     }
 
 
