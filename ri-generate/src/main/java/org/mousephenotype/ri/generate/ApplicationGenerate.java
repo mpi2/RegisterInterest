@@ -54,7 +54,7 @@ public class ApplicationGenerate implements CommandLineRunner {
     public void initialise() {
         geneContacts = sqlUtils.getGeneContacts();
         genesMap = sqlUtils.getGenesByPk();
-        geneSentMap = sqlUtils.getGenesSent();
+        geneSentMap = sqlUtils.getGeneSent();
     }
 
 
@@ -374,7 +374,7 @@ public class ApplicationGenerate implements CommandLineRunner {
                 .append("\n")
                 .append("Best Regards,\n")
                 .append("\n")
-                .append("The MPI2 (KOMP2) informatics consortium\n");
+                .append("The MPI2 (KOMP2) informatics consortium");
 
         return body.toString();
     }

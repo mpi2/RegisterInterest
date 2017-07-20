@@ -286,7 +286,7 @@ public class SqlUtils {
      *
      * @return A {@link Map} of all {@link GeneSent} instances, indexed by gene_contact_pk
      */
-    public Map<Integer, GeneSent> getGenesSent() {
+    public Map<Integer, GeneSent> getGeneSent() {
 
         Map<Integer, GeneSent> sentMap = new HashMap<>();
 

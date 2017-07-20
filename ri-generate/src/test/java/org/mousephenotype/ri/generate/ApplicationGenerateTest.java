@@ -64,7 +64,7 @@ public class ApplicationGenerateTest {
         //               body
         jdbc.getJdbcOperations().execute("CALL CSVWRITE('target/gene_sent2.csv', 'SELECT body FROM gene_sent WHERE sent_at IS NULL', 'charset=UTF-8 fieldSeparator=,')");
 
-        List<GeneSent> genesSent = new ArrayList(sqlUtils.getGenesSent().values());
+        List<GeneSent> genesSent = new ArrayList(sqlUtils.getGeneSent().values());
         int i = 0;
         for (GeneSent geneSent : genesSent) {
             if (geneSent.getSentAt() != null) {
