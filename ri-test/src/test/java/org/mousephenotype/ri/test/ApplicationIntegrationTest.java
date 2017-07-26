@@ -1,6 +1,7 @@
 package org.mousephenotype.ri.test;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mousephenotype.ri.core.SqlUtils;
@@ -39,6 +40,7 @@ public class ApplicationIntegrationTest {
 
     public final static boolean SEND_EMAIL = false;
 
+    @Ignore
     @Test
     public void testGenerateAndSendRegisterInterest() throws Exception {
 
