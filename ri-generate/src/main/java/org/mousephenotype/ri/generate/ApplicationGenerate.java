@@ -167,9 +167,10 @@ public class ApplicationGenerate implements CommandLineRunner {
         }
 
         if ( ! errorMessages.isEmpty()) {
-            logger.warn("WARNINGS:");
+            // Mark these as 'info' so they do not make the build unstable. Data errors are iMits problems.
+            logger.info("WARNINGS:");
             for (String s : errorMessages) {
-                logger.warn("\t" + s);
+                logger.info("\t" + s);
             }
         }
 

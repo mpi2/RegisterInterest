@@ -76,6 +76,7 @@ public class AppConfig {
         try {
 
             logger.info("Using database {} with initial pool size {}", ds.getConnection().getCatalog(), ((BasicDataSource) ds).getInitialSize());
+            logger.info("URL = " + riUrl);
 
         } catch (Exception e) { }
 
