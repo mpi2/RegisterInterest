@@ -63,6 +63,18 @@ public class MigrateGeneContactSent implements CommandLineRunner {
 
     private Map<String, ImitsStatus> imitsStatusMap;
 
+    public static final int COL_MGI_ACCESSION_ID                     =  1;
+    public static final int COL_MARKER_SYMBOL                        =  2;
+    public static final int COL_EMAIL                                =  3;
+    public static final int COL_LAST_EMAIL_SENT_DATE                 =  4;
+    public static final int COL_GENE_ASSIGNMENT_STATUS               =  5;
+    public static final int COL_CONDITIONAL_ALLELE_PRODUCTION_STATUS =  6;
+    public static final int COL_NULL_ALLELE_PRODUCTION_STATUS        =  7;
+    public static final int COL_PHENOTYPING_STATUS                   =  8;
+    public static final int COL_GENE_CONTACT_CREATED_AT              =  9;
+    public static final int COL_CONTACT_CREATED_AT                   = 10;
+
+
 
     public static void main(String[] args) throws Exception {
         SpringApplication app = new SpringApplication(MigrateGeneContact.class);
@@ -161,20 +173,20 @@ public class MigrateGeneContactSent implements CommandLineRunner {
 
                 parts = line.split(Pattern.quote("\t"));
 
-                if (parts.length != 9) {
-                    logger.error("Input file '" + targetFilename + "' contains " + parts.length + " fields. Expected 8.");
+                if (parts.length != 10) {
+                    logger.error("Input file '" + targetFilename + "' contains " + parts.length + " fields. Expected 10.");
                     return count;
                 }
 
-                String mgiAccessionId = parts[0];
-                String email = parts[1];
-                String contactCreatedAtString = parts[2];
-                String geneContactCreatedAtString = parts[3];
-                String assignmentStatusString = parts[4];
-                String conditionalAlleleProductionStatusString = parts[5];
-                String nullAlleleProductionStatusString = parts[6];
-                String phenotypingStatusString = parts[7];
-                String sentAtString = parts[8];
+                String mgiAccessionId = parts[COL_MGI_ACCESSION_ID];
+                String email = parts[COL_EMAIL];
+                String contactCreatedAtString = parts[COL_CONTACT_CREATED_AT];
+                String geneContactCreatedAtString = parts[COL_GENE_CONTACT_CREATED_AT];
+                String assignmentStatusString = parts[COL_GENE_ASSIGNMENT_STATUS];
+                String conditionalAlleleProductionStatusString = parts[COL_CONDITIONAL_ALLELE_PRODUCTION_STATUS];
+                String nullAlleleProductionStatusString = parts[COL_NULL_ALLELE_PRODUCTION_STATUS];
+                String phenotypingStatusString = parts[COL_PHENOTYPING_STATUS];
+                String sentAtString = parts[COL_LAST_EMAIL_SENT_DATE];
 
                 Date contactCreatedAt = parseDate(contactCreatedAtString);
                 Date geneContactCreatedAt = parseDate(geneContactCreatedAtString);

@@ -76,13 +76,15 @@ public class GeneLoader implements InitializingBean, Step {
             , "conditional_allele_production_status"            // F - Conditional allele production status
             , "conditional_allele_production_centre"            // G - Conditional allele production centre
             , "conditional_allele_status_date"                  // H - Date conditional allele status was last updated
-            , "null_allele_production_status"                   // I - Null allele production status
-            , "null_allele_production_centre"                   // J - Null allele production centre
-            , "null_allele_status_date"                         // K - Date null allele status was last updated
-            , "phenotyping_status"                              // L - Phenotyping status
-            , "phenotyping_centre"                              // M - Phenotyping centre
-            , "phenotyping_status_date"                         // N - Date phenotyping status was last updated
-            , "number_of_significant_phenotypes"                // O - Number of significant phenotypes
+            , "conditional_allele_production_start_date"        // I - Date conditional allele status was started
+            , "null_allele_production_status"                   // J - Null allele production status
+            , "null_allele_production_centre"                   // K - Null allele production centre
+            , "null_allele_status_date"                         // L - Date null allele status was last updated
+            , "null_allele_production_start_date"               // M - Date null allele status was started
+            , "phenotyping_status"                              // N - Phenotyping status
+            , "phenotyping_centre"                              // O - Phenotyping centre
+            , "phenotyping_status_date"                         // P - Date phenotyping status was last updated
+            , "number_of_significant_phenotypes"                // Q - Number of significant phenotypes
     };
 
     @Autowired
@@ -149,29 +151,25 @@ public class GeneLoader implements InitializingBean, Step {
             s = fs.readString("conditional_allele_production_status");
             gene.setConditionalAlleleProductionStatus((s != null) && ( ! s.trim().isEmpty()) ? s : null);
 
+            s = fs.readString("conditional_allele_status_date");
+            gene.setConditionalAlleleProductionStatusDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
 
+            s = fs.readString("conditional_allele_production_start_date");
+            gene.setConditionalAlleleProductionStartDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
 
-//            s = fs.readString("conditional_allele_start_date");
-//            gene.setConditionalAlleleProductionStartDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
-//
-//            s = fs.readString("conditional_allele_completed_date");
-//            gene.setConditionalAlleleProductionCompletedDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
-            gene.setConditionalAlleleProductionStartDate(null);
-            gene.setConditionalAlleleProductionCompletedDate(null);
 
             s = fs.readString("null_allele_production_centre");
             gene.setNullAlleleProductionCentre((s != null) && ( ! s.trim().isEmpty()) ? s : null);
 
             s = fs.readString("null_allele_production_status");
             gene.setNullAlleleProductionStatus((s != null) && ( ! s.trim().isEmpty()) ? s : null);
-//
-//            s = fs.readString("null_allele_start_date");
-//            gene.setNullAlleleProductionStartDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
-//
-//            s = fs.readString("null_allele_completed_date");
-//            gene.setNullAlleleProductionCompletedDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
-            gene.setNullAlleleProductionStartDate(null);
-            gene.setNullAlleleProductionCompletedDate(null);
+
+            s = fs.readString("null_allele_status_date");
+            gene.setNullAlleleProductionStatusDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
+
+            s = fs.readString("null_allele_production_start_date");
+            gene.setNullAlleleProductionStartDateString((s != null) && ( ! s.trim().isEmpty()) ? s : null);
+
 
             s = fs.readString("phenotyping_centre");
             gene.setPhenotypingCentre((s != null) && ( ! s.trim().isEmpty()) ? s : null);

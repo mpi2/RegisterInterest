@@ -249,7 +249,7 @@ public class ApplicationGenerate implements CommandLineRunner {
 
             // 4.2
             String startDate = (gene.getNullAlleleProductionStartDate() == null ? "<Unknown>" : sdf.format(gene.getNullAlleleProductionStartDate()));
-            String producedDate = (gene.getNullAlleleProductionCompletedDate() == null ? "<Unknown>" : sdf.format(gene.getNullAlleleProductionCompletedDate()));
+            String producedDate = (gene.getNullAlleleProductionStatusDate() == null ? "<Unknown>" : sdf.format(gene.getNullAlleleProductionStatusDate()));
             body
                     .append("\n")
                     .append("Mouse Production for the null allele commenced on ")
@@ -275,7 +275,7 @@ public class ApplicationGenerate implements CommandLineRunner {
 
             // 5.2
             String startDate = (gene.getConditionalAlleleProductionStartDate() == null ? "<Unknown>" : sdf.format(gene.getConditionalAlleleProductionStartDate()));
-            String producedDate = (gene.getConditionalAlleleProductionCompletedDate() == null ? "<Unknown" : sdf.format(gene.getConditionalAlleleProductionCompletedDate()));
+            String producedDate = (gene.getConditionalAlleleProductionStatusDate() == null ? "<Unknown" : sdf.format(gene.getConditionalAlleleProductionStatusDate()));
             body
                     .append("\n")
                     .append("Mouse Production for the conditional allele commenced on ")

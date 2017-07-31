@@ -36,19 +36,20 @@ public class Gene {
     private String conditionalAlleleProductionStatus;
 
     @JsonIgnore
+    private Date conditionalAlleleProductionStatusDate;
+
+    @JsonIgnore
+    private String conditionalAlleleProductionStatusDateString;
+
+    @JsonIgnore
     private Date conditionalAlleleProductionStartDate;
 
     @JsonIgnore
     private String conditionalAlleleProductionStartDateString;
 
     @JsonIgnore
-    private Date conditionalAlleleProductionCompletedDate;
-
-    @JsonIgnore
-    private String conditionalAlleleProductionCompletedDateString;
-
-    @JsonIgnore
     private Integer conditionalAlleleProductionStatusPk;
+
 
     @JsonIgnore
     private String nullAlleleProductionCentre;
@@ -57,19 +58,20 @@ public class Gene {
     private String nullAlleleProductionStatus;
 
     @JsonIgnore
+    private Date nullAlleleProductionStatusDate;
+
+    @JsonIgnore
+    private String nullAlleleProductionStatusDateString;
+
+    @JsonIgnore
     private Date nullAlleleProductionStartDate;
 
     @JsonIgnore
     private String nullAlleleProductionStartDateString;
 
     @JsonIgnore
-    private Date nullAlleleProductionCompletedDate;
-
-    @JsonIgnore
-    private String nullAlleleProductionCompletedDateString;
-
-    @JsonIgnore
     private Integer nullAlleleProductionStatusPk;
+
 
     @JsonIgnore
     private String phenotypingCentre;
@@ -95,6 +97,7 @@ public class Gene {
     private Date createdAt;
 
     private Date updatedAt;
+
 
     public int getPk() {
         return pk;
@@ -176,6 +179,22 @@ public class Gene {
         this.conditionalAlleleProductionStatus = conditionalAlleleProductionStatus;
     }
 
+    public Date getConditionalAlleleProductionStatusDate() {
+        return conditionalAlleleProductionStatusDate;
+    }
+
+    public void setConditionalAlleleProductionStatusDate(Date conditionalAlleleProductionStatusDate) {
+        this.conditionalAlleleProductionStatusDate = conditionalAlleleProductionStatusDate;
+    }
+
+    public String getConditionalAlleleProductionStatusDateString() {
+        return conditionalAlleleProductionStatusDateString;
+    }
+
+    public void setConditionalAlleleProductionStatusDateString(String conditionalAlleleProductionStatusDateString) {
+        this.conditionalAlleleProductionStatusDateString = conditionalAlleleProductionStatusDateString;
+    }
+
     public Date getConditionalAlleleProductionStartDate() {
         return conditionalAlleleProductionStartDate;
     }
@@ -190,22 +209,6 @@ public class Gene {
 
     public void setConditionalAlleleProductionStartDateString(String conditionalAlleleProductionStartDateString) {
         this.conditionalAlleleProductionStartDateString = conditionalAlleleProductionStartDateString;
-    }
-
-    public Date getConditionalAlleleProductionCompletedDate() {
-        return conditionalAlleleProductionCompletedDate;
-    }
-
-    public void setConditionalAlleleProductionCompletedDate(Date conditionalAlleleProductionCompletedDate) {
-        this.conditionalAlleleProductionCompletedDate = conditionalAlleleProductionCompletedDate;
-    }
-
-    public String getConditionalAlleleProductionCompletedDateString() {
-        return conditionalAlleleProductionCompletedDateString;
-    }
-
-    public void setConditionalAlleleProductionCompletedDateString(String conditionalAlleleProductionCompletedDateString) {
-        this.conditionalAlleleProductionCompletedDateString = conditionalAlleleProductionCompletedDateString;
     }
 
     public Integer getConditionalAlleleProductionStatusPk() {
@@ -232,6 +235,22 @@ public class Gene {
         this.nullAlleleProductionStatus = nullAlleleProductionStatus;
     }
 
+    public Date getNullAlleleProductionStatusDate() {
+        return nullAlleleProductionStatusDate;
+    }
+
+    public void setNullAlleleProductionStatusDate(Date nullAlleleProductionStatusDate) {
+        this.nullAlleleProductionStatusDate = nullAlleleProductionStatusDate;
+    }
+
+    public String getNullAlleleProductionStatusDateString() {
+        return nullAlleleProductionStatusDateString;
+    }
+
+    public void setNullAlleleProductionStatusDateString(String nullAlleleProductionStatusDateString) {
+        this.nullAlleleProductionStatusDateString = nullAlleleProductionStatusDateString;
+    }
+
     public Date getNullAlleleProductionStartDate() {
         return nullAlleleProductionStartDate;
     }
@@ -246,22 +265,6 @@ public class Gene {
 
     public void setNullAlleleProductionStartDateString(String nullAlleleProductionStartDateString) {
         this.nullAlleleProductionStartDateString = nullAlleleProductionStartDateString;
-    }
-
-    public Date getNullAlleleProductionCompletedDate() {
-        return nullAlleleProductionCompletedDate;
-    }
-
-    public void setNullAlleleProductionCompletedDate(Date nullAlleleProductionCompletedDate) {
-        this.nullAlleleProductionCompletedDate = nullAlleleProductionCompletedDate;
-    }
-
-    public String getNullAlleleProductionCompletedDateString() {
-        return nullAlleleProductionCompletedDateString;
-    }
-
-    public void setNullAlleleProductionCompletedDateString(String nullAlleleProductionCompletedDateString) {
-        this.nullAlleleProductionCompletedDateString = nullAlleleProductionCompletedDateString;
     }
 
     public Integer getNullAlleleProductionStatusPk() {
@@ -356,14 +359,14 @@ public class Gene {
                 ", assignmentStatusPk=" + assignmentStatusPk +
                 ", conditionalAlleleProductionCentre='" + conditionalAlleleProductionCentre + '\'' +
                 ", conditionalAlleleProductionStatus='" + conditionalAlleleProductionStatus + '\'' +
-                ", conditionalAlleleProductionStartDate=" + conditionalAlleleProductionStartDate +
-                ", conditionalAlleleProductionCompletedDate=" + conditionalAlleleProductionCompletedDate +
                 ", conditionalAlleleProductionStatusPk=" + conditionalAlleleProductionStatusPk +
+                ", conditionalAlleleProductionStatusDate=" + conditionalAlleleProductionStatusDate +
+                ", conditionalAlleleProductionStartDate=" + conditionalAlleleProductionStartDate +
                 ", nullAlleleProductionCentre='" + nullAlleleProductionCentre + '\'' +
                 ", nullAlleleProductionStatus='" + nullAlleleProductionStatus + '\'' +
-                ", nullAlleleProductionStartDate=" + nullAlleleProductionStartDate +
-                ", nullAlleleProductionCompletedDate=" + nullAlleleProductionCompletedDate +
                 ", nullAlleleProductionStatusPk=" + nullAlleleProductionStatusPk +
+                ", nullAlleleProductionStatusDate=" + nullAlleleProductionStatusDate +
+                ", nullAlleleProductionStartDate=" + nullAlleleProductionStartDate +
                 ", phenotypingCentre='" + phenotypingCentre + '\'' +
                 ", phenotypingStatus='" + phenotypingStatus + '\'' +
                 ", phenotypingStatusDate=" + phenotypingStatusDate +
@@ -394,21 +397,21 @@ public class Gene {
             return false;
         if (conditionalAlleleProductionStatus != null ? !conditionalAlleleProductionStatus.equals(gene.conditionalAlleleProductionStatus) : gene.conditionalAlleleProductionStatus != null)
             return false;
-        if (conditionalAlleleProductionStartDate != null ? !conditionalAlleleProductionStartDate.equals(gene.conditionalAlleleProductionStartDate) : gene.conditionalAlleleProductionStartDate != null)
-            return false;
-        if (conditionalAlleleProductionCompletedDate != null ? !conditionalAlleleProductionCompletedDate.equals(gene.conditionalAlleleProductionCompletedDate) : gene.conditionalAlleleProductionCompletedDate != null)
-            return false;
         if (conditionalAlleleProductionStatusPk != null ? !conditionalAlleleProductionStatusPk.equals(gene.conditionalAlleleProductionStatusPk) : gene.conditionalAlleleProductionStatusPk != null)
+            return false;
+        if (conditionalAlleleProductionStatusDate != null ? !conditionalAlleleProductionStatusDate.equals(gene.conditionalAlleleProductionStatusDate) : gene.conditionalAlleleProductionStatusDate != null)
+            return false;
+        if (conditionalAlleleProductionStartDate != null ? !conditionalAlleleProductionStartDate.equals(gene.conditionalAlleleProductionStartDate) : gene.conditionalAlleleProductionStartDate != null)
             return false;
         if (nullAlleleProductionCentre != null ? !nullAlleleProductionCentre.equals(gene.nullAlleleProductionCentre) : gene.nullAlleleProductionCentre != null)
             return false;
         if (nullAlleleProductionStatus != null ? !nullAlleleProductionStatus.equals(gene.nullAlleleProductionStatus) : gene.nullAlleleProductionStatus != null)
             return false;
-        if (nullAlleleProductionStartDate != null ? !nullAlleleProductionStartDate.equals(gene.nullAlleleProductionStartDate) : gene.nullAlleleProductionStartDate != null)
-            return false;
-        if (nullAlleleProductionCompletedDate != null ? !nullAlleleProductionCompletedDate.equals(gene.nullAlleleProductionCompletedDate) : gene.nullAlleleProductionCompletedDate != null)
-            return false;
         if (nullAlleleProductionStatusPk != null ? !nullAlleleProductionStatusPk.equals(gene.nullAlleleProductionStatusPk) : gene.nullAlleleProductionStatusPk != null)
+            return false;
+        if (nullAlleleProductionStatusDate != null ? !nullAlleleProductionStatusDate.equals(gene.nullAlleleProductionStatusDate) : gene.nullAlleleProductionStatusDate != null)
+            return false;
+        if (nullAlleleProductionStartDate != null ? !nullAlleleProductionStartDate.equals(gene.nullAlleleProductionStartDate) : gene.nullAlleleProductionStartDate != null)
             return false;
         if (phenotypingCentre != null ? !phenotypingCentre.equals(gene.phenotypingCentre) : gene.phenotypingCentre != null)
             return false;
@@ -434,14 +437,14 @@ public class Gene {
         result = 31 * result + (assignmentStatusPk != null ? assignmentStatusPk.hashCode() : 0);
         result = 31 * result + (conditionalAlleleProductionCentre != null ? conditionalAlleleProductionCentre.hashCode() : 0);
         result = 31 * result + (conditionalAlleleProductionStatus != null ? conditionalAlleleProductionStatus.hashCode() : 0);
-        result = 31 * result + (conditionalAlleleProductionStartDate != null ? conditionalAlleleProductionStartDate.hashCode() : 0);
-        result = 31 * result + (conditionalAlleleProductionCompletedDate != null ? conditionalAlleleProductionCompletedDate.hashCode() : 0);
         result = 31 * result + (conditionalAlleleProductionStatusPk != null ? conditionalAlleleProductionStatusPk.hashCode() : 0);
+        result = 31 * result + (conditionalAlleleProductionStatusDate != null ? conditionalAlleleProductionStatusDate.hashCode() : 0);
+        result = 31 * result + (conditionalAlleleProductionStartDate != null ? conditionalAlleleProductionStartDate.hashCode() : 0);
         result = 31 * result + (nullAlleleProductionCentre != null ? nullAlleleProductionCentre.hashCode() : 0);
         result = 31 * result + (nullAlleleProductionStatus != null ? nullAlleleProductionStatus.hashCode() : 0);
-        result = 31 * result + (nullAlleleProductionStartDate != null ? nullAlleleProductionStartDate.hashCode() : 0);
-        result = 31 * result + (nullAlleleProductionCompletedDate != null ? nullAlleleProductionCompletedDate.hashCode() : 0);
         result = 31 * result + (nullAlleleProductionStatusPk != null ? nullAlleleProductionStatusPk.hashCode() : 0);
+        result = 31 * result + (nullAlleleProductionStatusDate != null ? nullAlleleProductionStatusDate.hashCode() : 0);
+        result = 31 * result + (nullAlleleProductionStartDate != null ? nullAlleleProductionStartDate.hashCode() : 0);
         result = 31 * result + (phenotypingCentre != null ? phenotypingCentre.hashCode() : 0);
         result = 31 * result + (phenotypingStatus != null ? phenotypingStatus.hashCode() : 0);
         result = 31 * result + (phenotypingStatusDate != null ? phenotypingStatusDate.hashCode() : 0);

@@ -81,8 +81,8 @@ public class ApplicationIntegrationTest {
         Arrays.sort(candidates, new SubjectComparator());
 
         for (int i = 0; i < candidates.length; i++) {
-            Assert.assertEquals(candidates[i].getSubject(), subjects[i]);
-            Assert.assertEquals(candidates[i].getBody(), bodies[i]);
+            Assert.assertEquals("SUBJECT: " + candidates[i].getSubject(), subjects[i], candidates[i].getSubject());
+            Assert.assertEquals("BODY: " + candidates[i].getSubject(), bodies[i], candidates[i].getBody());
         }
     }
 

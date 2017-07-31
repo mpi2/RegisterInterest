@@ -57,9 +57,11 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
             , "conditional_allele_production_status"
             , "conditional_allele_production_centre"
             , "conditional_allele_status_date"
+            , "conditional_allele_production_start_date"
             , "null_allele_production_status"
             , "null_allele_production_centre"
             , "null_allele_status_date"
+            , "null_allele_production_start_date"
             , "phenotyping_status"
             , "phenotyping_centre"
             , "phenotyping_status_date"
@@ -80,33 +82,35 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
 
         // Validate the file using the heading names and initialize any collections.
         if (lineNumber == 1) {
-//            String[] actualHeadings = new String[] {
-//                    gene.getMgiAccessionId()
-//                  , gene.getSymbol()
-//                  , gene.getAssignmentStatus()
-//                  , gene.getAssignedTo()
-//                  , gene.getAssignmentStatusDateString()
-//
-//                  , gene.getConditionalAlleleProductionStatus()
-//                  , gene.getConditionalAlleleProductionCentre()
-//                  , gene.getConditionalAlleleProductionStartDateString()
-//
-//                  , gene.getNullAlleleProductionStatus()
-//                  , gene.getNullAlleleProductionCentre()
-//                  , gene.getNullAlleleProductionStartDateString()
-//
-//                  , gene.getPhenotypingStatus()
-//                  , gene.getPhenotypingCentre()
-//                  , gene.getPhenotypingStatusDateString()
-//
-//                  , gene.getNumberOfSignificantPhenotypesString()
-//            };
-//
-//            for (int i = 0; i < expectedHeadings.length; i++) {
-//                if ( ! expectedHeadings[i].equals(actualHeadings[i])) {
-//                    throw new InterestException("Expected heading '" + expectedHeadings[i] + "' but found '" + actualHeadings[i] + "'.");
-//                }
-//            }
+            String[] actualHeadings = new String[] {
+                    gene.getMgiAccessionId()
+                  , gene.getSymbol()
+                  , gene.getAssignmentStatus()
+                  , gene.getAssignedTo()
+                  , gene.getAssignmentStatusDateString()
+
+                  , gene.getConditionalAlleleProductionStatus()
+                  , gene.getConditionalAlleleProductionCentre()
+                  , gene.getConditionalAlleleProductionStatusDateString()
+                  , gene.getConditionalAlleleProductionStartDateString()
+
+                  , gene.getNullAlleleProductionStatus()
+                  , gene.getNullAlleleProductionCentre()
+                  , gene.getNullAlleleProductionStatusDateString()
+                  , gene.getNullAlleleProductionStartDateString()
+
+                  , gene.getPhenotypingStatus()
+                  , gene.getPhenotypingCentre()
+                  , gene.getPhenotypingStatusDateString()
+
+                  , gene.getNumberOfSignificantPhenotypesString()
+            };
+
+            for (int i = 0; i < expectedHeadings.length; i++) {
+                if ( ! expectedHeadings[i].equals(actualHeadings[i])) {
+                    throw new InterestException("Expected heading '" + expectedHeadings[i] + "' but found '" + actualHeadings[i] + "'.");
+                }
+            }
 
             return null;
         }
@@ -169,6 +173,14 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
             }
             gene.setAssignmentStatusDate(date);
         }
+        if ((gene.getConditionalAlleleProductionStatusDateString() != null) && ( ! gene.getConditionalAlleleProductionStatusDateString().trim().isEmpty())) {
+            Date date = parseUtils.tryParseDate(sdf, gene.getConditionalAlleleProductionStatusDateString());
+            if (date == null) {
+                errMessages.add("Invalid date '" + gene.getConditionalAlleleProductionStatusDate() + "'");
+                return null;
+            }
+            gene.setConditionalAlleleProductionStatusDate(date);
+        }
         if ((gene.getConditionalAlleleProductionStartDateString() != null) && ( ! gene.getConditionalAlleleProductionStartDateString().trim().isEmpty())) {
             Date date = parseUtils.tryParseDate(sdf, gene.getConditionalAlleleProductionStartDateString());
             if (date == null) {
@@ -177,13 +189,13 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
             }
             gene.setConditionalAlleleProductionStartDate(date);
         }
-        if ((gene.getConditionalAlleleProductionCompletedDateString() != null) && ( ! gene.getConditionalAlleleProductionCompletedDateString().trim().isEmpty())) {
-            Date date = parseUtils.tryParseDate(sdf, gene.getConditionalAlleleProductionCompletedDateString());
+        if ((gene.getNullAlleleProductionStatusDateString() != null) && (!gene.getNullAlleleProductionStatusDateString().trim().isEmpty())) {
+            Date date = parseUtils.tryParseDate(sdf, gene.getNullAlleleProductionStatusDateString());
             if (date == null) {
-                errMessages.add("Invalid date '" + gene.getConditionalAlleleProductionCompletedDate() + "'");
+                errMessages.add("Invalid date '" + gene.getNullAlleleProductionStatusDate() + "'");
                 return null;
             }
-            gene.setConditionalAlleleProductionCompletedDate(date);
+            gene.setNullAlleleProductionStatusDate(date);
         }
         if ((gene.getNullAlleleProductionStartDateString() != null) && ( ! gene.getNullAlleleProductionStartDateString().trim().isEmpty())) {
             Date date = parseUtils.tryParseDate(sdf, gene.getNullAlleleProductionStartDateString());
@@ -192,14 +204,6 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
                 return null;
             }
             gene.setNullAlleleProductionStartDate(date);
-        }
-        if ((gene.getNullAlleleProductionCompletedDateString() != null) && (!gene.getNullAlleleProductionCompletedDateString().trim().isEmpty())) {
-            Date date = parseUtils.tryParseDate(sdf, gene.getNullAlleleProductionCompletedDateString());
-            if (date == null) {
-                errMessages.add("Invalid date '" + gene.getNullAlleleProductionCompletedDate() + "'");
-                return null;
-            }
-            gene.setNullAlleleProductionCompletedDate(date);
         }
         if ((gene.getPhenotypingStatusDateString() != null) && ( ! gene.getPhenotypingStatusDateString().trim().isEmpty())) {
             Date date = parseUtils.tryParseDate(sdf, gene.getPhenotypingStatusDateString());

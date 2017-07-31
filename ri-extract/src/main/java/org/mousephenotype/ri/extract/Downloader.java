@@ -64,7 +64,6 @@ public class Downloader implements Tasklet, InitializingBean {
     }
 
     @Override
-
     public void afterPropertiesSet() throws Exception {
   	    Assert.notNull(sourceUrl, "sourceUrl must be set");
         Assert.notNull(targetFilename, "targetFilename must be set");

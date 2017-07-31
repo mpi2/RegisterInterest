@@ -59,6 +59,12 @@ public class MigrateGeneContact implements CommandLineRunner {
     private String sourceUrl = geneContact;
     private String targetFilename;
 
+    public static final int COL_MGI_ACCESSION_ID                     = 1;
+    public static final int COL_MARKER_SYMBOL                        = 2;
+    public static final int COL_EMAIL                                = 3;
+    public static final int COL_GENE_CONTACT_CREATED_AT              = 4;
+    public static final int COL_CONTACT_CREATED_AT                   = 5;
+
 
     public static void main(String[] args) throws Exception {
         SpringApplication app = new SpringApplication(MigrateGeneContact.class);
@@ -158,15 +164,15 @@ public class MigrateGeneContact implements CommandLineRunner {
 
                 parts = line.split(Pattern.quote("\t"));
 
-                if (parts.length != 4) {
-                    logger.error(" Input file '" + targetFilename + "' contains " + parts.length + " fields. Expected 4.");
+                if (parts.length != 5) {
+                    logger.error(" Input file '" + targetFilename + "' contains " + parts.length + " fields. Expected 5.");
                     return count;
                 }
 
-                String mgiAccessionId = parts[0];
-                String email = parts[1];
-                String contactCreatedAtString = parts[2];
-                String geneContactCreatedAtString = parts[3];
+                String mgiAccessionId = parts[COL_MGI_ACCESSION_ID];
+                String email = parts[COL_EMAIL];
+                String contactCreatedAtString = parts[COL_CONTACT_CREATED_AT];
+                String geneContactCreatedAtString = parts[COL_GENE_CONTACT_CREATED_AT];
 
                 Date contactCreatedAt = parseDate(contactCreatedAtString);
                 Date geneContactCreatedAt = parseDate(geneContactCreatedAtString);

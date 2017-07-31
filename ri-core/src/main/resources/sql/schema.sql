@@ -76,14 +76,14 @@ CREATE TABLE gene (
     conditional_allele_production_centre                        VARCHAR(128) DEFAULT NULL,
     conditional_allele_production_status                        VARCHAR(128) DEFAULT NULL,
     conditional_allele_production_status_pk                     INT          DEFAULT NULL,
+    conditional_allele_production_status_date                   DATETIME     DEFAULT NULL,
     conditional_allele_production_start_date                    DATETIME     DEFAULT NULL,
-    conditional_allele_production_completed_date                DATETIME     DEFAULT NULL,
 
     null_allele_production_centre                               VARCHAR(128) DEFAULT NULL,
     null_allele_production_status                               VARCHAR(128) DEFAULT NULL,
     null_allele_production_status_pk                            INT          DEFAULT NULL,
+    null_allele_production_status_date                          DATETIME     DEFAULT NULL,
     null_allele_production_start_date                           DATETIME     DEFAULT NULL,
-    null_allele_production_completed_date                       DATETIME     DEFAULT NULL,
 
     phenotyping_centre                                          VARCHAR(128) DEFAULT NULL,
     phenotyping_status                                          VARCHAR(128) DEFAULT NULL,
