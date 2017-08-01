@@ -48,36 +48,32 @@ public class MigrateGeneContactSent implements CommandLineRunner {
     protected String downloadWorkspace;
 
     @NotNull
-    @Value("${GeneContactSent}")
-    protected String geneContactSent;
+    @Value("${GeneContactSentUrl}")
+    protected String sourceUrl;
 
     @Autowired
     private SqlUtils sqlUtils;
 
     private DateUtils dateUtils = new DateUtils();
     private Logger logger      = LoggerFactory.getLogger(this.getClass());
-
-    private String sourceUrl = geneContactSent;
     private String targetFilename;
-
-
     private Map<String, ImitsStatus> imitsStatusMap;
 
-    public static final int COL_MGI_ACCESSION_ID                     =  1;
-    public static final int COL_MARKER_SYMBOL                        =  2;
-    public static final int COL_EMAIL                                =  3;
-    public static final int COL_LAST_EMAIL_SENT_DATE                 =  4;
-    public static final int COL_GENE_ASSIGNMENT_STATUS               =  5;
-    public static final int COL_CONDITIONAL_ALLELE_PRODUCTION_STATUS =  6;
-    public static final int COL_NULL_ALLELE_PRODUCTION_STATUS        =  7;
-    public static final int COL_PHENOTYPING_STATUS                   =  8;
-    public static final int COL_GENE_CONTACT_CREATED_AT              =  9;
-    public static final int COL_CONTACT_CREATED_AT                   = 10;
+    public static final int COL_MGI_ACCESSION_ID                     = 0;
+    public static final int COL_MARKER_SYMBOL                        = 1;
+    public static final int COL_EMAIL                                = 2;
+    public static final int COL_LAST_EMAIL_SENT_DATE                 = 3;
+    public static final int COL_GENE_ASSIGNMENT_STATUS               = 4;
+    public static final int COL_CONDITIONAL_ALLELE_PRODUCTION_STATUS = 5;
+    public static final int COL_NULL_ALLELE_PRODUCTION_STATUS        = 6;
+    public static final int COL_PHENOTYPING_STATUS                   = 7;
+    public static final int COL_GENE_CONTACT_CREATED_AT              = 8;
+    public static final int COL_CONTACT_CREATED_AT                   = 9;
 
 
 
     public static void main(String[] args) throws Exception {
-        SpringApplication app = new SpringApplication(MigrateGeneContact.class);
+        SpringApplication app = new SpringApplication(MigrateGeneContactSent.class);
         app.setBannerMode(Banner.Mode.OFF);
         app.setLogStartupInfo(false);
         app.setWebEnvironment(false);
@@ -190,7 +186,10 @@ public class MigrateGeneContactSent implements CommandLineRunner {
 
                 Date contactCreatedAt = parseDate(contactCreatedAtString);
                 Date geneContactCreatedAt = parseDate(geneContactCreatedAtString);
-                int assignmentStatusPk = getStatusPk(assignmentStatusString);
+                Integer assignmentStatusPk = null;
+                if ((assignmentStatusString != null) && ( ! assignmentStatusString.trim().isEmpty())) {
+                    assignmentStatusPk = getStatusPk(assignmentStatusString);
+                }
                 Integer conditionalAlleleProductionStatusPk = null;
                 if ((conditionalAlleleProductionStatusString != null) && ( ! conditionalAlleleProductionStatusString.trim().isEmpty())) {
                     conditionalAlleleProductionStatusPk = getStatusPk(conditionalAlleleProductionStatusString);

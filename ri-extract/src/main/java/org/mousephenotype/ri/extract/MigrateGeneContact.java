@@ -47,23 +47,21 @@ public class MigrateGeneContact implements CommandLineRunner {
     protected String downloadWorkspace;
 
     @NotNull
-    @Value("${GeneContact}")
-    protected String geneContact;
+    @Value("${GeneContactUrl}")
+    protected String sourceUrl;
 
     @Autowired
     private SqlUtils sqlUtils;
 
     private DateUtils dateUtils = new DateUtils();
     private Logger logger      = LoggerFactory.getLogger(this.getClass());
-
-    private String sourceUrl = geneContact;
     private String targetFilename;
 
-    public static final int COL_MGI_ACCESSION_ID                     = 1;
-    public static final int COL_MARKER_SYMBOL                        = 2;
-    public static final int COL_EMAIL                                = 3;
-    public static final int COL_GENE_CONTACT_CREATED_AT              = 4;
-    public static final int COL_CONTACT_CREATED_AT                   = 5;
+    public static final int COL_MGI_ACCESSION_ID                     = 0;
+    public static final int COL_MARKER_SYMBOL                        = 1;
+    public static final int COL_EMAIL                                = 2;
+    public static final int COL_GENE_CONTACT_CREATED_AT              = 3;
+    public static final int COL_CONTACT_CREATED_AT                   = 4;
 
 
     public static void main(String[] args) throws Exception {
@@ -84,7 +82,7 @@ public class MigrateGeneContact implements CommandLineRunner {
 
             start = new Date().getTime();
             download();
-            logger.info("Ddownloaded " + sourceUrl + " to " + targetFilename + " in " + dateUtils.msToHms(new Date().getTime() - start));
+            logger.info("Downloaded " + sourceUrl + " to " + targetFilename + " in " + dateUtils.msToHms(new Date().getTime() - start));
 
         } catch (InterestException e) {
 
