@@ -69,7 +69,7 @@ public class ApiDocumentationTest {
             fieldWithPath("address").description("The contact's email address"),
             fieldWithPath("createdAt").description("The time and date the contact was created"),
             fieldWithPath("updatedAt").description("The time and date the contact was last updated"),
-            fieldWithPath("active").description("A flag indicating whether or not the contact is active (1) or inactive (0)")
+            fieldWithPath("active").description("A flag indicating whether or not the contact is active (true) or inactive (false)")
     };
 
     FieldDescriptor[] gene = new FieldDescriptor[] {
@@ -97,7 +97,7 @@ public class ApiDocumentationTest {
                                 fieldWithPath("[*].contact.address").description("The contact's email address"),
                                 fieldWithPath("[*].contact.createdAt").description("The time and date the contact was created"),
                                 fieldWithPath("[*].contact.updatedAt").description("The time and date the contact was last updated"),
-                                fieldWithPath("[*].contact.active").description("A flag indicating whether or not the contact is active (1) or inactive (0)"),
+                                fieldWithPath("[*].contact.active").description("A flag indicating whether or not the contact is active (true) or inactive (false)"),
 
                                 fieldWithPath("[*].genes[*].pk").description("The primary key of the gene instance"),
                                 fieldWithPath("[*].genes[*].mgiAccessionId").description("The gene's MGI gene accession id"),

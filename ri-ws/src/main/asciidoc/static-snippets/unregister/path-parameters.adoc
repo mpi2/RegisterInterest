@@ -1,0 +1,14 @@
+./mi/impc/interest/contacts
+|===
+|Parameter|Description
+
+|`type` (required)
+|The type of interest (e.g. gene, disease, phenotype) to unregister
+
+|`gene` (required)
+|The MGI gene accession id to unregister
+
+|`email` (required)
+|The email address to unregister
+
+|===

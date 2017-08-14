@@ -1,0 +1,8 @@
+[source,http,options="nowrap"]
+----
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+Content-Length: 59
+
+Unregister contact user1@ebi.ac.uk for gene MGI:1196326: OK
+----

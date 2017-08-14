@@ -58,47 +58,47 @@ The api endpoint provides the entry point into the service.
 
 
 [[resources-discover-contacts]]
-=== Accessing the API
+=== Querying the API for contacts
 
 A `GET` request is used to query the resource for contacts
 
 ==== Example request
+include::static-snippets/filtered-contact-get/curl-request.adoc[]
 
-include::generated-snippets/filtered-contact-get/curl-request.adoc[]
+==== Path parameters
+include::static-snippets/filtered-contact-get/path-parameters.adoc[]
 
 ==== Response structure
-
 include::generated-snippets/filtered-contact-get/response-fields.adoc[]
 
 ==== Example response
-
-include::generated-snippets/filtered-contact-get/http-response.adoc[]
+include::static-snippets/filtered-contact-get/http-response.adoc[]
 
 
 
 [[resources-register]]
-=== Accessing the API
-
-A `POST` request is used to register interest
+=== Registering a user and gene
+A `POST` request is used to register interest by a user in a gene
 
 ==== Example request
+include::static-snippets/register/curl-request.adoc[]
 
-include::generated-snippets/register/curl-request.adoc[]
+==== Path parameters
+include::static-snippets/register/path-parameters.adoc[]
 
 ==== Example response
-
-include::generated-snippets/register/http-response.adoc[]
+include::static-snippets/register/http-response.adoc[]
 
 
 [[resources-unregister]]
-=== Accessing the API
-
-A `DELETE` request is used to register interest
+=== Unregistering a user and gene
+A `DELETE` request is used to unregister interest by a user in a gene
 
 ==== Example request
+include::static-snippets/unregister/curl-request.adoc[]
 
-include::generated-snippets/unregister/curl-request.adoc[]
+==== Path parameters
+include::static-snippets/unregister/path-parameters.adoc[]
 
 ==== Example response
-
-include::generated-snippets/unregister/http-response.adoc[]
+include::static-snippets/unregister/http-response.adoc[]

@@ -1,0 +1,4 @@
+[source,bash]
+----
+$ curl -u 'mi-admin' 'https://www.ebi.ac.uk/mi/impc/interest/contacts?type=gene&email=user1@ebi.ac.uk&gene=MGI:103309' -i -H 'Accept: application/json'
+----
