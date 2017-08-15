@@ -82,15 +82,15 @@ public class ApiDocumentationTest {
 
     @Test
     public void filteredContactGet() throws Exception {
-        this.mockMvc.perform(get("/mi/impc/dev/interest/contacts?type=gene&email=user1@ebi.ac.uk&gene=MGI:0000010")
-                .contextPath("/mi/impc/dev/interest")
+        this.mockMvc.perform(get("https://www.ebi.ac.uk/mi/impc/interest/contacts?type=gene&email=user1@ebi.ac.uk&gene=MGI:0000010")
+                .contextPath("/mi/impc/interest")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(this.restDocumentationResultHandler.document(
-                        pathParameters(
-                                parameterWithName("type").description("The type of register interest (e.g. gene, disease, phenotype) to further filter by").optional(),
-                                parameterWithName("gene").description("The MGI gene accession id to further filter by").optional(),
-                                parameterWithName("email").description("The email address to further filter by").optional()),
+                        requestParameters(
+                                parameterWithName("type").description("The type of register interest (e.g. gene, disease, phenotype) to further filter by (optional)").optional(),
+                                parameterWithName("gene").description("The MGI gene accession id to further filter by (optional)").optional(),
+                                parameterWithName("email").description("The email address to further filter by (optional)").optional()),
 
                         responseFields(
                                 fieldWithPath("[*].contact.pk").description("The primary key of the contact instance"),
@@ -110,29 +110,29 @@ public class ApiDocumentationTest {
 
     @Test
     public void register() throws Exception {
-        this.mockMvc.perform(post("/mi/impc/dev/interest/contacts?type=gene&email=user10@ebi.ac.uk&gene=MGI:0000010")
-                .contextPath("/mi/impc/dev/interest")
+        this.mockMvc.perform(post("https://www.ebi.ac.uk/mi/impc/interest/contacts?type=gene&email=user10@ebi.ac.uk&gene=MGI:0000010")
+                .contextPath("/mi/impc/interest")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(document("register",
                         requestParameters(
-                                parameterWithName("type").description("The type of register interest (e.g. gene, disease, phenotype) to further filter by"),
-                                parameterWithName("gene").description("The MGI gene accession id to further filter by"),
-                                parameterWithName("email").description("The email address to further filter by"))))
+                                parameterWithName("type").description("The type of interest (e.g. gene, disease, phenotype) to register (required)"),
+                                parameterWithName("gene").description("The MGI gene accession id to register (required)"),
+                                parameterWithName("email").description("The email address to register (required)"))))
         ;
     }
 
     @Test
     public void unregister() throws Exception {
-        this.mockMvc.perform(delete("/mi/impc/dev/interest/contacts?type=gene&email=user10@ebi.ac.uk&gene=MGI:0000010")
-                .contextPath("/mi/impc/dev/interest")
+        this.mockMvc.perform(delete("https://www.ebi.ac.uk/mi/impc/interest/contacts?type=gene&email=user10@ebi.ac.uk&gene=MGI:0000010")
+                .contextPath("/mi/impc/interest")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(document("unregister",
                         requestParameters(
-                                parameterWithName("type").description("The type of unregister interest (e.g. gene, disease, phenotype) to further filter by"),
-                                parameterWithName("gene").description("The MGI gene accession id to further filter by"),
-                                parameterWithName("email").description("The email address to further filter by"))))
+                                parameterWithName("type").description("The type of interest (e.g. gene, disease, phenotype) to unregister (required)"),
+                                parameterWithName("gene").description("The MGI gene accession id to unregister (required)"),
+                                parameterWithName("email").description("The email address to unregister (required)"))))
         ;
     }
 }

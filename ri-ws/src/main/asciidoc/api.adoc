@@ -65,8 +65,8 @@ A `GET` request is used to query the resource for contacts
 ==== Example request
 include::static-snippets/filtered-contact-get/curl-request.adoc[]
 
-==== Path parameters
-include::static-snippets/filtered-contact-get/path-parameters.adoc[]
+==== Request parameters
+include::generated-snippets/filtered-contact-get/request-parameters.adoc[]
 
 ==== Response structure
 include::generated-snippets/filtered-contact-get/response-fields.adoc[]
@@ -83,8 +83,8 @@ A `POST` request is used to register interest by a user in a gene
 ==== Example request
 include::static-snippets/register/curl-request.adoc[]
 
-==== Path parameters
-include::static-snippets/register/path-parameters.adoc[]
+==== Request parameters
+include::generated-snippets/register/request-parameters.adoc[]
 
 ==== Example response
 include::static-snippets/register/http-response.adoc[]
@@ -97,8 +97,8 @@ A `DELETE` request is used to unregister interest by a user in a gene
 ==== Example request
 include::static-snippets/unregister/curl-request.adoc[]
 
-==== Path parameters
-include::static-snippets/unregister/path-parameters.adoc[]
+==== Request parameters
+include::generated-snippets/unregister/request-parameters.adoc[]
 
 ==== Example response
 include::static-snippets/unregister/http-response.adoc[]
