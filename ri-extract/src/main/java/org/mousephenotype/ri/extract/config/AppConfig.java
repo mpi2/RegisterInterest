@@ -125,7 +125,7 @@ public class AppConfig {
                 .driverClassName("com.mysql.jdbc.Driver").build();
         ((BasicDataSource) ds).setInitialSize(4);
         ((BasicDataSource) ds).setLogAbandoned(false);
-        ((BasicDataSource) ds).setRemoveAbandoned(false);
+        ((BasicDataSource) ds).setRemoveAbandoned(true);
 
         try {
 
