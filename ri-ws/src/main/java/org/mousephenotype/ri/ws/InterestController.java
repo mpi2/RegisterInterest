@@ -21,6 +21,8 @@ import org.mousephenotype.ri.core.SqlUtils;
 import org.mousephenotype.ri.core.entities.GeneContact;
 import org.mousephenotype.ri.core.entities.Interest;
 import org.mousephenotype.ri.core.exceptions.InterestException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +43,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.*;
 @RestController
 public class InterestController {
 
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private SqlUtils sqlUtils;
 
     @Inject

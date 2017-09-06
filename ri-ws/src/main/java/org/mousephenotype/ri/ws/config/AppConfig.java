@@ -67,11 +67,10 @@ public class AppConfig {
                 .password(password)
                 .type(BasicDataSource.class)
                 .driverClassName("com.mysql.jdbc.Driver").build();
+
         ((BasicDataSource) ds).setInitialSize(4);
-
-
-        ((BasicDataSource) ds).setLogAbandoned(false);
-        ((BasicDataSource) ds).setRemoveAbandoned(false);
+        ((BasicDataSource) ds).setTestOnBorrow(true);
+        ((BasicDataSource) ds).setValidationQuery("SELECT 1");
 
         try {
 
