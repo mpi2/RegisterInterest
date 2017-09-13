@@ -180,7 +180,7 @@ public class SqlUtils {
                 "  g.assignment_status,\n" +
                 "  g.assignment_status_date,\n" +
                 "  count(g.symbol) AS subscriber_count,\n" +
-                "  GROUP_CONCAT(c.address, \"::\", gc.created_at SEPARATOR ' | ') AS subscribers\n" +
+                "  GROUP_CONCAT(c.address, \"::\", gc.created_at ORDER BY gc.created_at SEPARATOR ' | ') AS subscribers\n" +
                 "FROM gene g\n" +
                 "JOIN gene_contact gc ON gc.gene_pk = g. pk\n" +
                 "JOIN contact      c  ON c. pk      = gc.contact_pk\n" +
