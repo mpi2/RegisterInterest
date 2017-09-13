@@ -24,7 +24,8 @@ public class GenesOfInterestByPopularity {
     private String assignedTo;
     private String assignmentStatus;
     private Date   assignmentStatusDate;
-    private int    numUsers;
+    private int    subscriberCount;
+    private String subscribers;
 
     public String getMgiAccessionId() {
         return mgiAccessionId;
@@ -66,6 +67,22 @@ public class GenesOfInterestByPopularity {
         this.assignmentStatusDate = assignmentStatusDate;
     }
 
+    public int getSubscriberCount() {
+        return subscriberCount;
+    }
+
+    public void setSubscriberCount(int subscriberCount) {
+        this.subscriberCount = subscriberCount;
+    }
+
+    public String getSubscribers() {
+        return subscribers;
+    }
+
+    public void setSubscribers(String subscribers) {
+        this.subscribers = subscribers;
+    }
+
     @Override
     public String toString() {
         return "GenesOfInterestByPopularity{" +
@@ -74,15 +91,8 @@ public class GenesOfInterestByPopularity {
                 ", assignedTo='" + assignedTo + '\'' +
                 ", assignmentStatus='" + assignmentStatus + '\'' +
                 ", assignmentStatusDate=" + assignmentStatusDate +
-                ", numUsers=" + numUsers +
+                ", subscriberCount=" + subscriberCount +
+                ", subscribers='" + subscribers + '\'' +
                 '}';
-    }
-
-    public int getNumUsers() {
-        return numUsers;
-    }
-
-    public void setNumUsers(int numUsers) {
-        this.numUsers = numUsers;
     }
 }

@@ -179,12 +179,13 @@ public class SqlUtils {
                 "  g.assigned_to,\n" +
                 "  g.assignment_status,\n" +
                 "  g.assignment_status_date,\n" +
-                "  count(address) AS num_users\n" +
+                "  count(g.symbol) AS subscriber_count,\n" +
+                "  GROUP_CONCAT(c.address SEPARATOR ' | ') AS subscribers\n" +
                 "FROM gene g\n" +
-                "JOIN gene_contact gc ON gc.gene_pk = g.pk\n" +
-                "JOIN contact c ON c.pk = gc.contact_pk\n" +
-                "GROUP BY c.address\n" +
-                "ORDER BY count(address) DESC,symbol";
+                "JOIN gene_contact gc ON gc.gene_pk = g. pk\n" +
+                "JOIN contact      c  ON c. pk      = gc.contact_pk\n" +
+                "GROUP BY g.symbol\n" +
+                "ORDER BY count(address) DESC, g.symbol";
 
         Map<String, Object> parameterMap = new HashMap<>();
 

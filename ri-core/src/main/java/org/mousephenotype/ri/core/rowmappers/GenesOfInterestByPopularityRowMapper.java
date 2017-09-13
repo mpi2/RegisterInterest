@@ -48,7 +48,8 @@ public class GenesOfInterestByPopularityRowMapper implements RowMapper<GenesOfIn
         gene.setAssignmentStatusDate((date == null ? date : new Date(date.getTime())));
         gene.setMgiAccessionId(rs.getString("mgi_accession_id"));
         gene.setSymbol(rs.getString("symbol"));
-        gene.setNumUsers(rs.getInt("num_users"));
+        gene.setSubscriberCount(rs.getInt("subscriber_count"));
+        gene.setSubscribers(rs.getString("subscribers"));
 
         return gene;
     }

@@ -80,7 +80,7 @@ public class ApplicationGenesOfInterestByPopularity extends AbstractReport imple
         long start = System.currentTimeMillis();
 
         List<String> headerParams = Arrays.asList(new String[]{
-                "mgi_accession_id", "symbol", "assigned_to", "assignment_status", "assignment_status_date", "num_users"});
+                "mgi_accession_id", "symbol", "assigned_to", "assignment_status", "assignment_status_date", "subscriber_count", "subscribers"});
 
         csvWriter.writeRow(headerParams);
 
@@ -98,7 +98,8 @@ public class ApplicationGenesOfInterestByPopularity extends AbstractReport imple
                     , (gene.getAssignedTo() != null ? gene.getAssignedTo() : NO_DATA)
                     , (gene.getAssignmentStatus() != null ? gene.getAssignmentStatus() : NO_DATA)
                     , dateString
-                    , Integer.toString(gene.getNumUsers())
+                    , Integer.toString(gene.getSubscriberCount())
+                    , gene.getSubscribers()
 
             });
 
