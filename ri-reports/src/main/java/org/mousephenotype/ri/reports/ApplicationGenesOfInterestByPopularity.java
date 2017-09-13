@@ -80,7 +80,7 @@ public class ApplicationGenesOfInterestByPopularity extends AbstractReport imple
         long start = System.currentTimeMillis();
 
         List<String> headerParams = Arrays.asList(new String[]{
-                "mgi_accession_id", "symbol", "assigned_to", "assignment_status", "assignment_status_date", "subscriber_count", "subscribers"});
+                "mgi_accession_id", "symbol", "assigned_to", "assignment_status", "assignment_status_date", "subscriber_count", "subscriber::date_subscribed"});
 
         csvWriter.writeRow(headerParams);
 
