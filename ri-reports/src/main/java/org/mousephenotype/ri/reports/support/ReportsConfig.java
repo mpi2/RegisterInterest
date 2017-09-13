@@ -14,7 +14,7 @@
  *  License.
  ******************************************************************************/
 
-package org.mousephenotype.ri.ws.config;
+package org.mousephenotype.ri.reports.support;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.mousephenotype.ri.core.SqlUtils;
@@ -22,54 +22,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
-import org.springframework.boot.autoconfigure.data.neo4j.Neo4jDataAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
-import org.springframework.boot.autoconfigure.jms.JndiConnectionFactoryAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
+import javax.validation.constraints.NotNull;
 
 /**
- * Created by mrelac on 02/05/2017.
+ * ReportType bean configuration
  */
+
 @Configuration
-@PropertySource(value="file:${user.home}/configfiles/${profile}/ri.application.properties")
-@EnableAutoConfiguration(exclude = {
-        JndiConnectionFactoryAutoConfiguration.class,
-        DataSourceAutoConfiguration.class,
-        HibernateJpaAutoConfiguration.class,
-        JpaRepositoriesAutoConfiguration.class,
-        DataSourceTransactionManagerAutoConfiguration.class,
-        Neo4jDataAutoConfiguration.class
-})
-public class AppConfig {
+@EnableAutoConfiguration
+@PropertySource("file:${user.home}/configfiles/${profile:dev}/ri.application.properties")
+public class ReportsConfig {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Bean
-    public NamedParameterJdbcTemplate jdbc() {
-        return new NamedParameterJdbcTemplate(riDataSource());
-    }
 
-    @Bean
-    public SqlUtils sqlUtils() {
-        return new SqlUtils(jdbc());
-    }
-
+    @NotNull
     @Value("${datasource.ri.url}")
     String riUrl;
 
+    @NotNull
     @Value("${datasource.ri.username}")
     String username;
 
+    @NotNull
     @Value("${datasource.ri.password}")
     String password;
 
@@ -97,4 +79,14 @@ public class AppConfig {
 
         return ds;
     }
+
+	@Bean
+	public NamedParameterJdbcTemplate jdbcRi() {
+		return new NamedParameterJdbcTemplate(riDataSource());
+	}
+
+    @Bean
+	public SqlUtils sqlUtils() {
+    	return new SqlUtils(jdbcRi());
+	}
 }

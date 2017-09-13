@@ -14,56 +14,30 @@
  * License.
  ******************************************************************************/
 
-package org.mousephenotype.ri.core.exceptions;
-
-import org.springframework.http.HttpStatus;
+package org.mousephenotype.ri.reports.support;
 
 /**
  * Created by mrelac on 24/07/2015.
  */
-public class InterestException extends Exception {
+public class ReportException extends Exception {
 
-    private HttpStatus httpStatus;
-    
-    public InterestException() {
+    public ReportException() {
         super();
     }
 
-    public InterestException(String message) {
+    public ReportException(String message) {
         super(message);
     }
-    
-    public InterestException(HttpStatus httpStatus) {
-        super();
-        this.httpStatus = httpStatus;
-    }
-    
-    public InterestException(String message, HttpStatus httpStatus) {
-        super(message);
-        this.httpStatus = httpStatus;
-    }
 
-    public InterestException(Exception e) {
-        super(e);
-    }
-
-    public InterestException(String message, Throwable cause) {
+    public ReportException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public InterestException(Throwable cause) {
+    public ReportException(Throwable cause) {
         super(cause);
     }
 
-    public InterestException(String message, Throwable cause, boolean enableSuppression, boolean writeableStackTrace) {
+    public ReportException(String message, Throwable cause, boolean enableSuppression, boolean writeableStackTrace) {
         super(message, cause, enableSuppression, writeableStackTrace);
-    }
-
-    public HttpStatus getHttpStatus() {
-        return httpStatus;
-    }
-
-    public void setHttpStatus(HttpStatus httpStatus) {
-        this.httpStatus = httpStatus;
     }
 }

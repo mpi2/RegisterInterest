@@ -16,17 +16,16 @@
 
 package org.mousephenotype.ri.core.rowmappers;
 
-import org.mousephenotype.ri.core.entities.GeneStatus;
+import org.mousephenotype.ri.core.entities.report.GenesOfInterestByPopularity;
 import org.springframework.jdbc.core.RowMapper;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 
 /**
- * Created by mrelac on 12/05/2017.
+ * Created by mrelac on 12/09/2017.
  */
-public class GeneStatusRowMapper implements RowMapper<GeneStatus> {
+public class GenesOfInterestByPopularityRowMapper implements RowMapper<GenesOfInterestByPopularity> {
 
     /**
      * Implementations must implement this method to map each row of data
@@ -40,18 +39,17 @@ public class GeneStatusRowMapper implements RowMapper<GeneStatus> {
      *                      column values (that is, there's no need to catch SQLException)
      */
     @Override
-    public GeneStatus mapRow(ResultSet rs, int rowNum) throws SQLException {
-        GeneStatus geneStatus = new GeneStatus();
+    public GenesOfInterestByPopularity mapRow(ResultSet rs, int rowNum) throws SQLException {
+        GenesOfInterestByPopularity gene = new GenesOfInterestByPopularity();
 
-        geneStatus.setPk(rs.getInt("pk"));
+        gene.setAssignedTo(rs.getString("assigned_to"));
+        gene.setAssignmentStatus(rs.getString("assignment_status"));
+        Date date = rs.getTimestamp("assignment_status_date");
+        gene.setAssignmentStatusDate((date == null ? date : new Date(date.getTime())));
+        gene.setMgiAccessionId(rs.getString("mgi_accession_id"));
+        gene.setSymbol(rs.getString("symbol"));
+        gene.setNumUsers(rs.getInt("num_users"));
 
-        geneStatus.setStatus(rs.getString("status"));
-        int active = rs.getInt("active");
-        geneStatus.setActive(active > 0 ? true : false);
-
-        geneStatus.setCreatedAt(new Date(rs.getTimestamp("created_at").getTime()));
-        geneStatus.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));
-
-        return geneStatus;
+        return gene;
     }
 }
