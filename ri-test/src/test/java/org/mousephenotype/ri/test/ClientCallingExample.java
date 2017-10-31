@@ -19,13 +19,14 @@ package org.mousephenotype.ri.test;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+
+import java.util.Base64;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.test.context.junit4.SpringRunner;
-import sun.misc.BASE64Encoder;
 
 import javax.validation.constraints.NotNull;
 
@@ -113,7 +114,7 @@ public class ClientCallingExample implements CommandLineRunner {
         }
 
         String authString = username + ":" + password;
-        authStringEncoded = new BASE64Encoder().encode(authString.getBytes());
+        authStringEncoded = Base64.getEncoder().encodeToString(authString.getBytes());
         System.out.println("Base64 encoded auth string: " + authStringEncoded);
     }
 
