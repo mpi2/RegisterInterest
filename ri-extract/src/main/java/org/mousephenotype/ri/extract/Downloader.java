@@ -16,6 +16,7 @@
 
 package org.mousephenotype.ri.extract;
 
+import org.mousephenotype.ri.core.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.ExitStatus;
@@ -37,7 +38,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import org.mousephenotype.ri.core.DateUtils;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -103,7 +103,8 @@ public class Downloader implements Tasklet, InitializingBean {
             logger.info(source + " -> " + target + "(" + dateUtils.msToHms(new Date().getTime() - start) + ")");
 
         } catch (IOException e) {
-            logger.warn(source + " -> " + target + "(" + dateUtils.msToHms(new Date().getTime() - start) + "). Reason: " + e.getLocalizedMessage());
+
+            logger.warn("Download of " + target + " from URL '" + source + "' failed failed. Reason: " + e.getLocalizedMessage());
         }
 
         logger.debug("Total steps elapsed time: " + dateUtils.msToHms(new Date().getTime() - startStep));
@@ -117,5 +118,9 @@ public class Downloader implements Tasklet, InitializingBean {
         return stepBuilderFactory.get("databaseInitialiserStep")
                 .tasklet(this)
                 .build();
+    }
+
+    public String getTargetFilename() {
+        return targetFilename;
     }
 }

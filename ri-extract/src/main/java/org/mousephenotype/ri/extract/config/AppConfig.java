@@ -18,7 +18,6 @@ package org.mousephenotype.ri.extract.config;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.mousephenotype.ri.core.SqlUtils;
-import org.mousephenotype.ri.core.UrlUtils;
 import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.entities.ImitsStatus;
 import org.mousephenotype.ri.core.exceptions.InterestException;
@@ -28,6 +27,8 @@ import org.mousephenotype.ri.extract.GeneProcessor;
 import org.mousephenotype.ri.extract.GeneWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
@@ -45,10 +46,10 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,6 +58,7 @@ import java.util.Map;
  */
 @Configuration
 @PropertySource(value="file:${user.home}/configfiles/${profile}/ri.application.properties")
+@EnableBatchProcessing
 @EnableAutoConfiguration(exclude = {
         JndiConnectionFactoryAutoConfiguration.class,
         DataSourceAutoConfiguration.class,
@@ -70,6 +72,7 @@ import java.util.Map;
 public class AppConfig {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private StepBuilderFactory stepBuilderFactory;
 
     @NotNull
     @Value("${GeneStatusChangeUrl}")
@@ -78,6 +81,12 @@ public class AppConfig {
     @NotNull
     @Value("${download.workspace}")
     protected String downloadWorkspace;
+
+    @Inject
+    public AppConfig(StepBuilderFactory stepBuilderFactory) {
+        this.stepBuilderFactory = stepBuilderFactory;
+    }
+
 
     private enum DownloadFileEnum {
         GENE_STATUS_CHANGE
@@ -171,19 +180,10 @@ public class AppConfig {
 
     @Bean(name = "geneLoader")
     public GeneLoader geneLoader() throws InterestException {
-        Map<GeneLoader.FilenameKeys, String> filenameKeys = new HashMap<>();
-        Map<DownloadFileEnum, DownloadFilename> downloadFilenameMap = new HashMap<>();
-
-        for (DownloadFilename downloadFilename : filenames) {
-
-            downloadFilename.sourceUrl = UrlUtils.getRedirectedUrl(downloadFilename.sourceUrl);                         // Resolve any URL redirection.
-            downloadFilenameMap.put(downloadFilename.downloadFileEnum, downloadFilename);
-        }
-
-        filenameKeys.put(GeneLoader.FilenameKeys.EBI_Gene, downloadFilenameMap.get(DownloadFileEnum.GENE_STATUS_CHANGE).targetFilename);
-
-        return new GeneLoader(filenameKeys);
+            return new GeneLoader(
+                    geneProcessor(), stepBuilderFactory, geneWriter());
     }
+
 
     @Bean(name = "geneProcessor")
     public GeneProcessor geneProcessor() throws InterestException {

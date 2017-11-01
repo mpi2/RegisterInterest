@@ -34,6 +34,8 @@ import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.core.env.PropertySource;
+import org.springframework.core.env.SimpleCommandLinePropertySource;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 
 import javax.inject.Inject;
@@ -58,13 +60,14 @@ public class ApplicationExtract implements CommandLineRunner {
 
     private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private JobBuilderFactory jobBuilderFactory;
+    private JobBuilderFactory  jobBuilderFactory;
     private StepBuilderFactory stepBuilderFactory;
-    private JobRepository jobRepository;
-    private List<Downloader> downloader;
-    private GeneLoader imitsLoader;
-    private DataSource riDataSource;
-    private SqlUtils sqlUtils;
+    private JobRepository      jobRepository;
+    private List<Downloader>   downloader;
+    private GeneLoader         imitsLoader;
+    private String             pathToGeneStatusChangeReport;
+    private DataSource         riDataSource;
+    private SqlUtils           sqlUtils;
 
 
     public static void main(String[] args) throws Exception {
@@ -96,10 +99,23 @@ public class ApplicationExtract implements CommandLineRunner {
         this.sqlUtils = sqlUtils;
     }
 
-
+    /**
+     * Callers may opt to pass in the fully-qualified path of the gene status report (default is GeneStatusChange.tsv)
+     * by using the --report=xxx argument. If supplied, no download is done; the supplied report file is used instead.
+     *
+     * @param args
+     * @throws Exception
+     */
 
     @Override
     public void run(String... args) throws Exception {
+
+        PropertySource ps = new SimpleCommandLinePropertySource(args);
+        if (ps.containsProperty("report")) {
+            pathToGeneStatusChangeReport = ps.getProperty("report").toString();
+            imitsLoader.setPathToGeneStatusChangeReport(pathToGeneStatusChangeReport);
+        }
+
         runJobs();
     }
 
@@ -116,10 +132,14 @@ public class ApplicationExtract implements CommandLineRunner {
             throw new InterestException("Unable to create Spring Batch tables.");
         }
 
-        Job[] jobs = new Job[]{
-                downloaderJob(),
-                imitsLoaderJob()
-        };
+        List<Job> jobList = new ArrayList<>();
+        if (pathToGeneStatusChangeReport == null) {
+            jobList.add(downloaderJob());
+        }
+        jobList.add(imitsLoaderJob());
+
+        Job[] jobs = jobList.toArray(new Job[0]);
+
         DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
         String now = dateFormat.format(new Date());
 
@@ -154,11 +174,15 @@ public class ApplicationExtract implements CommandLineRunner {
             flowBuilder.split(executor).add(flows.get(i));
         }
 
-        return jobBuilderFactory.get("downloaderJob")
+        Job j = jobBuilderFactory.get("downloaderJob")
                 .incrementer(new RunIdIncrementer())
                 .start(flowBuilder.build())
                 .end()
                 .build();
+
+        imitsLoader.setPathToGeneStatusChangeReport(downloader.get(0).getTargetFilename());
+
+        return j;
     }
 
     public Job imitsLoaderJob() throws InterestException {

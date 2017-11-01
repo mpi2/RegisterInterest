@@ -16,12 +16,17 @@
 
 package org.mousephenotype.ri.extract;
 
+import org.mousephenotype.ri.core.DateUtils;
 import org.mousephenotype.ri.core.entities.Gene;
+import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.mousephenotype.ri.extract.support.BlankLineRecordSeparatorPolicy;
 import org.mousephenotype.ri.extract.support.LogStatusStepListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.core.*;
+import org.springframework.batch.core.JobInterruptedException;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.job.builder.FlowBuilder;
 import org.springframework.batch.core.job.flow.Flow;
@@ -31,16 +36,11 @@ import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.mapping.FieldSetMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.batch.item.file.transform.FieldSet;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindException;
 
-import org.mousephenotype.ri.core.exceptions.InterestException;
-import org.mousephenotype.ri.core.DateUtils;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.File;
 import java.util.Set;
 
 
@@ -50,20 +50,19 @@ import java.util.Set;
  * Created by mrelac on 22/05/2017
  *
  */
-public class GeneLoader implements InitializingBean, Step {
+@EnableBatchProcessing
+public class GeneLoader implements Step {
 
-    private DateUtils dateUtils = new DateUtils();
-    public Map<FilenameKeys, String> imitsKeys = new HashMap<>();
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
+    private DateUtils                dateUtils  = new DateUtils();
+    private ItemProcessor            geneProcessor;
     private FlatFileItemReader<Gene> geneReader = new FlatFileItemReader<>();
+    private Logger                   logger     = LoggerFactory.getLogger(this.getClass());
+    private String                   pathToGeneStatusChangeReport;
+    private StepBuilderFactory       stepBuilderFactory;
+    private GeneWriter               writer;
 
-    public enum FilenameKeys {
-        EBI_Gene
-    }
 
-
-    // Fields within EBI_Gene.csv:
+    // Fields within GeneStatusChange.tsv:
     private final String[] geneColumnNames = new String[] {
               "gene_mgi_accession_id"                           // A - Gene MGI accession id
             , "gene_marker_symbol"                              // B - Gene marker symbol
@@ -84,35 +83,17 @@ public class GeneLoader implements InitializingBean, Step {
             , "number_of_significant_phenotypes"                // Q - Number of significant phenotypes
     };
 
-    @Autowired
-    private ItemProcessor geneProcessor;
 
-    @Autowired
-    private StepBuilderFactory stepBuilderFactory;
-
-    @Autowired
-    private GeneWriter writer;
-
-
-    public GeneLoader(Map<FilenameKeys, String> imitsKeys) throws InterestException {
-        this.imitsKeys = imitsKeys;
+    public GeneLoader(
+            ItemProcessor geneProcessor,
+            StepBuilderFactory stepBuilderFactory,
+            GeneWriter writer
+    ) throws InterestException {
+        this.geneProcessor = geneProcessor;
+        this.stepBuilderFactory = stepBuilderFactory;
+        this.writer = writer;
     }
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-
-        geneReader.setResource(new FileSystemResource(imitsKeys.get(FilenameKeys.EBI_Gene)));
-        geneReader.setComments(new String[] {"#" });
-        geneReader.setRecordSeparatorPolicy(new BlankLineRecordSeparatorPolicy());
-        DefaultLineMapper<Gene> lineMapperPhenotypedColony = new DefaultLineMapper<>();
-        String delimiter = (imitsKeys.get(FilenameKeys.EBI_Gene).toLowerCase().endsWith("tsv") ? "\t" : ",");
-        DelimitedLineTokenizer              tokenizerPhenotypedColony  = new DelimitedLineTokenizer(delimiter);
-        tokenizerPhenotypedColony.setStrict(false);     // Relax token count. Some lines have more tokens; others, less, causing a parsing exception.
-        tokenizerPhenotypedColony.setNames(geneColumnNames);
-        lineMapperPhenotypedColony.setLineTokenizer(tokenizerPhenotypedColony);
-        lineMapperPhenotypedColony.setFieldSetMapper(new GeneFieldSetMapper());
-        geneReader.setLineMapper(lineMapperPhenotypedColony);
-    }
 
     public class GeneFieldSetMapper implements FieldSetMapper<Gene> {
 
@@ -227,6 +208,24 @@ public class GeneLoader implements InitializingBean, Step {
     @Override
     public void execute(StepExecution stepExecution) throws JobInterruptedException {
 
+        File f = new File(pathToGeneStatusChangeReport);
+        if (( ! f.exists()) || (f.isDirectory())) {
+            String message = "Unable to read GeneStatusReport '" + pathToGeneStatusChangeReport + "'";
+            logger.error(message);
+            throw new JobInterruptedException(message);
+        }
+        geneReader.setResource(new FileSystemResource(pathToGeneStatusChangeReport));
+        geneReader.setComments(new String[] {"#" });
+        geneReader.setRecordSeparatorPolicy(new BlankLineRecordSeparatorPolicy());
+        DefaultLineMapper<Gene> lineMapperPhenotypedColony = new DefaultLineMapper<>();
+        String delimiter = (pathToGeneStatusChangeReport.toLowerCase().endsWith("tsv") ? "\t" : ",");
+        DelimitedLineTokenizer              tokenizerPhenotypedColony  = new DelimitedLineTokenizer(delimiter);
+        tokenizerPhenotypedColony.setStrict(false);     // Relax token count. Some lines have more tokens; others, less, causing a parsing exception.
+        tokenizerPhenotypedColony.setNames(geneColumnNames);
+        lineMapperPhenotypedColony.setLineTokenizer(tokenizerPhenotypedColony);
+        lineMapperPhenotypedColony.setFieldSetMapper(new GeneFieldSetMapper());
+        geneReader.setLineMapper(lineMapperPhenotypedColony);
+
         Step geneLoaderStep = stepBuilderFactory.get("geneLoaderStepExecutor")
                 .listener(new GeneStepListener())
                 .chunk(200000)
@@ -252,12 +251,20 @@ public class GeneLoader implements InitializingBean, Step {
             logger.info("GENE LOADER: Inserted {} new gene records and updated {} gene records in database from file {} in {}.",
                     writer.getInsertCount(),
                     writer.getUpdateCount(),
-                    imitsKeys.get(FilenameKeys.EBI_Gene),
+                    pathToGeneStatusChangeReport,
                     dateUtils.formatDateDifference(start, stop));
 
             logger.info("");
 
             return ((GeneProcessor) geneProcessor).getErrMessages();
         }
+    }
+
+
+    // GETTERS AND SETTERS
+
+
+    public void setPathToGeneStatusChangeReport(String pathToGeneStatusChangeReport) {
+        this.pathToGeneStatusChangeReport = pathToGeneStatusChangeReport;
     }
 }
