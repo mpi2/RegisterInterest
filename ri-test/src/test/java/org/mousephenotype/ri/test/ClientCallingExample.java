@@ -19,8 +19,6 @@ package org.mousephenotype.ri.test;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
-
-import java.util.Base64;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.Banner;
@@ -28,7 +26,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.validation.constraints.NotNull;
+import java.util.Base64;
 
 /**
  * Created by mrelac on 20/09/2017.
