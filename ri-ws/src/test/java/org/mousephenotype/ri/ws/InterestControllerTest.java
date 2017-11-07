@@ -17,7 +17,9 @@
 package org.mousephenotype.ri.ws;
 
 import org.hamcrest.Matchers;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mousephenotype.ri.ws.config.TestConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Created by mrelac on 02/05/2017.
+ *
+ * NOTE: Here is a good example of how to re-execute the database load script:
+ *
+ *      Resource r = context.getResource("classpath:sql/h2/generate-data.sql");
+ *      ScriptUtils.executeSqlScript(ds.getConnection(), r);
  */
 @RunWith(SpringRunner.class)
 @WebAppConfiguration
@@ -423,17 +430,24 @@ public class InterestControllerTest {
     @Test
     public void unregisterExistingEmailAndExistingRegisteredGene() throws Exception {
 
-        String url = "/contacts?email=user1@ebi.ac.uk&gene=MGI:0000020&type=gene";
+        String url = "/contacts?email=user4@ebi.ac.uk&gene=MGI:0000020&type=gene";
+
+        // First, add a new user and existing gene so we have something valid to unregister. Use new email as existing emails cause other tests to fail since database is not reloaded between tests.
+        this.mockMvc.perform(
+                post(url)
+                        .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", Matchers.comparesEqualTo("Register contact user4@ebi.ac.uk for gene MGI:0000020: OK")))
+        ;
+
+        url = "/contacts?email=user4@ebi.ac.uk&gene=MGI:0000020&type=gene";
 
         this.mockMvc.perform(
                 delete(url)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", Matchers.comparesEqualTo("Unregister contact user1@ebi.ac.uk for gene MGI:0000020: OK")))
+                .andExpect(jsonPath("$", Matchers.comparesEqualTo("Unregister contact user4@ebi.ac.uk for gene MGI:0000020: OK")))
         ;
 
-
-        // Clean up. Add this registration back in.
-        this.mockMvc.perform(post(url));
     }
 }

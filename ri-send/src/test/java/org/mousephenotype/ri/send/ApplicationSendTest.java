@@ -42,6 +42,12 @@ public class ApplicationSendTest {
     private SqlUtils sqlUtils;
 
 
+    /**
+     * Sends an e-mail from no-reply@ebi.ac.uk to mrelac@ebi.ac.uk with subject 'my subject' and body 'my body'
+     * to test send infrastructure
+     *
+     * @throws Exception
+     */
     @Ignore
     @Test
     public void testSendRegisterInterest() throws Exception {

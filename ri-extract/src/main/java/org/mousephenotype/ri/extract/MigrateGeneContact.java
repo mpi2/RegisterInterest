@@ -195,7 +195,7 @@ public class MigrateGeneContact implements CommandLineRunner {
 
                     Gene gene = genesMap.get(mgiAccessionId);
                     Contact contact = sqlUtils.updateOrInsertContact("migrator", email, 1, contactCreatedAt);
-                    int localCount = sqlUtils.insertOrUpdateGeneContact(gene.getPk(), contact.getPk(), geneContactCreatedAt);
+                    int localCount = sqlUtils.insertOrUpdateGeneContact(gene.getPk(), contact.getPk(), 1, geneContactCreatedAt);
                     count += localCount;
 
                 } catch (InterestException e) {

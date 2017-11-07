@@ -33,8 +33,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.inject.Inject;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -60,10 +58,10 @@ public class InterestController {
     public ResponseEntity<List<Interest>> getContacts(
             @RequestParam(value = "email", required = false) String email,
             @RequestParam(value = "type", required = false) String type,
-            @RequestParam(value = INTEREST_GENE, required = false) String gene
+            @RequestParam(value = INTEREST_GENE, required = false) String geneAccessionId
     ) {
 
-        List<Interest> list = sqlUtils.getInterests(email, type, gene);
+        List<Interest> list = sqlUtils.getInterests(email, type, geneAccessionId);
         HttpHeaders responseHeaders = new HttpHeaders();
         HttpStatus status = HttpStatus.OK;
 
@@ -77,7 +75,7 @@ public class InterestController {
 
             @RequestParam(value = "email", required = true) String email,
             @RequestParam(value = "type", required = true) String type,
-            @RequestParam(value = "gene", required = true) String gene
+            @RequestParam(value = "gene", required = true) String geneAccessionId
     ) {
 
         HttpHeaders responseHeaders = new HttpHeaders();
@@ -95,7 +93,7 @@ public class InterestController {
         // Validate the email address.
         EmailValidator validator = EmailValidator.getInstance(false);
         if ( ! validator.isValid(email)) {
-            message = "Register contact " + email + " for gene " + gene + " failed: malformatted email address";
+            message = "Register contact " + email + " for gene " + geneAccessionId + " failed: malformatted email address";
             sqlUtils.logSendAction(invoker, null, null, message);
             return new ResponseEntity<>(message, responseHeaders, HttpStatus.BAD_REQUEST);
         }
@@ -103,24 +101,24 @@ public class InterestController {
         if (type.equals(INTEREST_GENE)) {
             try {
 
-                GeneContact geneContact = sqlUtils.getGeneContact(gene, email, 1);
-                if (geneContact == null) {
-                    sqlUtils.insertInterestGene(invoker, gene, email, now, now);
+                GeneContact geneContact = sqlUtils.getGeneContact(geneAccessionId, email);
+                if ((geneContact == null) || (geneContact.getActive() == 0)) {
+                    int geneContactActive = 1;
+                    sqlUtils.insertOrUpdateInterestGene(invoker, geneAccessionId, email, now, geneContactActive, now);
                 } else {
-                    DateFormat inputDateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    message = "Register contact " + email + " for gene " + gene + ": contact is already registered for that gene.";
+                    message = "Register contact " + email + " for gene " + geneAccessionId + ": contact is already registered for that gene.";
                     sqlUtils.logSendAction(invoker, null, null, message);
                     return new ResponseEntity<>(message, responseHeaders, HttpStatus.OK);
                 }
 
-                interests = sqlUtils.getInterests(email, INTEREST_GENE, gene);
+                interests = sqlUtils.getInterests(email, INTEREST_GENE, geneAccessionId);
 
             } catch (InterestException e) {
 
                 return new ResponseEntity<>(e.getLocalizedMessage(), responseHeaders, e.getHttpStatus());
             }
 
-            message = "Register contact " + email + " for gene " + gene + ": OK";
+            message = "Register contact " + email + " for gene " + geneAccessionId + ": OK";
             if ( ! interests.isEmpty()) {
                 sqlUtils.logSendAction(invoker, interests.get(0).getGenes().get(0).getPk(), interests.get(0).getContact().getPk(), message);
             }
@@ -136,7 +134,7 @@ public class InterestController {
 
             @RequestParam(value = "email", required = true) String email,
             @RequestParam(value = "type", required = true) String type,
-            @RequestParam(value = "gene", required = true) String gene
+            @RequestParam(value = "gene", required = true) String geneAccessionId
     ) {
 
         HttpHeaders responseHeaders = new HttpHeaders();
@@ -153,9 +151,9 @@ public class InterestController {
         if (type.equals(INTEREST_GENE)) {
             try {
 
-                gc = sqlUtils.getGeneContact(gene, email, 1);
-                if (gc == null) {
-                    message = "Unregister contact " + email + " for gene " + gene + " failed: no such active registration exists";
+                gc = sqlUtils.getGeneContact(geneAccessionId, email);
+                if ((gc == null) || (gc.getActive() == 0)) {
+                    message = "Unregister contact " + email + " for gene " + geneAccessionId + " failed: no such active registration exists";
                     throw new InterestException(message, HttpStatus.NOT_FOUND);
                 }
 
@@ -163,7 +161,7 @@ public class InterestController {
                 int contactPk = gc.getContactPk();
 
                 sqlUtils.removeInterestGene(gc);
-                message = "Unregister contact " + email + " for gene " + gene + ": OK";
+                message = "Unregister contact " + email + " for gene " + geneAccessionId + ": OK";
                 sqlUtils.logSendAction(invoker, genePk, contactPk, message);
 
             } catch (InterestException e) {

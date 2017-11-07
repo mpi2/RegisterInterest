@@ -50,7 +50,7 @@ CREATE TABLE gene_contact (
   pk          INT       NOT NULL      AUTO_INCREMENT PRIMARY KEY,
   contact_pk  INT       NOT NULL,
   gene_pk     INT       NOT NULL,
-  active      INT       NOT NULL      DEFAULT 1,                             -- 1 = active; 0 = inactive
+  active      INT       NOT NULL      DEFAULT 1,                             -- 1 = active; 0 = inactive, -1 = unregister pending
   created_at  DATETIME  NOT NULL,
   updated_at  TIMESTAMP NOT NULL      DEFAULT CURRENT_TIMESTAMP,
 

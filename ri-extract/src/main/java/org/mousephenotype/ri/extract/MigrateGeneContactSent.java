@@ -226,7 +226,7 @@ public class MigrateGeneContactSent implements CommandLineRunner {
 
                 try {
 
-                    geneContact = sqlUtils.insertInterestGene("migrator", mgiAccessionId, email, contactCreatedAt, geneContactCreatedAt);
+                    geneContact = sqlUtils.insertOrUpdateInterestGene("migrator", mgiAccessionId, email, contactCreatedAt, 1, geneContactCreatedAt);
 
                     geneSent.setSubject("migrated");
                     geneSent.setBody("migrated");

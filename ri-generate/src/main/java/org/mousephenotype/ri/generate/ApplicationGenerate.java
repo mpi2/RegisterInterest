@@ -29,7 +29,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -66,14 +65,6 @@ public class ApplicationGenerate implements CommandLineRunner {
     }
 
 
-    @PostConstruct
-    public void initialise() {
-        geneContacts = sqlUtils.getGeneContacts();
-        genesMap = sqlUtils.getGenesByPk();
-        geneSentMap = sqlUtils.getGeneSent();
-    }
-
-
     public static void main(String[] args) throws Exception {
         SpringApplication app = new SpringApplication(ApplicationGenerate.class);
         app.setBannerMode(Banner.Mode.OFF);
@@ -88,7 +79,11 @@ public class ApplicationGenerate implements CommandLineRunner {
 
         int count = 0;
         String message;
-        
+
+        geneContacts = sqlUtils.getGeneContacts();
+        genesMap = sqlUtils.getGenesByPk();
+        geneSentMap = sqlUtils.getGeneSent();
+
         /**
          * For each geneContact:
          *      - Look up the Gene object from genesMap using the gene primary key (found in the geneContact object)
@@ -112,6 +107,11 @@ public class ApplicationGenerate implements CommandLineRunner {
             gene = Validator.validate(gene, errorMessages);
             if (gene == null) {
                 continue;
+            }
+
+            // If the user unregistered interest, process that request here.
+            if (geneContact.getActive() == -1) {
+                count += generateUnregisterGeneEmail(gene, geneContact);
             }
 
             boolean shouldWelcome = false;
@@ -352,7 +352,11 @@ public class ApplicationGenerate implements CommandLineRunner {
         return subject;
     }
 
-    public int generateUnregisterGeneEmail(Gene gene, GeneContact geneContact) throws InterestException {
+
+    // PRIVATE METHODS
+
+
+    private int generateUnregisterGeneEmail(Gene gene, GeneContact geneContact) throws InterestException {
         GeneSent geneSent = new GeneSent();
         StringBuilder body = new StringBuilder();
 

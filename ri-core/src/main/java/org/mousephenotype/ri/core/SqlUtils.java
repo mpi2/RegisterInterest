@@ -303,10 +303,9 @@ public class SqlUtils {
      *
      * @param gene The mgi accession id of the gene of interest
      * @param email the email address of interest
-     * @param active if 1, filter by active only; if 0; filter by inactive only; if null, ignore active flag
      * @return the {@link GeneContact} instance, if found; null otherwise
      */
-    public GeneContact getGeneContact(String gene, String email, Integer active) {
+    public GeneContact getGeneContact(String gene, String email) {
         String query =
                 "SELECT * FROM gene_contact gc\n" +
                 "JOIN gene g ON g.pk = gc.gene_pk\n" +
@@ -316,10 +315,6 @@ public class SqlUtils {
         Map<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("gene", gene);
         parameterMap.put("email", email);
-        if (active != null) {
-            query += " AND gc.active = 1";
-            parameterMap.put("active", (active > 0 ? 1 : 0));
-        }
 
         List<GeneContact> list = jdbcInterest.query(query, parameterMap, new GeneContactRowMapper());
 
@@ -379,15 +374,16 @@ public class SqlUtils {
      *
      * @param genePk The primary key gene to be inserted/updated
      * @param contactPk The primary key of the contact to be inserted/updated
+     * @param active the {@link GeneContact} active flag (0 = inactive; 1 = active; 2 = pending unregister
      * @param createdAt The @link GeneContact} creation date. If NULL, the current time and date is used.
      *
      * @return the count of inserted/activated geneContacts.
      */
-    public int insertOrUpdateGeneContact(int genePk, int contactPk, Date createdAt) throws InterestException {
+    public int insertOrUpdateGeneContact(int genePk, int contactPk, int active, Date createdAt) throws InterestException {
         int count = 0;
         String insert = "INSERT INTO gene_contact(contact_pk, gene_pk, created_at, active) " +
                         "VALUES (:contact_pk, :gene_pk, :created_at, 1)";
-        String update = "UPDATE gene_contact SET active = 1 WHERE contact_pk = :contact_pk AND gene_pk = :gene_pk";
+        String update = "UPDATE gene_contact SET active = :active WHERE contact_pk = :contact_pk AND gene_pk = :gene_pk";
 
         if (createdAt == null) {
             createdAt = new Date();
@@ -399,6 +395,7 @@ public class SqlUtils {
             parameterMap.put("contact_pk", contactPk);
             parameterMap.put("gene_pk", genePk);
             parameterMap.put("created_at", createdAt);
+            parameterMap.put("active", active);
 
             count += jdbcInterest.update(insert, parameterMap);
 
@@ -423,6 +420,9 @@ public class SqlUtils {
      * @param invoker The authorised invoker of this request
      * @param gene The mgi accession id of the gene being registgered
      * @param email The email address being registered
+     * @param contactCreatedAt The date the contact was created
+     * @param geneContactActive The geneContact active flag
+     * @param geneContactCreatedAt The date the geneContact was created
      *
      * @return The newly-inserted {@link GeneContact} instance.
      *
@@ -431,11 +431,9 @@ public class SqlUtils {
      *
      *         @throws InterestException if the gene does not exist
      */
-    public GeneContact insertInterestGene(String invoker, String gene, String email, Date contactCreatedAt, Date geneContactCreatedAt) throws InterestException {
+    public GeneContact insertOrUpdateInterestGene(String invoker, String gene, String email, Date contactCreatedAt, int geneContactActive, Date geneContactCreatedAt) throws InterestException {
 
-        int count = 0;
-        Map<String, Integer> results = new HashMap<>();
-        String message = "";
+        String message;
 
         // Check that the gene exists.
         Gene geneInstance = getGene(gene);
@@ -448,9 +446,9 @@ public class SqlUtils {
         Contact contact = updateOrInsertContact(invoker, email, 1, contactCreatedAt);
 
         // Insert into the gene_contact table.
-        insertOrUpdateGeneContact(geneInstance.getPk(), contact.getPk(), geneContactCreatedAt);
+        insertOrUpdateGeneContact(geneInstance.getPk(), contact.getPk(), geneContactActive, geneContactCreatedAt);
 
-        return getGeneContact(gene, email, 1);
+        return getGeneContact(gene, email);
     }
 
     public void logGeneStatusChangeAction(GeneSent geneSent, int contactPk, Integer genePk, String message) {
@@ -512,7 +510,7 @@ public class SqlUtils {
     public void removeInterestGene(GeneContact gc) throws InterestException {
 
         String message;
-        final String query = "UPDATE gene_contact SET active = 0 WHERE pk = :pk";
+        final String query = "UPDATE gene_contact SET active = -1 WHERE pk = :pk";
 
         try {
 

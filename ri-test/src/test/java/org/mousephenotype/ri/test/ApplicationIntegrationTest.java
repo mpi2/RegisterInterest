@@ -65,12 +65,14 @@ public class ApplicationIntegrationTest {
         generateContext.getAutowireCapableBeanFactory().autowireBean(generateApp);
         generateContext.getAutowireCapableBeanFactory().initializeBean(generateApp, "generateApp");
 
+        // Unregister this contact/geneAccessionId combination.
         Gene gene = sqlutils.getGene("MGI:0000220");
-        GeneContact geneContact = sqlutils.getGeneContact("MGI:0000220", "mrelac@ebi.ac.uk", 1);
+        GeneContact geneContact = sqlutils.getGeneContact("MGI:0000220", "mrelac@ebi.ac.uk");
+        sqlutils.insertOrUpdateGeneContact(gene.getPk(), geneContact.getContactPk(), -1, null);
 
         generateApp.run();
-        generateApp.generateUnregisterGeneEmail(gene, geneContact);
-        checkSent(generateApp);
+
+        checkGenerated();
 
         if (SEND_EMAIL) {
             ApplicationSend sendApp = new ApplicationSend(sqlutils);
@@ -85,7 +87,7 @@ public class ApplicationIntegrationTest {
     // PRIVATE METHODS
 
 
-    private void checkSent(ApplicationGenerate generateApp) {
+    private void checkGenerated() {
 
         ArrayList<GeneSent> candidateList = new ArrayList<>(sqlutils.getGenesScheduledForSending());
         GeneSent[] candidates = candidateList.toArray(new GeneSent[0]);
