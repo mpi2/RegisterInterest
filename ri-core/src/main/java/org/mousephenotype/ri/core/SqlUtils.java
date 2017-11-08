@@ -130,6 +130,25 @@ public class SqlUtils {
     }
 
     /**
+     * Return the {@link GeneSent}
+     *
+     * @param pk the gene_sent primary key
+     *
+     * @return the {@link GeneSent} matching the geneContactPk if found; null otherwise
+     */
+    public GeneSent getGeneSent(int pk) {
+
+        final String query = "SELECT * FROM gene_sent WHERE pk = :pk";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("pk", pk);
+
+        List<GeneSent> genesSent = jdbcInterest.query(query, parameterMap, new GeneSentRowMapper());
+
+        return (genesSent.isEmpty() ? null : genesSent.get(0));
+    }
+
+    /**
      * @return A map of all genes, indexed by mgi accession id.
      */
     public Map<String, Gene> getGenes() {
@@ -616,8 +635,7 @@ public class SqlUtils {
     }
 
     /**
-     * Try to update the given {@link GeneSent} instance. If the update fails because it's missing,
-     * insert the record.
+     * Insert the given {@link GeneSent} instance.
      *
      * @param geneSent the {@link GeneSent } instance to be used to update the database
      *
@@ -625,29 +643,16 @@ public class SqlUtils {
      *
      * @throws InterestException
      */
-    public GeneSent updateOrInsertGeneSent(GeneSent geneSent) throws InterestException {
+    public GeneSent insertGeneSent(GeneSent geneSent) throws InterestException {
 
-        try {
+        Map<String, Object> parameterMap = loadSentParameterMap(geneSent);
 
-            Map<String, Object> parameterMap = loadSentParameterMap(geneSent);
+        KeyHolder          keyholder       = new GeneratedKeyHolder();
+        SqlParameterSource parameterSource = new MapSqlParameterSource(parameterMap);
 
-            // Except for the initial load, most of the time the row will already exist.
-            // Try to update. If that fails because it doesn't yet exist, insert.
-            int updateCount = updateGeneSent(geneSent, parameterMap);
-            if (updateCount == 0) {
+        int pk = insertGeneSent(parameterSource, keyholder);
 
-                KeyHolder keyholder = new GeneratedKeyHolder();
-                SqlParameterSource parameterSource = new MapSqlParameterSource(parameterMap);
-
-                int pk = insertGeneSent(parameterSource, keyholder);
-                geneSent.setPk(pk);
-            }
-
-        } catch (Exception e) {
-            logger.error(e.getLocalizedMessage());
-        }
-
-        return geneSent;
+        return getGeneSent(pk);
     }
 
 
@@ -656,7 +661,6 @@ public class SqlUtils {
 
     private int insertGene(Map<String, Object> parameterMap) throws InterestException {
 
-        // Try to insert the row into gene. If the mgi accession id already exists, the INSERT operation is ignored.
         final String columnNames =
                 "mgi_accession_id, symbol, assigned_to, assignment_status, assignment_status_date, assignment_status_pk, " +
                 "conditional_allele_production_centre, conditional_allele_production_status, conditional_allele_production_status_pk, " +

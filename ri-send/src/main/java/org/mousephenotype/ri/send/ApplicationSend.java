@@ -154,7 +154,7 @@ public class ApplicationSend implements CommandLineRunner {
 
             Transport.send(message);
             geneSent.setSentAt(new Date());
-            sqlUtils.updateOrInsertGeneSent(geneSent);
+            sqlUtils.insertGeneSent(geneSent);
             String logMessage = "email scheduled for transport " + geneSent.getSentAt() + " for genePk " + gc.getGenePk() + ", contactPk " + gc.getContactPk() + ": OK";
             sqlUtils.logSendAction(invoker, gc.getGenePk(), gc.getContactPk(), logMessage);
 

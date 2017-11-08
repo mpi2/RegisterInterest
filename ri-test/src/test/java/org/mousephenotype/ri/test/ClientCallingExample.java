@@ -113,7 +113,7 @@ public class ClientCallingExample implements CommandLineRunner {
 
         String authString = username + ":" + password;
         authStringEncoded = Base64.getEncoder().encodeToString(authString.getBytes());
-        System.out.println("Base64 encoded auth string: " + authStringEncoded);
+//        System.out.println("Base64 encoded auth string: " + authStringEncoded);
     }
 
     private ClientResponse performGet(String url) {

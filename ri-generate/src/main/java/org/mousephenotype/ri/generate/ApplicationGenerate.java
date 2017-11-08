@@ -176,7 +176,7 @@ public class ApplicationGenerate implements CommandLineRunner {
 
             geneSent.setSentAt(null);
 
-            geneSent = sqlUtils.updateOrInsertGeneSent(geneSent);
+            geneSent = sqlUtils.insertGeneSent(geneSent);
             
             sqlUtils.logGeneStatusChangeAction(geneSent, geneContact.getContactPk(), geneContact.getGenePk(), message);
             count++;
@@ -378,7 +378,9 @@ public class ApplicationGenerate implements CommandLineRunner {
         geneSent.setBody(body.toString());
         geneSent.setGeneContactPk(geneContact.getPk());
 
-        geneSent = sqlUtils.updateOrInsertGeneSent(geneSent);
+        geneContact.setActive(0);               // Reset active flag to 0 (unregistered) and update the geneContact record in the database
+        sqlUtils.insertOrUpdateGeneContact(geneContact.getGenePk(), geneContact.getContactPk(), 0, geneContact.getCreatedAt());
+        geneSent = sqlUtils.insertGeneSent(geneSent);
 
         String message = "ri-generate: send unregister message";
         sqlUtils.logGeneStatusChangeAction(geneSent, geneContact.getContactPk(), geneContact.getGenePk(), message);

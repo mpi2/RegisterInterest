@@ -37,7 +37,6 @@ import org.springframework.batch.item.file.mapping.FieldSetMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.batch.item.file.transform.FieldSet;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindException;
 
 import java.io.File;
@@ -204,7 +203,6 @@ public class GeneLoader implements Step {
      * @param stepExecution an entity representing the step to be executed
      * @throws JobInterruptedException if the step is interrupted externally
      */
-    @Transactional
     @Override
     public void execute(StepExecution stepExecution) throws JobInterruptedException {
 
@@ -228,7 +226,7 @@ public class GeneLoader implements Step {
 
         Step geneLoaderStep = stepBuilderFactory.get("geneLoaderStepExecutor")
                 .listener(new GeneStepListener())
-                .chunk(200000)
+                .chunk(10000)
                 .reader(geneReader)
                 .processor(geneProcessor)
                 .writer(writer)

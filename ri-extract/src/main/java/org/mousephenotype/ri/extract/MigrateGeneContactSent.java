@@ -238,7 +238,7 @@ public class MigrateGeneContactSent implements CommandLineRunner {
                     geneSent.setCreatedAt(new Date());
                     geneSent.setSentAt(sentAt);
 
-                    sqlUtils.updateOrInsertGeneSent(geneSent);
+                    sqlUtils.insertGeneSent(geneSent);
                     count++;
 
                 } catch (InterestException e) {
