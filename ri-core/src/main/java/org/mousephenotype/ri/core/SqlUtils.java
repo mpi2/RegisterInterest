@@ -633,7 +633,7 @@ public class SqlUtils {
 
             // Except for the initial load, most of the time the row will already exist.
             // Try to update. If that fails because it doesn't yet exist, insert.
-            int updateCount = updateGeneSent(parameterMap);
+            int updateCount = updateGeneSent(geneSent, parameterMap);
             if (updateCount == 0) {
 
                 KeyHolder keyholder = new GeneratedKeyHolder();
@@ -777,7 +777,7 @@ public class SqlUtils {
         throw new InterestException("Unable to get primary key after INSERT.");
     }
 
-    private int updateGeneSent(Map<String, Object> parameterMap) {
+    private int updateGeneSent(GeneSent geneSent, Map<String, Object> parameterMap) {
 
         final String colData =
                 // Omit gene_contact_pk in the UPDATE as it is used in the WHERE clause.
@@ -793,9 +793,16 @@ public class SqlUtils {
 
                 "sent_at = :sent_at";
 
-        final String query = "UPDATE gene_sent SET " + colData + " WHERE gene_contact_pk = :gene_contact_pk";
+        String query = "UPDATE gene_sent SET " + colData + " WHERE gene_contact_pk = :gene_contact_pk";
 
         int count = jdbcInterest.update(query, parameterMap);
+        if (count > 0) {
+
+            // Get and update the gene_sent primary key.
+            query = "SELECT pk FROM gene_sent WHERE gene_contact_pk = :gene_contact_pk";
+            int pk = jdbcInterest.queryForObject(query, parameterMap, Integer.class);
+            geneSent.setPk(pk);
+        }
 
         return count;
     }
