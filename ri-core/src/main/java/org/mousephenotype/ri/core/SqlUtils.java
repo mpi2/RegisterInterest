@@ -813,7 +813,7 @@ public class SqlUtils {
         parameterMap.put("null_allele_production_status_pk", geneSent.getNullAlleleProductionStatusPk());
         parameterMap.put("phenotyping_status_pk", geneSent.getPhenotypingStatusPk());
 
-        parameterMap.put("created_at", geneSent.getCreatedAt());
+        parameterMap.put("created_at", (geneSent.getCreatedAt() == null ? new Date() : geneSent.getCreatedAt()));
         parameterMap.put("sent_at", geneSent.getSentAt());
 
         return parameterMap;
