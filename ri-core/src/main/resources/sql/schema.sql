@@ -123,8 +123,7 @@ CREATE TABLE gene_sent (
     FOREIGN KEY assignment_status_pk_fk                         (assignment_status_pk)                          REFERENCES gene_status(pk),
     FOREIGN KEY conditional_allele_production_status_pk_fk      (conditional_allele_production_status_pk)       REFERENCES gene_status(pk),
     FOREIGN KEY null_allele_production_status_pk_fk             (null_allele_production_status_pk)              REFERENCES gene_status(pk),
-    FOREIGN KEY phenotyping_status_pk_fk                        (phenotyping_status_pk)                         REFERENCES gene_status(pk),
-    UNIQUE KEY  gene_contact_pk_uk                              (gene_contact_pk)
+    FOREIGN KEY phenotyping_status_pk_fk                        (phenotyping_status_pk)                         REFERENCES gene_status(pk)
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 
