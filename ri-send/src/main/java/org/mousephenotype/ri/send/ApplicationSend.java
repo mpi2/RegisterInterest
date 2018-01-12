@@ -64,6 +64,10 @@ public class ApplicationSend implements CommandLineRunner {
     @Value("${mail.smtp.from}")
     private String smtpFrom;
 
+    @NotNull
+    @Value("${mail.smtp.replyto}")
+    private String smtpReplyto;
+
 
     @Inject
     public ApplicationSend(SqlUtils sqlUtils) {
@@ -128,6 +132,8 @@ public class ApplicationSend implements CommandLineRunner {
         try {
 
             message.setFrom(new InternetAddress(smtpFrom));
+            InternetAddress[] replyToArray = new InternetAddress[] { new InternetAddress(smtpReplyto) };
+            message.setReplyTo(replyToArray);
             message.setRecipients(Message.RecipientType.TO,
                     InternetAddress.parse(email));
             message.setSubject(gene.getSubject());

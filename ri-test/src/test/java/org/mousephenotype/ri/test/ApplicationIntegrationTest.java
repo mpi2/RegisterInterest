@@ -93,7 +93,7 @@ public class ApplicationIntegrationTest {
         GeneSent[] candidates = candidateList.toArray(new GeneSent[0]);
 
         // We expect 21 emails.
-        Assert.assertEquals("Expected 21 results", candidates.length, 21);
+        Assert.assertEquals("Expected 21 results but found " + candidates.length, 21, candidates.length);
 
         // Sort the GeneSent objects by subject.
         Arrays.sort(candidates, new SubjectComparator());
