@@ -446,7 +446,7 @@ public class InterestControllerTest {
                 delete(url)
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", Matchers.comparesEqualTo("Unregister contact user4@ebi.ac.uk for gene MGI:0000020: OK")))
+                .andExpect(jsonPath("$", Matchers.comparesEqualTo("Unregister contact scheduled for user4@ebi.ac.uk for gene MGI:0000020: OK")))
         ;
 
     }
