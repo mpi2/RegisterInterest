@@ -138,7 +138,7 @@ public class InterestController {
     ) {
 
         HttpHeaders responseHeaders = new HttpHeaders();
-        GeneContact gc;
+        GeneContact geneContact;
         String message = "";
 
         if (( ! type.equals(INTEREST_GENE)) && (! type.equals("disease")) && ( ! type.equals("phenotype"))) {
@@ -151,17 +151,18 @@ public class InterestController {
         if (type.equals(INTEREST_GENE)) {
             try {
 
-                gc = sqlUtils.getGeneContact(geneAccessionId, email);
-                if ((gc == null) || (gc.getActive() == 0)) {
+                geneContact = sqlUtils.getGeneContact(geneAccessionId, email);
+                if ((geneContact == null) || (geneContact.getActive() == 0)) {
                     message = "Unregister contact " + email + " for gene " + geneAccessionId + " failed: no such active registration exists";
                     throw new InterestException(message, HttpStatus.NOT_FOUND);
                 }
 
-                int genePk = gc.getGenePk();
-                int contactPk = gc.getContactPk();
+                int genePk = geneContact.getGenePk();
+                int contactPk = geneContact.getContactPk();
 
-                sqlUtils.removeInterestGene(gc);
-                message = "Unregister contact " + email + " for gene " + geneAccessionId + ": OK";
+                sqlUtils.insertOrUpdateGeneContact(genePk, contactPk, -1, null);
+
+                message = "Unregister contact scheduled for " + email + " for gene " + geneAccessionId + ": OK";
                 sqlUtils.logSendAction(invoker, genePk, contactPk, message);
 
             } catch (InterestException e) {
