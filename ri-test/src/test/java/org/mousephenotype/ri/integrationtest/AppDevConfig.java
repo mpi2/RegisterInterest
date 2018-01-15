@@ -66,6 +66,8 @@ public class AppDevConfig {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    final private Integer INITIAL_POOL_CONNECTIONS = 1;
+
     @NotNull
     @Value("${ri-admin-password}")
     String riPassword;
@@ -82,29 +84,44 @@ public class AppDevConfig {
     @Value("${datasource.ri.password}")
     String password;
 
-    @Bean(name = "riDataSource", destroyMethod = "close")
-    public DataSource riDataSource() {
-
-        DataSource ds = DataSourceBuilder
-                .create()
-                .url(riUrl)
-                .username(username)
-                .password(password)
-                .type(BasicDataSource.class)
-                .driverClassName("com.mysql.jdbc.Driver").build();
-
-        ((BasicDataSource) ds).setInitialSize(4);
-        ((BasicDataSource) ds).setTestOnBorrow(true);
-        ((BasicDataSource) ds).setValidationQuery("SELECT 1");
+    private DataSource getConfiguredDatasource(String url, String username, String password) {
+        org.apache.tomcat.jdbc.pool.DataSource ds = new org.apache.tomcat.jdbc.pool.DataSource();
+        ds.setUrl(url);
+        ds.setUsername(username);
+        ds.setPassword(password);
+        ds.setDriverClassName("com.mysql.jdbc.Driver");
+        ds.setInitialSize(INITIAL_POOL_CONNECTIONS);
+        ds.setMaxActive(50);
+        ds.setMinIdle(INITIAL_POOL_CONNECTIONS);
+        ds.setMaxIdle(INITIAL_POOL_CONNECTIONS);
+        ds.setTestOnBorrow(true);
+        ds.setValidationQuery("SELECT 1");
+        ds.setValidationInterval(5000);
+        ds.setMaxAge(30000);
+        ds.setMaxWait(35000);
+        ds.setTestWhileIdle(true);
+        ds.setTimeBetweenEvictionRunsMillis(5000);
+        ds.setMinEvictableIdleTimeMillis(5000);
+        ds.setValidationInterval(30000);
+        ds.setRemoveAbandoned(true);
+        ds.setRemoveAbandonedTimeout(10000); // 10 seconds before abandoning a query
 
         try {
+            logger.info("Using cdasource database {} with initial pool size {}. URL: {}", ds.getConnection().getCatalog(), ds.getInitialSize(), url);
 
-            logger.info("Using database {} with initial pool size {}", ds.getConnection().getCatalog(), ((BasicDataSource) ds).getInitialSize());
-            logger.info("URL = " + riUrl);
+        } catch (Exception e) {
 
-        } catch (Exception e) { }
+            System.err.println(e.getLocalizedMessage());
+            e.printStackTrace();
+        }
 
         return ds;
+    }
+
+
+    @Bean
+    public DataSource riDataSource() {
+        return getConfiguredDatasource(riUrl, username, password);
     }
 
     @Bean

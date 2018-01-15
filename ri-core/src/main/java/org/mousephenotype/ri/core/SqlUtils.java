@@ -99,7 +99,7 @@ public class SqlUtils {
                 "JOIN gene_contact gc ON gc.contact_pk      = c. pk\n" +
                 "JOIN gene_sent    gs ON gs.gene_contact_pk = gc.pk";
 
-        List<Map<String, Object>> listMap = jdbcInterest.queryForList(query, new HashMap<String, Object>());
+        List<Map<String, Object>> listMap = jdbcInterest.queryForList(query, new HashMap<>());
         for (Map<String, Object> map : listMap) {
             int pk = (Integer)map.get("pk");
             String address = map.get("address").toString();

@@ -65,11 +65,11 @@ public class ApplicationIntegrationTest {
         generateContext.getAutowireCapableBeanFactory().autowireBean(generateApp);
         generateContext.getAutowireCapableBeanFactory().initializeBean(generateApp, "generateApp");
 
-        // Unregister this contact/geneAccessionId combination.
-        Gene gene = sqlutils.getGene("MGI:0000220");
+        // Unregister this contact/geneAccessionId combination to generate and send an unregister e-mail.
         GeneContact geneContact = sqlutils.getGeneContact("MGI:0000220", "mrelac@ebi.ac.uk");
-        sqlutils.insertOrUpdateGeneContact(gene.getPk(), geneContact.getContactPk(), -1, null);
+        sqlutils.removeInterestGene(geneContact);
 
+        // test-data is configured to generate 20 register e-mails. The unregister above creates one more, for a total of 21.
         generateApp.run();
 
         checkGenerated();

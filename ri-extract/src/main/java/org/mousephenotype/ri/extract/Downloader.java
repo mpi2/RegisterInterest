@@ -104,7 +104,7 @@ public class Downloader implements Tasklet, InitializingBean {
 
         } catch (IOException e) {
 
-            logger.warn("Download of " + target + " from URL '" + source + "' failed failed. Reason: " + e.getLocalizedMessage());
+            logger.warn("Download of " + target + " from URL '" + source + "' failed. Reason: " + e.getLocalizedMessage());
         }
 
         logger.debug("Total steps elapsed time: " + dateUtils.msToHms(new Date().getTime() - startStep));
