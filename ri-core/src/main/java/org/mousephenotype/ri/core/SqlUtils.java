@@ -520,31 +520,6 @@ public class SqlUtils {
     }
 
     /**
-     * Remove interest described by {@link GeneContact}.
-     *
-     * @param gc The {@link GeneContact} instance
-     *
-     * @throws InterestException if the gene does not exist
-     */
-    public void removeInterestGene(GeneContact gc) throws InterestException {
-
-        String message;
-        final String query = "UPDATE gene_contact SET active = -1 WHERE pk = :pk";
-
-        try {
-
-            Map<String, Object> parameterMap = new HashMap<>();
-            parameterMap.put("pk", gc.getPk());
-
-            jdbcInterest.update(query, parameterMap);
-
-        } catch (Exception e) {
-            message = "Error removing interest for geneContactPk " + gc.getPk() + " : " + e.getLocalizedMessage();
-            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
      * Try to update the contact. If the update fails because it doesn't exist, insert it.
      *
      * Return the contact (pk is guaranteed to be set)

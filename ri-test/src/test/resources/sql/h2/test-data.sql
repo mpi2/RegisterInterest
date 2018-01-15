@@ -200,24 +200,25 @@ insert into gene_contact(contact_pk, gene_pk, created_at) VALUES
   (@gcUserPk, 82, @now)
 ;
 
+
 INSERT INTO gene_sent
   (subject,            body,         gene_contact_pk, assignment_status_pk, conditional_allele_production_status_pk, null_allele_production_status_pk, phenotyping_status_pk, created_at, sent_at) VALUES
-  ('my subject PK  5', 'my body  5',   5,             @PK_PAPP,             NULL,                                    NULL,                             NULL,                  @now,       NULL),
-  ('my subject PK  6', 'my body  6',   6,             @PK_PAPP,             @PK_MPS,                                 @PK_MPS,                          @PK_PDA,               @now,       NULL),
-  ('my subject PK  7', 'my body  7',   7,             @PK_PAPP,             @PK_MPS,                                 @PK_MP,                           @PK_MPDA,              @now,       NULL),
-  ('my subject PK  8', 'my body  8',   8,             @PK_PAPP,             @PK_MPS,                                 NULL,                             @PK_PDA,               @now,       NULL),
-  ('my subject PK  9', 'my body  9',   9,             @PK_PAPP,             @PK_MPS,                                 @PK_MS,                           NULL,                  @now,       NULL),
-  ('my subject PK 10', 'my body 10',  10,             @PK_PAPP,             @PK_MP,                                  @PK_MP,                           NULL,                  @now,       NULL),
-  ('my subject PK 11', 'my body 11',  11,             @PK_PAPP,             @PK_MPS,                                 @PK_MP,                           @PK_MPDA,              @now,       NULL),
-  ('my subject PK 12', 'my body 12',  12,             @PK_PAPP,             @PK_MPS,                                 @PK_MP,                           @PK_PDA,               @now,       NULL),
-  ('my subject PK 13', 'my body 13',  13,             @PK_PAPP,             @PK_MPS,                                 NULL,                             NULL,                  @now,       NULL),
-  ('my subject PK 14', 'my body 14',  14,             @PK_PAPP,             @PK_MPS,                                 NULL,                             @PK_MPDA,              @now,       NULL),
-  ('my subject PK 15', 'my body 15',  15,             @PK_PAPP,             @PK_MPS,                                 NULL,                             @PK_MPDA,              @now,       NULL),
-  ('my subject PK 16', 'my body 16',  16,             @PK_PAPP,             @PK_MPS,                                 @PK_MPS,                          NULL,                  @now,       NULL),
-  ('my subject PK 17', 'my body 17',  17,             @PK_PAPP,             @PK_MPS,                                 @PK_MPS,                          @PK_PDA,               @now,       NULL),
-  ('my subject PK 18', 'my body 18',  18,             @PK_PAPP,             @PK_MPS,                                 @PK_MPS,                          @PK_MPDA,              @now,       NULL),
-  ('my subject PK 19', 'my body 19',  19,             @PK_PAPP,             @PK_MPS,                                 @PK_MP,                           NULL,                  @now,       NULL),
-  ('my subject PK 20', 'my body 20',  20,             @PK_PAPP,             @PK_MPS,                                 @PK_MP,                           @PK_PDA,               @now,       NULL),
-  ('my subject PK 21', 'my body 21',  21,             @PK_PAPP,             @PK_MPS,                                 @PK_MP,                           @PK_MPDA,              @now,       NULL),
-  ('my subject PK 22', 'my body 22',  22,             @PK_PAPP,             @PK_MPS,                                 @PK_MP,                           @PK_PDA,               @now,       NULL)
+  ('my subject PK  5', 'my body  5',   5,             @PK_PAPP,             NULL,                                    NULL,                             NULL,                  @now,       @now),
+  ('my subject PK  6', 'my body  6',   6,             @PK_PAPP,             @PK_MPS,                                 @PK_MPS,                          @PK_PDA,               @now,       @now),
+  ('my subject PK  7', 'my body  7',   7,             @PK_PAPP,             @PK_MPS,                                 @PK_MP,                           @PK_MPDA,              @now,       @now),
+  ('my subject PK  8', 'my body  8',   8,             @PK_PAPP,             @PK_MPS,                                 NULL,                             @PK_PDA,               @now,       @now),
+  ('my subject PK  9', 'my body  9',   9,             @PK_PAPP,             @PK_MPS,                                 @PK_MS,                           NULL,                  @now,       @now),
+  ('my subject PK 10', 'my body 10',  10,             @PK_PAPP,             @PK_MP,                                  @PK_MP,                           NULL,                  @now,       @now),
+  ('my subject PK 11', 'my body 11',  11,             @PK_PAPP,             @PK_MPS,                                 @PK_MP,                           @PK_MPDA,              @now,       @now),
+  ('my subject PK 12', 'my body 12',  12,             @PK_PAPP,             @PK_MPS,                                 @PK_MP,                           @PK_PDA,               @now,       @now),
+  ('my subject PK 13', 'my body 13',  13,             @PK_PAPP,             @PK_MPS,                                 NULL,                             NULL,                  @now,       @now),
+  ('my subject PK 14', 'my body 14',  14,             @PK_PAPP,             @PK_MPS,                                 NULL,                             @PK_MPDA,              @now,       @now),
+  ('my subject PK 15', 'my body 15',  15,             @PK_PAPP,             @PK_MPS,                                 NULL,                             @PK_MPDA,              @now,       @now),
+  ('my subject PK 16', 'my body 16',  16,             @PK_PAPP,             @PK_MPS,                                 @PK_MPS,                          NULL,                  @now,       @now),
+  ('my subject PK 17', 'my body 17',  17,             @PK_PAPP,             @PK_MPS,                                 @PK_MPS,                          @PK_PDA,               @now,       @now),
+  ('my subject PK 18', 'my body 18',  18,             @PK_PAPP,             @PK_MPS,                                 @PK_MPS,                          @PK_MPDA,              @now,       @now),
+  ('my subject PK 19', 'my body 19',  19,             @PK_PAPP,             @PK_MPS,                                 @PK_MP,                           NULL,                  @now,       @now),
+  ('my subject PK 20', 'my body 20',  20,             @PK_PAPP,             @PK_MPS,                                 @PK_MP,                           @PK_PDA,               @now,       @now),
+  ('my subject PK 21', 'my body 21',  21,             @PK_PAPP,             @PK_MPS,                                 @PK_MP,                           @PK_MPDA,              @now,       @now),
+  ('my subject PK 22', 'my body 22',  22,             @PK_PAPP,             @PK_MPS,                                 @PK_MP,                           @PK_PDA,               @now,       @now)
 ;

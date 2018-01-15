@@ -21,6 +21,7 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import org.apache.catalina.util.ParameterMap;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mousephenotype.ri.generate.ApplicationGenerate;
@@ -68,7 +69,8 @@ public class RegisterUnregisterIntegrationTest {
      *     send
      * @throws Exception
      */
-//    @Ignore
+    // This test actually generates 2 emails to mrelac@ebi.ac.uk and 2 to mike@foxhill.com.
+@Ignore
     @Test
     public void testRegisterUnregisterGenerateSend() throws Exception {
 

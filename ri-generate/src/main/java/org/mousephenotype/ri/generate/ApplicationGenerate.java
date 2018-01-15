@@ -65,7 +65,7 @@ public class ApplicationGenerate implements CommandLineRunner {
     }
 
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         SpringApplication app = new SpringApplication(ApplicationGenerate.class);
         app.setBannerMode(Banner.Mode.OFF);
         app.setLogStartupInfo(false);
@@ -109,9 +109,9 @@ public class ApplicationGenerate implements CommandLineRunner {
                 continue;
             }
 
-            // If the user unregistered interest, process that request here.
+            // If the Web Service indicates that a user/gene pair is to be unregistered, process that request here.
             if (geneContact.getActive() == -1) {
-                count += generateUnregisterGeneEmail(gene, geneContact);
+                count += generateUnregisterGeneEmail(gene, geneContact);        // Side effect: this method sets the geneContact active flag to 0.
             }
 
             boolean shouldWelcome = false;

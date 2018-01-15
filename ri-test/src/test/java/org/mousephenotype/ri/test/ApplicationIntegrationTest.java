@@ -65,11 +65,14 @@ public class ApplicationIntegrationTest {
         generateContext.getAutowireCapableBeanFactory().autowireBean(generateApp);
         generateContext.getAutowireCapableBeanFactory().initializeBean(generateApp, "generateApp");
 
-        // Unregister this contact/geneAccessionId combination to generate and send an unregister e-mail.
-        GeneContact geneContact = sqlutils.getGeneContact("MGI:0000220", "mrelac@ebi.ac.uk");
-        sqlutils.removeInterestGene(geneContact);
 
-        // test-data is configured to generate 20 register e-mails. The unregister above creates one more, for a total of 21.
+        // Unregister this contact/geneAccessionId combination to generate and send an unregister e-mail.
+        Gene gene = sqlutils.getGene("MGI:0000220");
+        GeneContact geneContact = sqlutils.getGeneContact("MGI:0000220", "mrelac@ebi.ac.uk");
+        sqlutils.insertOrUpdateGeneContact(gene.getPk(), geneContact.getContactPk(), -1, null);
+
+
+        // test-data is configured to generate 21 register e-mails. The unregister above creates one more, for a total of 22.
         generateApp.run();
 
         checkGenerated();
@@ -89,70 +92,72 @@ public class ApplicationIntegrationTest {
 
     private void checkGenerated() {
 
-        ArrayList<GeneSent> candidateList = new ArrayList<>(sqlutils.getGenesScheduledForSending());
-        GeneSent[] candidates = candidateList.toArray(new GeneSent[0]);
+        ArrayList<GeneSent> actualCandidateList = new ArrayList<>(sqlutils.getGenesScheduledForSending());
+        GeneSent[] actualCandidates = actualCandidateList.toArray(new GeneSent[0]);
 
-        // We expect 21 emails.
-        Assert.assertEquals("Expected 21 results but found " + candidates.length, 21, candidates.length);
+        // Check # of emails, expected vs actual.
+        int expectedSize = expectedSubjects.length;
+        int actualSize = actualCandidates.length;
+        Assert.assertEquals("Expected " + expectedSize + " results but found " + actualSize, expectedSize, actualSize);
 
         // Sort the GeneSent objects by subject.
-        Arrays.sort(candidates, new SubjectComparator());
+        Arrays.sort(actualCandidates, new SubjectComparator());
 
-        for (int i = 0; i < candidates.length; i++) {
-            Assert.assertEquals("SUBJECT: " + candidates[i].getSubject(), subjects[i], candidates[i].getSubject());
-            Assert.assertEquals("BODY: " + candidates[i].getSubject(), bodies[i], candidates[i].getBody());
+        for (int i = 0; i < actualCandidates.length; i++) {
+            Assert.assertEquals("SUBJECT: " + actualCandidates[i].getSubject(), expectedSubjects[i], actualCandidates[i].getSubject());
+            Assert.assertEquals("BODY: " + actualCandidates[i].getBody(), expectedBodies[i], actualCandidates[i].getBody());
         }
     }
 
-    private final String[] subjects = new String[] {
-            GENE_010_SUBJECT,
-            GENE_030_SUBJECT,
-            GENE_040_SUBJECT,
-            GENE_220_SUBJECT,
-            GENE_050_SUBJECT,
-            GENE_060_SUBJECT,
-            GENE_070_SUBJECT,
-            GENE_080_SUBJECT,
-            GENE_090_SUBJECT,
-            GENE_100_SUBJECT,
-            GENE_110_SUBJECT,
-            GENE_120_SUBJECT,
-            GENE_130_SUBJECT,
-            GENE_140_SUBJECT,
-            GENE_150_SUBJECT,
-            GENE_160_SUBJECT,
-            GENE_170_SUBJECT,
-            GENE_180_SUBJECT,
-            GENE_190_SUBJECT,
-            GENE_200_SUBJECT,
-            GENE_210_SUBJECT,
+    private final String[] expectedSubjects = new String[] {
+            GENE_010_REG_SUBJECT,
+            GENE_030_REG_SUBJECT,
+            GENE_040_REG_SUBJECT,
+            GENE_220_UNREG_SUBJECT,
+            GENE_050_UPD_SUBJECT,
+            GENE_060_UPD_SUBJECT,
+            GENE_070_UPD_SUBJECT,
+            GENE_080_UPD_SUBJECT,
+            GENE_090_UPD_SUBJECT,
+            GENE_100_UPD_SUBJECT,
+            GENE_110_UPD_SUBJECT,
+            GENE_120_UPD_SUBJECT,
+            GENE_130_UPD_SUBJECT,
+            GENE_140_UPD_SUBJECT,
+            GENE_150_UPD_SUBJECT,
+            GENE_160_UPD_SUBJECT,
+            GENE_170_UPD_SUBJECT,
+            GENE_180_UPD_SUBJECT,
+            GENE_190_UPD_SUBJECT,
+            GENE_200_UPD_SUBJECT,
+            GENE_210_UPD_SUBJECT
     };
 
-    private final String[] bodies = new String[] {
-            GENE_010_BODY,
-            GENE_030_BODY,
-            GENE_040_BODY,
-            GENE_220_BODY,
-            GENE_050_BODY,
-            GENE_060_BODY,
-            GENE_070_BODY,
-            GENE_080_BODY,
-            GENE_090_BODY,
-            GENE_100_BODY,
-            GENE_110_BODY,
-            GENE_120_BODY,
-            GENE_130_BODY,
-            GENE_140_BODY,
-            GENE_150_BODY,
-            GENE_160_BODY,
-            GENE_170_BODY,
-            GENE_180_BODY,
-            GENE_190_BODY,
-            GENE_200_BODY,
-            GENE_210_BODY
+    private final String[]      expectedBodies       = new String[] {
+            GENE_010_REG_BODY,
+            GENE_030_REG_BODY,
+            GENE_040_REG_BODY,
+            GENE_220_UNREG_BODY,
+            GENE_050_UPD_BODY,
+            GENE_060_UPD_BODY,
+            GENE_070_UPD_BODY,
+            GENE_080_UPD_BODY,
+            GENE_090_UPD_BODY,
+            GENE_100_UPD_BODY,
+            GENE_110_UPD_BODY,
+            GENE_120_UPD_BODY,
+            GENE_130_UPD_BODY,
+            GENE_140_UPD_BODY,
+            GENE_150_UPD_BODY,
+            GENE_160_UPD_BODY,
+            GENE_170_UPD_BODY,
+            GENE_180_UPD_BODY,
+            GENE_190_UPD_BODY,
+            GENE_200_UPD_BODY,
+            GENE_210_UPD_BODY
     };
-    private static final String GENE_010_SUBJECT = "IMPC Gene registration for gene-010";
-    private static final String GENE_010_BODY =
+    private static final String GENE_010_REG_SUBJECT = "IMPC Gene registration for gene-010";
+    private static final String GENE_010_REG_BODY    =
     "Dear colleague,\n"+
             "\n"+
             "Thank you for registering interest in gene gene-010.\n"+
@@ -167,8 +172,8 @@ public class ApplicationIntegrationTest {
             "\n"+
             "The MPI2 (KOMP2) informatics consortium";
 
-    private static final String GENE_030_SUBJECT = "IMPC Gene registration for gene-030";
-    private static final String GENE_030_BODY =
+    private static final String GENE_030_REG_SUBJECT = "IMPC Gene registration for gene-030";
+    private static final String GENE_030_REG_BODY    =
             "Dear colleague,\n" +
             "\n" +
             "Thank you for registering interest in gene gene-030.\n" +
@@ -185,8 +190,8 @@ public class ApplicationIntegrationTest {
             "\n" +
             "The MPI2 (KOMP2) informatics consortium";
 
-    private static final String GENE_040_SUBJECT = "IMPC Gene registration for gene-040";
-    private static final String GENE_040_BODY =
+    private static final String GENE_040_REG_SUBJECT = "IMPC Gene registration for gene-040";
+    private static final String GENE_040_REG_BODY    =
             "Dear colleague,\n" +
             "\n" +
             "Thank you for registering interest in gene gene-040.\n" +
@@ -202,8 +207,8 @@ public class ApplicationIntegrationTest {
             "Best Regards,\n" +
             "\n" +
             "The MPI2 (KOMP2) informatics consortium";
-    private static final String GENE_050_SUBJECT = "IMPC Status update for gene-050";
-    private static final String GENE_050_BODY =
+    private static final String GENE_050_UPD_SUBJECT = "IMPC Status update for gene-050";
+    private static final String GENE_050_UPD_BODY    =
             "Dear colleague,\n" +
             "\n" +
             "You have registered interest in gene gene-050 via the IMPC (www.mousephenotype.org). You are receiving this email because either the IMPC production or phenotyping status of the gene has changed.\n" +
@@ -218,8 +223,8 @@ public class ApplicationIntegrationTest {
             "\n" +
             "The MPI2 (KOMP2) informatics consortium";
 
-    private static final String GENE_060_SUBJECT = "IMPC Status update for gene-060";
-    private static final String GENE_060_BODY =
+    private static final String GENE_060_UPD_SUBJECT = "IMPC Status update for gene-060";
+    private static final String GENE_060_UPD_BODY    =
             "Dear colleague,\n" +
             "\n" +
             "You have registered interest in gene gene-060 via the IMPC (www.mousephenotype.org). You are receiving this email because either the IMPC production or phenotyping status of the gene has changed.\n" +
@@ -236,8 +241,8 @@ public class ApplicationIntegrationTest {
             "\n" +
             "The MPI2 (KOMP2) informatics consortium";
 
-    private static final String GENE_070_SUBJECT = "IMPC Status update for gene-070";
-    private static final String GENE_070_BODY =
+    private static final String GENE_070_UPD_SUBJECT = "IMPC Status update for gene-070";
+    private static final String GENE_070_UPD_BODY    =
             "Dear colleague,\n" +
             "\n" +
             "You have registered interest in gene gene-070 via the IMPC (www.mousephenotype.org). You are receiving this email because either the IMPC production or phenotyping status of the gene has changed.\n" +
@@ -254,8 +259,8 @@ public class ApplicationIntegrationTest {
             "\n" +
             "The MPI2 (KOMP2) informatics consortium";
 
-    private static final String GENE_080_SUBJECT = "IMPC Status update for gene-080";
-    private static final String GENE_080_BODY =
+    private static final String GENE_080_UPD_SUBJECT = "IMPC Status update for gene-080";
+    private static final String GENE_080_UPD_BODY    =
             "Dear colleague,\n" +
             "\n" +
             "You have registered interest in gene gene-080 via the IMPC (www.mousephenotype.org). You are receiving this email because either the IMPC production or phenotyping status of the gene has changed.\n" +
@@ -270,8 +275,8 @@ public class ApplicationIntegrationTest {
             "\n" +
             "The MPI2 (KOMP2) informatics consortium";
 
-    private static final String GENE_090_SUBJECT = "IMPC Status update for gene-090";
-    private static final String GENE_090_BODY =
+    private static final String GENE_090_UPD_SUBJECT = "IMPC Status update for gene-090";
+    private static final String GENE_090_UPD_BODY    =
             "Dear colleague,\n" +
             "\n" +
             "You have registered interest in gene gene-090 via the IMPC (www.mousephenotype.org). You are receiving this email because either the IMPC production or phenotyping status of the gene has changed.\n" +
@@ -288,8 +293,8 @@ public class ApplicationIntegrationTest {
             "\n" +
             "The MPI2 (KOMP2) informatics consortium";
 
-    private static final String GENE_100_SUBJECT = "IMPC Status update for gene-100";
-    private static final String GENE_100_BODY =
+    private static final String GENE_100_UPD_SUBJECT = "IMPC Status update for gene-100";
+    private static final String GENE_100_UPD_BODY    =
             "Dear colleague,\n" +
             "\n" +
             "You have registered interest in gene gene-100 via the IMPC (www.mousephenotype.org). You are receiving this email because either the IMPC production or phenotyping status of the gene has changed.\n" +
@@ -306,8 +311,8 @@ public class ApplicationIntegrationTest {
             "\n" +
             "The MPI2 (KOMP2) informatics consortium";
 
-    private static final String GENE_110_SUBJECT = "IMPC Status update for gene-110";
-    private static final String GENE_110_BODY =
+    private static final String GENE_110_UPD_SUBJECT = "IMPC Status update for gene-110";
+    private static final String GENE_110_UPD_BODY    =
             "Dear colleague,\n" +
             "\n" +
             "You have registered interest in gene gene-110 via the IMPC (www.mousephenotype.org). You are receiving this email because either the IMPC production or phenotyping status of the gene has changed.\n" +
@@ -326,8 +331,8 @@ public class ApplicationIntegrationTest {
             "\n" +
             "The MPI2 (KOMP2) informatics consortium";
 
-    private static final String GENE_120_SUBJECT = "IMPC Status update for gene-120";
-    private static final String GENE_120_BODY =
+    private static final String GENE_120_UPD_SUBJECT = "IMPC Status update for gene-120";
+    private static final String GENE_120_UPD_BODY    =
             "Dear colleague,\n" +
             "\n" +
             "You have registered interest in gene gene-120 via the IMPC (www.mousephenotype.org). You are receiving this email because either the IMPC production or phenotyping status of the gene has changed.\n" +
@@ -346,8 +351,8 @@ public class ApplicationIntegrationTest {
             "\n" +
             "The MPI2 (KOMP2) informatics consortium";
 
-    private static final String GENE_130_SUBJECT = "IMPC Status update for gene-130";
-    private static final String GENE_130_BODY =
+    private static final String GENE_130_UPD_SUBJECT = "IMPC Status update for gene-130";
+    private static final String GENE_130_UPD_BODY    =
             "Dear colleague,\n" +
             "\n" +
             "You have registered interest in gene gene-130 via the IMPC (www.mousephenotype.org). You are receiving this email because either the IMPC production or phenotyping status of the gene has changed.\n" +
@@ -362,8 +367,8 @@ public class ApplicationIntegrationTest {
             "\n" +
             "The MPI2 (KOMP2) informatics consortium";
 
-    private static final String GENE_140_SUBJECT = "IMPC Status update for gene-140";
-    private static final String GENE_140_BODY =
+    private static final String GENE_140_UPD_SUBJECT = "IMPC Status update for gene-140";
+    private static final String GENE_140_UPD_BODY    =
             "Dear colleague,\n" +
             "\n" +
             "You have registered interest in gene gene-140 via the IMPC (www.mousephenotype.org). You are receiving this email because either the IMPC production or phenotyping status of the gene has changed.\n" +
@@ -380,8 +385,8 @@ public class ApplicationIntegrationTest {
             "\n" +
             "The MPI2 (KOMP2) informatics consortium";
 
-    private static final String GENE_150_SUBJECT = "IMPC Status update for gene-150";
-    private static final String GENE_150_BODY =
+    private static final String GENE_150_UPD_SUBJECT = "IMPC Status update for gene-150";
+    private static final String GENE_150_UPD_BODY    =
     "Dear colleague,\n" +
             "\n" +
             "You have registered interest in gene gene-150 via the IMPC (www.mousephenotype.org). You are receiving this email because either the IMPC production or phenotyping status of the gene has changed.\n" +
@@ -398,8 +403,8 @@ public class ApplicationIntegrationTest {
             "\n" +
             "The MPI2 (KOMP2) informatics consortium";
 
-    private static final String GENE_160_SUBJECT = "IMPC Status update for gene-160";
-    private static final String GENE_160_BODY =
+    private static final String GENE_160_UPD_SUBJECT = "IMPC Status update for gene-160";
+    private static final String GENE_160_UPD_BODY    =
             "Dear colleague,\n" +
             "\n" +
             "You have registered interest in gene gene-160 via the IMPC (www.mousephenotype.org). You are receiving this email because either the IMPC production or phenotyping status of the gene has changed.\n" +
@@ -416,8 +421,8 @@ public class ApplicationIntegrationTest {
             "\n" +
             "The MPI2 (KOMP2) informatics consortium";
 
-    private static final String GENE_170_SUBJECT = "IMPC Status update for gene-170";
-    private static final String GENE_170_BODY =
+    private static final String GENE_170_UPD_SUBJECT = "IMPC Status update for gene-170";
+    private static final String GENE_170_UPD_BODY    =
             "Dear colleague,\n" +
             "\n" +
             "You have registered interest in gene gene-170 via the IMPC (www.mousephenotype.org). You are receiving this email because either the IMPC production or phenotyping status of the gene has changed.\n" +
@@ -436,8 +441,8 @@ public class ApplicationIntegrationTest {
             "\n" +
             "The MPI2 (KOMP2) informatics consortium";
 
-    private static final String GENE_180_SUBJECT = "IMPC Status update for gene-180";
-    private static final String GENE_180_BODY =
+    private static final String GENE_180_UPD_SUBJECT = "IMPC Status update for gene-180";
+    private static final String GENE_180_UPD_BODY    =
             "Dear colleague,\n" +
             "\n" +
             "You have registered interest in gene gene-180 via the IMPC (www.mousephenotype.org). You are receiving this email because either the IMPC production or phenotyping status of the gene has changed.\n" +
@@ -456,8 +461,8 @@ public class ApplicationIntegrationTest {
             "\n" +
             "The MPI2 (KOMP2) informatics consortium";
 
-    private static final String GENE_190_SUBJECT = "IMPC Status update for gene-190";
-    private static final String GENE_190_BODY =
+    private static final String GENE_190_UPD_SUBJECT = "IMPC Status update for gene-190";
+    private static final String GENE_190_UPD_BODY    =
             "Dear colleague,\n" +
             "\n" +
             "You have registered interest in gene gene-190 via the IMPC (www.mousephenotype.org). You are receiving this email because either the IMPC production or phenotyping status of the gene has changed.\n" +
@@ -474,8 +479,8 @@ public class ApplicationIntegrationTest {
             "\n" +
             "The MPI2 (KOMP2) informatics consortium";
 
-    private static final String GENE_200_SUBJECT = "IMPC Status update for gene-200";
-    private static final String GENE_200_BODY =
+    private static final String GENE_200_UPD_SUBJECT = "IMPC Status update for gene-200";
+    private static final String GENE_200_UPD_BODY    =
             "Dear colleague,\n" +
             "\n" +
             "You have registered interest in gene gene-200 via the IMPC (www.mousephenotype.org). You are receiving this email because either the IMPC production or phenotyping status of the gene has changed.\n" +
@@ -494,8 +499,8 @@ public class ApplicationIntegrationTest {
             "\n" +
             "The MPI2 (KOMP2) informatics consortium";
 
-    private static final String GENE_210_SUBJECT = "IMPC Status update for gene-210";
-    private static final String GENE_210_BODY =
+    private static final String GENE_210_UPD_SUBJECT = "IMPC Status update for gene-210";
+    private static final String GENE_210_UPD_BODY    =
             "Dear colleague,\n" +
             "\n" +
             "You have registered interest in gene gene-210 via the IMPC (www.mousephenotype.org). You are receiving this email because either the IMPC production or phenotyping status of the gene has changed.\n" +
@@ -514,8 +519,8 @@ public class ApplicationIntegrationTest {
             "\n" +
             "The MPI2 (KOMP2) informatics consortium";
 
-    private static final String GENE_220_SUBJECT = "IMPC Gene unregistration for gene-220";
-    private static final String GENE_220_BODY =
+    private static final String GENE_220_UNREG_SUBJECT = "IMPC Gene unregistration for gene-220";
+    private static final String GENE_220_UNREG_BODY =
             "Dear colleague,\n" +
             "\n" +
             "You have been unregistered for interest in gene gene-220.\n" +
