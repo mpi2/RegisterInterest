@@ -60,9 +60,9 @@ public class RegisterUnregisterIntegrationTest {
     @Autowired
     private String riPassword;
 
-
+// FIXME Create the infrastructur to use ri_test.
     /**
-     * This is an end-to-end integration test uses the DEV ri database. It tests the following use case:
+     * This is an end-to-end integration test creates, loads, and uses the DEV ri_test database. It tests the following use case:
      *     register interest (using DEV web service)
      *     unregister interest (using DEV web service)
      *     generate

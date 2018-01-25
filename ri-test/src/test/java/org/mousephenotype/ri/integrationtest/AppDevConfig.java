@@ -79,11 +79,12 @@ public class AppDevConfig {
 
     @Bean
     public DataSource riDataSource() {
-        // SANITY CHECK to avoid deleting production database.
-        if (riUrl.toLowerCase().contains("release")) {
-            throw new RuntimeException("SANITY CHECK: riUrl contains 'release': " + riUrl);
-        }
 
+
+
+        // FIXME
+
+        riUrl = "jdbc:mysql://mysql-mi-dev:4356/ri?autoReconnect=true&amp;useUnicode=true&amp;connectionCollation=utf8_general_ci&amp;characterEncoding=utf8&amp;characterSetResults=utf8&amp;zeroDateTimeBehavior=convertToNull";
         return SqlUtils.getConfiguredDatasource(riUrl, username, password);
     }
 
