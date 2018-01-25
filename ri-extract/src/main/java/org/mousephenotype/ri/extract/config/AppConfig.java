@@ -16,7 +16,6 @@
 
 package org.mousephenotype.ri.extract.config;
 
-import org.apache.commons.dbcp.BasicDataSource;
 import org.mousephenotype.ri.core.SqlUtils;
 import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.entities.ImitsStatus;
@@ -34,7 +33,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.neo4j.Neo4jDataAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.boot.autoconfigure.jms.JndiConnectionFactoryAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
@@ -57,7 +55,7 @@ import java.util.Map;
  * Created by mrelac on 02/05/2017.
  */
 @Configuration
-@PropertySource(value="file:${user.home}/configfiles/${profile}/ri.application.properties")
+@PropertySource(value="file:${user.home}/configfiles/${profile}/application.properties")
 @EnableBatchProcessing
 @EnableAutoConfiguration(exclude = {
         JndiConnectionFactoryAutoConfiguration.class,
@@ -138,29 +136,11 @@ public class AppConfig {
     @Value("${datasource.ri.password}")
     String password;
 
-    @Bean(name = "riDataSource", destroyMethod = "close")
+
+
+    @Bean
     public DataSource riDataSource() {
-
-        DataSource ds = DataSourceBuilder
-                .create()
-                .url(riUrl)
-                .username(username)
-                .password(password)
-                .type(BasicDataSource.class)
-                .driverClassName("com.mysql.jdbc.Driver").build();
-        ((BasicDataSource) ds).setInitialSize(4);
-        ((BasicDataSource) ds).setLogAbandoned(false);
-        ((BasicDataSource) ds).setRemoveAbandoned(true);
-
-        try {
-
-            logger.info("Using database {} with initial pool size {}", ds.getConnection().getCatalog(), ((BasicDataSource) ds).getInitialSize());
-            logger.info("URL = " + riUrl);
-        } catch (Exception e) {
-
-        }
-
-        return ds;
+        return SqlUtils.getConfiguredDatasource(riUrl, username, password);
     }
 
     @Bean

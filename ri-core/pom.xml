@@ -93,12 +93,17 @@
         </dependency>
 
 
-        <!-- Miscellaneous -->
+        <!-- Other -->
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-jdbc</artifactId>
         </dependency>
 
     </dependencies>

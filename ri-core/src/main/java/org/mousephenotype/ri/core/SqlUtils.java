@@ -46,7 +46,10 @@ import java.util.*;
  */
 public class SqlUtils {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(SqlUtils.class);
+
+    private static final Integer INITIAL_POOL_CONNECTIONS = 1;
+
 
     @NotNull
     private NamedParameterJdbcTemplate jdbcInterest;
@@ -89,6 +92,40 @@ public class SqlUtils {
         org.springframework.core.io.Resource r = new ClassPathResource("org/springframework/batch/core/schema-mysql.sql");
         ResourceDatabasePopulator p = new ResourceDatabasePopulator(r);
         p.execute(datasource);
+    }
+
+    public static DataSource getConfiguredDatasource(String url, String username, String password) {
+        org.apache.tomcat.jdbc.pool.DataSource ds = new org.apache.tomcat.jdbc.pool.DataSource();
+        ds.setUrl(url);
+        ds.setUsername(username);
+        ds.setPassword(password);
+        ds.setDriverClassName("com.mysql.jdbc.Driver");
+        ds.setInitialSize(INITIAL_POOL_CONNECTIONS);
+        ds.setMaxActive(50);
+        ds.setMinIdle(INITIAL_POOL_CONNECTIONS);
+        ds.setMaxIdle(INITIAL_POOL_CONNECTIONS);
+        ds.setTestOnBorrow(true);
+        ds.setValidationQuery("SELECT 1");
+        ds.setValidationInterval(5000);
+        ds.setMaxAge(30000);
+        ds.setMaxWait(35000);
+        ds.setTestWhileIdle(true);
+        ds.setTimeBetweenEvictionRunsMillis(5000);
+        ds.setMinEvictableIdleTimeMillis(5000);
+        ds.setValidationInterval(30000);
+        ds.setRemoveAbandoned(true);
+        ds.setRemoveAbandonedTimeout(10000); // 10 seconds before abandoning a query
+
+        try {
+            logger.info("Using cdasource database {} with initial pool size {}. URL: {}", ds.getConnection().getCatalog(), ds.getInitialSize(), url);
+
+        } catch (Exception e) {
+
+            System.err.println(e.getLocalizedMessage());
+            e.printStackTrace();
+        }
+
+        return ds;
     }
 
     public Map<Integer, String> getEmailAddressesByGeneContactPk() {

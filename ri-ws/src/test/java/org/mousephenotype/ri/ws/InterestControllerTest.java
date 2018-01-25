@@ -49,7 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 @ContextConfiguration(classes = TestConfig.class)
 @ComponentScan("org.mousephenotype.ri.ws")
-@TestPropertySource("file:${user.home}/configfiles/${profile:dev}/ri.test.properties")
+@TestPropertySource("file:${user.home}/configfiles/${profile}/application.properties")
 public class InterestControllerTest {
 
     @Autowired

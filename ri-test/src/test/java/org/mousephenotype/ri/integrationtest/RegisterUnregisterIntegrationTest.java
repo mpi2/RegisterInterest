@@ -70,7 +70,7 @@ public class RegisterUnregisterIntegrationTest {
      * @throws Exception
      */
     // This test actually generates 2 emails to mrelac@ebi.ac.uk and 2 to mike@foxhill.com.
-@Ignore
+//@Ignore
     @Test
     public void testRegisterUnregisterGenerateSend() throws Exception {
 

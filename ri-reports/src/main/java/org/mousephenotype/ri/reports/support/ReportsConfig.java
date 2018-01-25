@@ -16,13 +16,11 @@
 
 package org.mousephenotype.ri.reports.support;
 
-import org.apache.commons.dbcp.BasicDataSource;
 import org.mousephenotype.ri.core.SqlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -37,7 +35,7 @@ import javax.validation.constraints.NotNull;
 
 @Configuration
 @EnableAutoConfiguration
-@PropertySource("file:${user.home}/configfiles/${profile:dev}/ri.application.properties")
+@PropertySource("file:${user.home}/configfiles/${profile}/application.properties")
 public class ReportsConfig {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -55,29 +53,11 @@ public class ReportsConfig {
     @Value("${datasource.ri.password}")
     String password;
 
-    @Bean(name = "riDataSource", destroyMethod = "close")
+
+
+    @Bean
     public DataSource riDataSource() {
-
-        DataSource ds = DataSourceBuilder
-                .create()
-                .url(riUrl)
-                .username(username)
-                .password(password)
-                .type(BasicDataSource.class)
-                .driverClassName("com.mysql.jdbc.Driver").build();
-
-        ((BasicDataSource) ds).setInitialSize(4);
-        ((BasicDataSource) ds).setTestOnBorrow(true);
-        ((BasicDataSource) ds).setValidationQuery("SELECT 1");
-
-        try {
-
-            logger.info("Using database {} with initial pool size {}", ds.getConnection().getCatalog(), ((BasicDataSource) ds).getInitialSize());
-            logger.info("URL = " + riUrl);
-
-        } catch (Exception e) { }
-
-        return ds;
+        return SqlUtils.getConfiguredDatasource(riUrl, username, password);
     }
 
 	@Bean
