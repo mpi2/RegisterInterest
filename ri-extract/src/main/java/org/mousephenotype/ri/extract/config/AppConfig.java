@@ -55,7 +55,7 @@ import java.util.Map;
  * Created by mrelac on 02/05/2017.
  */
 @Configuration
-@PropertySource(value="file:${user.home}/configfiles/${profile}/application.properties")
+@PropertySource(value="file:${user.home}/configfiles/${profile}/build.properties")
 @EnableBatchProcessing
 @EnableAutoConfiguration(exclude = {
         JndiConnectionFactoryAutoConfiguration.class,
