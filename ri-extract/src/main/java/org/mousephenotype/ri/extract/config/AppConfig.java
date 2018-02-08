@@ -44,7 +44,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -79,11 +78,6 @@ public class AppConfig {
     @NotNull
     @Value("${download.workspace}")
     protected String downloadWorkspace;
-
-    @Inject
-    public AppConfig(StepBuilderFactory stepBuilderFactory) {
-        this.stepBuilderFactory = stepBuilderFactory;
-    }
 
 
     private enum DownloadFileEnum {

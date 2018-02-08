@@ -24,7 +24,6 @@ import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
@@ -32,6 +31,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
@@ -66,12 +66,10 @@ public class MigrateGeneContact implements CommandLineRunner {
     @Value("${GeneContactUrl}")
     protected String sourceUrl;
 
-    @Autowired
-    private SqlUtils sqlUtils;
-
     private DateUtils dateUtils = new DateUtils();
     private Logger logger      = LoggerFactory.getLogger(this.getClass());
     private String targetFilename;
+    private SqlUtils sqlUtils;
 
     public static final int COL_MGI_ACCESSION_ID                     = 0;
     public static final int COL_MARKER_SYMBOL                        = 1;
@@ -86,6 +84,12 @@ public class MigrateGeneContact implements CommandLineRunner {
         app.setLogStartupInfo(false);
         app.setWebEnvironment(false);
         app.run(args);
+    }
+
+
+    @Inject
+    public MigrateGeneContact(SqlUtils sqlUtils) {
+        this.sqlUtils = sqlUtils;
     }
 
 
