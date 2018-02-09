@@ -102,7 +102,7 @@ public class Downloader implements Tasklet, InitializingBean {
             Files.move(Paths.get(targetTemp), Paths.get(target), StandardCopyOption.REPLACE_EXISTING);
             logger.info(source + " -> " + target + "(" + dateUtils.msToHms(new Date().getTime() - start) + ")");
 
-        } catch (IOException e) {
+        } catch (Exception e) {
 
             logger.warn("Download of " + target + " from URL '" + source + "' failed. Reason: " + e.getLocalizedMessage());
         }
