@@ -44,6 +44,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;Add
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -92,6 +93,12 @@ public class AppConfig {
         filenames = new DownloadFilename[] {
                 new DownloadFilename(DownloadFileEnum.GENE_STATUS_CHANGE, geneStatusChangeUrl, downloadWorkspace + "/GeneStatusChange.tsv")
         };
+    }
+
+
+    @Inject
+    public AppConfig(StepBuilderFactory stepBuilderFactory) {
+        this.stepBuilderFactory = stepBuilderFactory;
     }
 
 
