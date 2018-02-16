@@ -127,6 +127,22 @@ CREATE TABLE gene_sent (
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 
+DROP TABLE IF EXISTS gene_sent_summary;
+CREATE TABLE gene_sent_summary (
+    pk                                          INT             NOT NULL        AUTO_INCREMENT PRIMARY KEY,
+    subject                                     VARCHAR(78)     NOT NULL,
+    body                                        TEXT            NOT NULL,
+    contact_pk                                  INT             NOT NULL,
+
+    created_at                                  DATETIME        NOT NULL,
+    sent_at                                     DATETIME,                       -- a null value means 'generated but not geneSent yet'.
+    updated_at                                  TIMESTAMP       NOT NULL        DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY contact_pk_fk                                   (contact_pk)                                    REFERENCES contact(pk)
+
+) COLLATE=utf8_general_ci ENGINE=InnoDb;
+
 
 DROP TABLE IF EXISTS log;
 CREATE TABLE log (

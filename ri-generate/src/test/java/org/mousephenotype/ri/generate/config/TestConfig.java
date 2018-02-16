@@ -41,7 +41,6 @@ public class TestConfig {
         return new EmbeddedDatabaseBuilder()
                 .setType(EmbeddedDatabaseType.H2)
                 .ignoreFailedDrops(true)
-                .addScripts("sql/h2/schema.sql", "sql/h2/generate-data.sql")
                 .build();
     }
 

@@ -40,6 +40,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by mrelac on 12/05/2017.
@@ -396,6 +397,75 @@ public class SqlUtils {
         return sentMap;
     }
 
+    /**
+     *
+     * @return A {@link Map} of all {@link GeneSentSummary} instances, indexed by contact_pk
+     */
+    public Map<Integer, GeneSentSummary> getGeneSentSummary() {
+
+        Map<Integer, GeneSentSummary> sentMap = new HashMap<>();
+
+        final String query = "SELECT * FROM gene_sent_summary";
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        List<GeneSentSummary> summaryList = jdbcInterest.query(query, parameterMap, new GeneSentSummaryRowMapper());
+        for (GeneSentSummary summary : summaryList) {
+            sentMap.put(summary.getContactPk(), summary);
+        }
+
+        return sentMap;
+    }
+
+    /**
+     *
+     * @return A map, indexed by contact primary key, of all genes assigned to each contact
+     */
+    public Map<Integer, List<Gene>> getGenesByContactPk() {
+
+        Map<Integer, List<Gene>> genesByContactMap = new ConcurrentHashMap<>();
+
+        String query =
+               "SELECT DISTINCT\n" +
+               "  g.*\n" +
+               "FROM gene_contact gc\n" +
+               "JOIN gene         g  ON g.pk = gc.gene_pk\n" +
+               "WHERE gc.active = 1\n" +
+               "  AND gc.contact_pk = :contactPk\n" +
+               "ORDER BY g.symbol";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        List<Integer> contactPks = getActiveContactsWithRegistrations();
+        for (Integer contactPk : contactPks) {
+
+            parameterMap.put("contactPk", contactPk);
+            List<Gene> genes = jdbcInterest.query(query, parameterMap, new GeneRowMapper());
+            genesByContactMap.put(contactPk, genes);
+        }
+
+        return genesByContactMap;
+    }
+
+    /**
+     *
+     * @return a list of the contact primary keys for every active user who has registered interest in one or more genes
+     */
+    public List<Integer> getActiveContactsWithRegistrations() {
+
+        // Get the list of active contacts with interest in one or more genes
+        String contactPkQuery =
+                "SELECT DISTINCT\n" +
+                "  c.pk\n" +
+                "FROM gene_contact gc\n" +
+                "JOIN contact      c  ON c.pk = gc.contact_pk\n" +
+                "WHERE gc.active = 1 AND c.active = 1\n" +
+                "ORDER BY c.pk";
+
+        List<Integer> contactPks = jdbcInterest.queryForList(contactPkQuery, new HashMap<String, Object>(), Integer.class);
+
+        return contactPks;
+    }
+
     public List<GeneSent> getGenesScheduledForSending() {
 
         final String query = "SELECT * FROM gene_sent WHERE sent_at IS NULL";
@@ -508,7 +578,7 @@ public class SqlUtils {
     }
 
     public void logGeneStatusChangeAction(GeneSent geneSent, int contactPk, Integer genePk, String message) {
-        final String query =
+        final String insert =
                 "INSERT INTO log (" +
                     " contact_pk," +
                     " assignment_status_pk," +
@@ -539,7 +609,24 @@ public class SqlUtils {
         parameterMap.put("gene_sent_pk", geneSent.getPk());
         parameterMap.put("message", message);
 
-        jdbcInterest.update(query, parameterMap);
+        jdbcInterest.update(insert, parameterMap);
+    }
+
+    public void logGeneSentSummary(int contactPk, String message) {
+        final String insert =
+                "INSERT INTO log (" +
+                        " contact_pk," +
+                        " message)" +
+                        " VALUES (" +
+                        " :contact_pk," +
+                        " :message)";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        parameterMap.put("contact_pk", contactPk);
+        parameterMap.put("message", message);
+
+        jdbcInterest.update(insert, parameterMap);
     }
 
     public void logSendAction(String invoker, Integer genePk, Integer contactPk, String message) {
@@ -665,6 +752,42 @@ public class SqlUtils {
         int pk = insertGeneSent(parameterSource, keyholder);
 
         return getGeneSent(pk);
+    }
+
+    public void truncateGeneSentSummary() {
+
+        final String query = "DELETE FROM gene_sent_summary";
+        jdbcInterest.getJdbcOperations().execute(query);
+    }
+
+    /**
+     * Insert the given {@link GeneSentSummary} instance.
+     *
+     * @param geneSentSummary the {@link GeneSentSummary } instance to be used to update the database
+     *                        @return the inserted {@link GeneSentSummary} primary key}
+     *
+     * @throws InterestException
+     */
+    public int insertGeneSentSummary(GeneSentSummary geneSentSummary) throws InterestException {
+
+        String insert = "INSERT INTO gene_sent_summary (subject, body, contact_pk, created_at, sent_at)" +
+                " VALUES (:subject, :body, :contactPk, :createdAt, :sentAt)";
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("subject", geneSentSummary.getSubject());
+        parameterMap.put("body", geneSentSummary.getBody());
+        parameterMap.put("contactPk", geneSentSummary.getContactPk());
+        parameterMap.put("createdAt", geneSentSummary.getCreatedAt());
+        parameterMap.put("sentAt", geneSentSummary.getSentAt());
+
+        KeyHolder          keyholder       = new GeneratedKeyHolder();
+        SqlParameterSource parameterSource = new MapSqlParameterSource(parameterMap);
+
+        int count = jdbcInterest.update(insert, parameterSource, keyholder);
+        if (count > 0) {
+            return keyholder.getKey().intValue();
+        }
+
+        throw new InterestException("Unable to get primary key after INSERT.");
     }
 
 
