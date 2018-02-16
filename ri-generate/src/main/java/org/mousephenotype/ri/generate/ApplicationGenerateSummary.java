@@ -279,7 +279,7 @@ public class ApplicationGenerateSummary implements CommandLineRunner {
 
         body
                 .append("For further information / enquiries please write to:")
-                .append("<a href=\"mailto:" + mailto + "\">" + mailto + "</a>.<br />")
+                .append("<a href=\"mailto: " + mailto + "\">" + mailto + "</a>.<br />")
                 .append("<br />")
                 .append("Best Regards,<br />")
                 .append("<br />")

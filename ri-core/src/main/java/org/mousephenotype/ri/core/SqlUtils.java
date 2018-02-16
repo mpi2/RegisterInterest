@@ -343,6 +343,18 @@ public class SqlUtils {
         return (contacts.isEmpty() ? null : contacts.get(0));
     }
 
+    public Map<Integer, Contact> getContactsIndexedByContactPk() {
+        final String query = "SELECT * FROM contact";
+
+        Map<Integer, Contact> contactMap = new HashMap<>();
+        List<Contact> contactList = jdbcInterest.query(query, new HashMap<String, Object>(), new ContactRowMapper());
+        for (Contact contact : contactList) {
+            contactMap.put(contact.getPk(), contact);
+        }
+
+        return contactMap;
+    }
+
     /**
      *
      * @return a {@link List} of all {@link GeneContact} entries
@@ -414,6 +426,14 @@ public class SqlUtils {
         }
 
         return sentMap;
+    }
+
+    public int getGeneSentSummaryPendingEmailCount() {
+
+        final String query = "SELECT COUNT(*) FROM gene_sent_summary WHERE sent_at IS NULL";
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        return jdbcInterest.queryForObject(query, parameterMap, Integer.class);
     }
 
     /**

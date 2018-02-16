@@ -18,6 +18,7 @@ package org.mousephenotype.ri.integrationtest;
 
 import org.mousephenotype.ri.core.SqlUtils;
 import org.mousephenotype.ri.generate.ApplicationGenerate;
+import org.mousephenotype.ri.generate.ApplicationGenerateSummary;
 import org.mousephenotype.ri.send.ApplicationSend;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,6 +102,11 @@ public class AppDevConfig {
     @Bean
     public ApplicationGenerate applicationGenerate() {
         return new ApplicationGenerate(sqlUtils());
+    }
+
+    @Bean
+    public ApplicationGenerateSummary applicationGenerateSummary() {
+        return new ApplicationGenerateSummary(sqlUtils());
     }
 
     @Bean

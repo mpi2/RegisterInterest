@@ -17,8 +17,10 @@
 package org.mousephenotype.ri.send;
 
 import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.entities.Contact;
 import org.mousephenotype.ri.core.entities.GeneContact;
 import org.mousephenotype.ri.core.entities.GeneSent;
+import org.mousephenotype.ri.core.entities.GeneSentSummary;
 import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -75,12 +77,6 @@ public class ApplicationSend implements CommandLineRunner {
     }
 
 
-    private Map<Integer, String> emailAddressesByGeneContactPk;
-    private List<GeneSent> genesScheduledForSending;
-    private Map<Integer, GeneContact> geneContacts = new HashMap<>();
-
-
-
     public static void main(String[] args) throws Exception {
         SpringApplication app = new SpringApplication(ApplicationSend.class);
         app.setBannerMode(Banner.Mode.OFF);
@@ -91,6 +87,35 @@ public class ApplicationSend implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+
+
+        // If there are pending gene_sent_summary emails:
+        //    invoke doGeneSentSummary() to send all gene_sent_summary emails with null sent_at dates
+        //    Mark all gene_sent sent_at dates with the current date to clear all gene_sent generated e-mails
+        // else
+        //    invoke doGeneSent() to send all gene_sent emails with null sent_at dates
+
+
+        int pendingGeneSentSummaryCount = sqlUtils.getGeneSentSummaryPendingEmailCount();
+        if (pendingGeneSentSummaryCount > 0) {
+            doGeneSentSummary();
+            // TODO - mark all gene_sent sent_at dates with the current date to clear all gene_sent e-mails
+        } else {
+            doGeneSent();
+        }
+
+    }
+
+
+    // PRIVATE METHODS
+
+
+    private void doGeneSent() throws InterestException {
+
+        Map<Integer, String> emailAddressesByGeneContactPk;
+        List<GeneSent> genesScheduledForSending;
+        Map<Integer, GeneContact> geneContacts = new HashMap<>();
+
 
         emailAddressesByGeneContactPk = sqlUtils.getEmailAddressesByGeneContactPk();
         genesScheduledForSending = sqlUtils.getGenesScheduledForSending();
@@ -104,10 +129,33 @@ public class ApplicationSend implements CommandLineRunner {
 
         for (GeneSent geneSent : genesScheduledForSending) {
             String email = emailAddressesByGeneContactPk.get(geneSent.getGeneContactPk());
-            message = buildEmail(geneSent, email);
+            GeneContact geneContact = geneContacts.get(geneSent.getGeneContactPk());
+            message = buildEmail(geneSent.getSubject(), geneSent.getBody(), email);
             built++;
 
-            sendEmail(geneSent, message);
+            sendEmail(geneContact, geneSent, message);
+            sent++;
+        }
+
+        System.out.println("Built " + built + " emails.");
+        System.out.println("Sent " + sent + " emails.");
+    }
+
+    private void doGeneSentSummary() throws InterestException {
+        int built = 0;
+        int sent = 0;
+        Message message;
+        Map<Integer, GeneSentSummary> summaryMap = sqlUtils.getGeneSentSummary();
+        Map<Integer, Contact> contactMap = sqlUtils.getContactsIndexedByContactPk();
+
+        for (Map.Entry<Integer, GeneSentSummary> entry : summaryMap.entrySet()) {
+            int contactPk = entry.getKey();
+            GeneSentSummary summary = entry.getValue();
+            String email = contactMap.get(contactPk).getAddress();
+            message = buildEmail(summary.getSubject(), summary.getBody(), email);
+            built++;
+
+            sendSummaryEmail(summary, message);
             sent++;
         }
 
@@ -116,10 +164,7 @@ public class ApplicationSend implements CommandLineRunner {
     }
 
 
-    // PRIVATE METHODS
-
-
-    private Message buildEmail(GeneSent gene, String email) {
+    private Message buildEmail(String subject, String body, String email) {
 
         Properties smtpProperties = new Properties();
 
@@ -135,9 +180,9 @@ public class ApplicationSend implements CommandLineRunner {
             InternetAddress[] replyToArray = new InternetAddress[] { new InternetAddress(smtpReplyto) };
             message.setReplyTo(replyToArray);
             message.setRecipients(Message.RecipientType.TO,
-                    InternetAddress.parse(email));
-            message.setSubject(gene.getSubject());
-            message.setText(gene.getBody());
+                                  InternetAddress.parse(email));
+            message.setSubject(subject);
+            message.setContent(body, "text/html; charset=utf-8");
 
         } catch (MessagingException e) {
 
@@ -147,10 +192,9 @@ public class ApplicationSend implements CommandLineRunner {
         return message;
     }
 
-    private void sendEmail(GeneSent geneSent, Message message) throws InterestException {
+    private void sendEmail(GeneContact geneContact, GeneSent geneSent, Message message) throws InterestException {
 
         String recipient = null;
-        GeneContact gc = geneContacts.get(geneSent.getGeneContactPk());
 
         try {
             recipient = message.getRecipients(Message.RecipientType.TO)[0].toString();
@@ -161,8 +205,32 @@ public class ApplicationSend implements CommandLineRunner {
             Transport.send(message);
             geneSent.setSentAt(new Date());
             sqlUtils.insertGeneSent(geneSent);
-            String logMessage = "email scheduled for transport " + geneSent.getSentAt() + " for genePk " + gc.getGenePk() + ", contactPk " + gc.getContactPk() + ": OK";
-            sqlUtils.logSendAction(invoker, gc.getGenePk(), gc.getContactPk(), logMessage);
+            String logMessage = "email scheduled for transport " + geneSent.getSentAt() + " for genePk " + geneContact.getGenePk() + ", contactPk " + geneContact.getContactPk() + ": OK";
+            sqlUtils.logSendAction(invoker, geneContact.getGenePk(), geneContact.getContactPk(), logMessage);
+
+        } catch (MessagingException e) {
+
+            throw new InterestException("SEND of message to " + recipient + " failed: " + e.getLocalizedMessage());
+        }
+    }
+
+    private void sendSummaryEmail(GeneSentSummary summary, Message message) throws InterestException {
+
+        String recipient = null;
+
+        try {
+            recipient = message.getRecipients(Message.RecipientType.TO)[0].toString();
+
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String invoker = (auth == null ? "Unknown" : auth.getName());
+
+            Transport.send(message);
+            summary.setSentAt(new Date());
+
+
+
+            String logMessage = "summary email scheduled for transport " + summary.getSentAt() + " for contactPk " + summary.getContactPk() + ": OK";
+            sqlUtils.logSendAction(invoker, null, summary.getContactPk(), logMessage);
 
         } catch (MessagingException e) {
 
