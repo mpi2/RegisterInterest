@@ -17,6 +17,9 @@
 package org.mousephenotype.ri.send.config;
 
 import org.mousephenotype.ri.core.SqlUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -26,6 +29,7 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
 import javax.sql.DataSource;
+import javax.validation.constraints.NotNull;
 
 /**
  * Created by mrelac on 27/06/2017.
@@ -53,5 +57,51 @@ public class TestConfig {
     @Bean
     public SqlUtils sqlUtils() {
         return new SqlUtils(jdbc());
+    }
+
+
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @NotNull
+    @Value("${mail.smtp.host}")
+    private String smtpHost;
+
+    @NotNull
+    @Value("${mail.smtp.port}")
+    private Integer smtpPort;
+
+    @NotNull
+    @Value("${mail.smtp.from}")
+    private String smtpFrom;
+
+    @NotNull
+    @Value("${mail.smtp.replyto}")
+    private String smtpReplyto;
+
+
+    @Bean
+    public NamedParameterJdbcTemplate jdbcRi() {
+        return new NamedParameterJdbcTemplate(riDataSource());
+    }
+
+    @Bean
+    public String smtpHost() {
+        return smtpHost;
+    }
+
+    @Bean
+    public Integer smtpPort() {
+        return smtpPort;
+    }
+
+    @Bean
+    public String smtpFrom() {
+        return smtpFrom;
+    }
+
+    @Bean
+    public String smtpReplyto() {
+        return smtpReplyto;
     }
 }

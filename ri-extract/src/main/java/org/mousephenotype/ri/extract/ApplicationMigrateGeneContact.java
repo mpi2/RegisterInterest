@@ -18,9 +18,8 @@ package org.mousephenotype.ri.extract;
 
 import org.mousephenotype.ri.core.DateUtils;
 import org.mousephenotype.ri.core.SqlUtils;
-import org.mousephenotype.ri.core.entities.GeneContact;
-import org.mousephenotype.ri.core.entities.GeneSent;
-import org.mousephenotype.ri.core.entities.ImitsStatus;
+import org.mousephenotype.ri.core.entities.Contact;
+import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,38 +56,30 @@ import java.util.regex.Pattern;
  */
 @EnableBatchProcessing
 @ComponentScan({"org.mousephenotype.ri.extract"})
-public class MigrateGeneContactSent implements CommandLineRunner {
+public class ApplicationMigrateGeneContact implements CommandLineRunner {
 
     @NotNull
     @Value("${download.workspace}")
     protected String downloadWorkspace;
 
     @NotNull
-    @Value("${GeneContactSentUrl}")
+    @Value("${GeneContactUrl}")
     protected String sourceUrl;
-
 
     private DateUtils dateUtils = new DateUtils();
     private Logger logger      = LoggerFactory.getLogger(this.getClass());
     private String targetFilename;
-    private Map<String, ImitsStatus> imitsStatusMap;
     private SqlUtils sqlUtils;
 
     public static final int COL_MGI_ACCESSION_ID                     = 0;
     public static final int COL_MARKER_SYMBOL                        = 1;
     public static final int COL_EMAIL                                = 2;
-    public static final int COL_LAST_EMAIL_SENT_DATE                 = 3;
-    public static final int COL_GENE_ASSIGNMENT_STATUS               = 4;
-    public static final int COL_CONDITIONAL_ALLELE_PRODUCTION_STATUS = 5;
-    public static final int COL_NULL_ALLELE_PRODUCTION_STATUS        = 6;
-    public static final int COL_PHENOTYPING_STATUS                   = 7;
-    public static final int COL_GENE_CONTACT_CREATED_AT              = 8;
-    public static final int COL_CONTACT_CREATED_AT                   = 9;
-
+    public static final int COL_GENE_CONTACT_CREATED_AT              = 3;
+    public static final int COL_CONTACT_CREATED_AT                   = 4;
 
 
     public static void main(String[] args) throws Exception {
-        SpringApplication app = new SpringApplication(MigrateGeneContactSent.class);
+        SpringApplication app = new SpringApplication(ApplicationMigrateGeneContact.class);
         app.setBannerMode(Banner.Mode.OFF);
         app.setLogStartupInfo(false);
         app.setWebEnvironment(false);
@@ -97,15 +88,14 @@ public class MigrateGeneContactSent implements CommandLineRunner {
 
 
     @Inject
-    public MigrateGeneContactSent(SqlUtils sqlUtils) {
+    public ApplicationMigrateGeneContact(SqlUtils sqlUtils) {
         this.sqlUtils = sqlUtils;
     }
 
 
     @Override
     public void run(String... args) throws Exception {
-        targetFilename = downloadWorkspace + "/GeneContactSent.tsv";
-        imitsStatusMap = sqlUtils.getImitsStatusMap();
+        targetFilename = downloadWorkspace + "/GeneContact.tsv";
         long start;
 
         try {
@@ -177,6 +167,8 @@ public class MigrateGeneContactSent implements CommandLineRunner {
         int count = 0;
         String line;
         String[] parts;
+        Map<String, Gene> genesMap = sqlUtils.getGenes();
+
 
         try {
             BufferedReader br = new BufferedReader(new FileReader(targetFilename));
@@ -190,8 +182,8 @@ public class MigrateGeneContactSent implements CommandLineRunner {
 
                 parts = line.split(Pattern.quote("\t"));
 
-                if (parts.length != 10) {
-                    logger.error("Input file '" + targetFilename + "' contains " + parts.length + " fields. Expected 10.");
+                if (parts.length != 5) {
+                    logger.error(" Input file '" + targetFilename + "' contains " + parts.length + " fields. Expected 5.");
                     return count;
                 }
 
@@ -199,52 +191,16 @@ public class MigrateGeneContactSent implements CommandLineRunner {
                 String email = parts[COL_EMAIL];
                 String contactCreatedAtString = parts[COL_CONTACT_CREATED_AT];
                 String geneContactCreatedAtString = parts[COL_GENE_CONTACT_CREATED_AT];
-                String assignmentStatusString = parts[COL_GENE_ASSIGNMENT_STATUS];
-                String conditionalAlleleProductionStatusString = parts[COL_CONDITIONAL_ALLELE_PRODUCTION_STATUS];
-                String nullAlleleProductionStatusString = parts[COL_NULL_ALLELE_PRODUCTION_STATUS];
-                String phenotypingStatusString = parts[COL_PHENOTYPING_STATUS];
-                String sentAtString = parts[COL_LAST_EMAIL_SENT_DATE];
 
                 Date contactCreatedAt = parseDate(contactCreatedAtString);
                 Date geneContactCreatedAt = parseDate(geneContactCreatedAtString);
-                Integer assignmentStatusPk = null;
-                if ((assignmentStatusString != null) && ( ! assignmentStatusString.trim().isEmpty())) {
-                    assignmentStatusPk = getStatusPk(assignmentStatusString);
-                }
-                Integer conditionalAlleleProductionStatusPk = null;
-                if ((conditionalAlleleProductionStatusString != null) && ( ! conditionalAlleleProductionStatusString.trim().isEmpty())) {
-                    conditionalAlleleProductionStatusPk = getStatusPk(conditionalAlleleProductionStatusString);
-                }
-                Integer nullAlleleProductionStatusPk = null;
-                if ((nullAlleleProductionStatusString != null) && ( ! nullAlleleProductionStatusString.trim().isEmpty())) {
-                    nullAlleleProductionStatusPk = getStatusPk(nullAlleleProductionStatusString);
-                }
-                Integer phenotypingStatusPk = null;
-                if ((phenotypingStatusString != null) && ( ! phenotypingStatusString.trim().isEmpty())) {
-                    phenotypingStatusPk = getStatusPk(phenotypingStatusString);
-                }
-
-                Date sentAt = parseDate(sentAtString);
-
-                GeneContact geneContact;
-                GeneSent geneSent = new GeneSent();
 
                 try {
 
-                    geneContact = sqlUtils.insertOrUpdateInterestGene("migrator", mgiAccessionId, email, contactCreatedAt, 1, geneContactCreatedAt);
-
-                    geneSent.setSubject("migrated");
-                    geneSent.setBody("migrated");
-                    geneSent.setGeneContactPk(geneContact.getPk());
-                    geneSent.setAssignmentStatusPk(assignmentStatusPk);
-                    geneSent.setConditionalAlleleProductionStatusPk(conditionalAlleleProductionStatusPk);
-                    geneSent.setNullAlleleProductionStatusPk(nullAlleleProductionStatusPk);
-                    geneSent.setPhenotypingStatusPk(phenotypingStatusPk);
-                    geneSent.setCreatedAt(new Date());
-                    geneSent.setSentAt(sentAt);
-
-                    sqlUtils.insertGeneSent(geneSent);
-                    count++;
+                    Gene gene = genesMap.get(mgiAccessionId);
+                    Contact contact = sqlUtils.updateOrInsertContact("migrator", email, 1, contactCreatedAt);
+                    int localCount = sqlUtils.insertOrUpdateGeneContact(gene.getPk(), contact.getPk(), 1, geneContactCreatedAt);
+                    count += localCount;
 
                 } catch (InterestException e) {
 
@@ -270,24 +226,14 @@ public class MigrateGeneContactSent implements CommandLineRunner {
     // PRIVATE METHODS
 
 
-    private Integer getStatusPk(String imitsStatusString) throws InterestException {
-
-        ImitsStatus imitsStatus = imitsStatusMap.get(imitsStatusString);
-        if (imitsStatus == null) {
-            throw new InterestException("Invalid iMits status '" + imitsStatusString + "'");
-        }
-
-        return imitsStatus.getGeneStatusPk();
-    }
-
     private Date parseDate(String dateString) throws InterestException {
 
         Date date = dateUtils.convertToDate(dateString);
-
+        
         if (date == null) {
             throw new InterestException( "Invalid date: '" + dateString + "'");
         }
-
+        
         return date;
     }
 }

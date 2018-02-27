@@ -113,7 +113,7 @@ public class ApplicationGenerateSummary implements CommandLineRunner {
             count++;
         }
 
-        logger.info("Run ri-generate: " + count + " emails queued for gene status changes");
+        logger.info("Run ApplicationGenerateSummary: " + count + " emails queued for gene status changes");
     }
 
 

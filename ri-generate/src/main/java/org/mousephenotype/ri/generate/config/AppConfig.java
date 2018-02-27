@@ -35,6 +35,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
+import javax.validation.constraints.NotNull;
 
 /**
  * Created by mrelac on 02/05/2017.
@@ -55,27 +56,30 @@ public class AppConfig {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Bean
-    public NamedParameterJdbcTemplate jdbc() {
-        return new NamedParameterJdbcTemplate(riDataSource());
-    }
-
-    @Bean
-    public SqlUtils sqlUtils() {
-        return new SqlUtils(jdbc());
-    }
-
+    @NotNull
     @Value("${datasource.ri.url}")
     String riUrl;
 
+    @NotNull
     @Value("${datasource.ri.username}")
     String username;
 
+    @NotNull
     @Value("${datasource.ri.password}")
     String password;
 
     @Bean
     public DataSource riDataSource() {
         return SqlUtils.getConfiguredDatasource(riUrl, username, password);
+    }
+
+    @Bean
+    public SqlUtils sqlUtils() {
+        return new SqlUtils(jdbcRi());
+    }
+
+    @Bean
+    public NamedParameterJdbcTemplate jdbcRi() {
+        return new NamedParameterJdbcTemplate(riDataSource());
     }
 }

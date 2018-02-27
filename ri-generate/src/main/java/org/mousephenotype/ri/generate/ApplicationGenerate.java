@@ -190,7 +190,7 @@ public class ApplicationGenerate implements CommandLineRunner {
             }
         }
 
-        logger.info("Run ri-generate: " + count + " emails queued for gene status changes");
+        logger.info("Run ApplicationGenerate: " + count + " emails queued for gene status changes");
     }
 
     public String buildBody(Gene gene, GeneSent geneSent, boolean shouldWelcome) {

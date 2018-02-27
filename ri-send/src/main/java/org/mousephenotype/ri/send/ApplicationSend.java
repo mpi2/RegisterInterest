@@ -103,7 +103,6 @@ public class ApplicationSend implements CommandLineRunner {
         } else {
             doGeneSent();
         }
-
     }
 
 
@@ -130,7 +129,8 @@ public class ApplicationSend implements CommandLineRunner {
         for (GeneSent geneSent : genesScheduledForSending) {
             String email = emailAddressesByGeneContactPk.get(geneSent.getGeneContactPk());
             GeneContact geneContact = geneContacts.get(geneSent.getGeneContactPk());
-            message = buildEmail(geneSent.getSubject(), geneSent.getBody(), email);
+            boolean isHtml = false;
+            message = buildEmail(geneSent.getSubject(), geneSent.getBody(), email, isHtml);
             built++;
 
             sendEmail(geneContact, geneSent, message);
@@ -152,7 +152,8 @@ public class ApplicationSend implements CommandLineRunner {
             int contactPk = entry.getKey();
             GeneSentSummary summary = entry.getValue();
             String email = contactMap.get(contactPk).getAddress();
-            message = buildEmail(summary.getSubject(), summary.getBody(), email);
+            boolean isHtml = true;
+            message = buildEmail(summary.getSubject(), summary.getBody(), email, isHtml);
             built++;
 
             sendSummaryEmail(summary, message);
@@ -164,7 +165,7 @@ public class ApplicationSend implements CommandLineRunner {
     }
 
 
-    private Message buildEmail(String subject, String body, String email) {
+    private Message buildEmail(String subject, String body, String email, boolean isHtml) {
 
         Properties smtpProperties = new Properties();
 
@@ -182,7 +183,11 @@ public class ApplicationSend implements CommandLineRunner {
             message.setRecipients(Message.RecipientType.TO,
                                   InternetAddress.parse(email));
             message.setSubject(subject);
-            message.setContent(body, "text/html; charset=utf-8");
+            if (isHtml) {
+                message.setContent(body, "text/html; charset=utf-8");
+            } else {
+                message.setText(body);
+            }
 
         } catch (MessagingException e) {
 
@@ -226,9 +231,6 @@ public class ApplicationSend implements CommandLineRunner {
 
             Transport.send(message);
             summary.setSentAt(new Date());
-
-
-
             String logMessage = "summary email scheduled for transport " + summary.getSentAt() + " for contactPk " + summary.getContactPk() + ": OK";
             sqlUtils.logSendAction(invoker, null, summary.getContactPk(), logMessage);
 

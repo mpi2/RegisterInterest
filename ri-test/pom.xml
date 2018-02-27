@@ -5,15 +5,15 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.mousephenotype</groupId>
+    <groupId>org.mousephenotype.ri</groupId>
     <artifactId>ri-test</artifactId>
     <description>ri integration tests</description>
     <version>1.0.0-SNAPSHOT</version>
 
-    <packaging>jar</packaging>
+    <!--<packaging>jar</packaging>-->
 
     <parent>
-        <groupId>org.mousephenotype</groupId>
+        <groupId>org.mousephenotype.ri</groupId>
         <artifactId>ri-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../ri-parent/pom.xml</relativePath>
@@ -51,24 +51,25 @@
         <!-- ri -->
 
         <dependency>
-            <groupId>org.mousephenotype</groupId>
+            <groupId>org.mousephenotype.ri</groupId>
             <artifactId>ri-extract</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
-            <groupId>org.mousephenotype</groupId>
+            <groupId>org.mousephenotype.ri</groupId>
             <artifactId>ri-core</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
-            <groupId>org.mousephenotype</groupId>
+            <groupId>org.mousephenotype.ri</groupId>
             <artifactId>ri-generate</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
-            <groupId>org.mousephenotype</groupId>
+            <groupId>org.mousephenotype.ri</groupId>
             <artifactId>ri-send</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>

@@ -40,6 +40,7 @@ import org.springframework.boot.autoconfigure.web.EmbeddedServletContainerAutoCo
 import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -55,7 +56,7 @@ import java.util.Map;
  * Created by mrelac on 02/05/2017.
  */
 @Configuration
-@PropertySource(value="file:${user.home}/configfiles/${profile}/build.properties")
+@PropertySource(value="file:${user.home}/configfiles/${profile}/application.properties")
 @EnableBatchProcessing
 @EnableAutoConfiguration(exclude = {
         JndiConnectionFactoryAutoConfiguration.class,
@@ -96,6 +97,7 @@ public class AppConfig {
     }
 
 
+    @Lazy
     @Inject
     public AppConfig(StepBuilderFactory stepBuilderFactory) {
         this.stepBuilderFactory = stepBuilderFactory;

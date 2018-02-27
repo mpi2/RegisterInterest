@@ -33,7 +33,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 @RunWith(SpringRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = TestConfig.class)
-public class ApplicationSendTest {
+public class SendTest {
 
     @Autowired
     private ApplicationContext context;
@@ -48,7 +48,7 @@ public class ApplicationSendTest {
      *
      * @throws Exception
      */
-    @Ignore
+@Ignore
     @Test
     public void testSendRegisterInterest() throws Exception {
 

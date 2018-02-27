@@ -131,7 +131,7 @@ DROP TABLE IF EXISTS gene_sent_summary;
 CREATE TABLE gene_sent_summary (
     pk                                          INT             NOT NULL        AUTO_INCREMENT PRIMARY KEY,
     subject                                     VARCHAR(78)     NOT NULL,
-    body                                        TEXT            NOT NULL,
+    body                                        MEDIUMTEXT      NOT NULL,
     contact_pk                                  INT             NOT NULL,
 
     created_at                                  DATETIME        NOT NULL,
