@@ -19,7 +19,6 @@
         <module>ri-ws</module>
         <module>ri-generate</module>
         <module>ri-send</module>
-        <module>ri-test</module>
         <module>ri-reports</module>
     </modules>
 
