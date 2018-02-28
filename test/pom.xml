@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.mousephenotype.ri</groupId>
-    <artifactId>ri-test</artifactId>
+    <artifactId>test</artifactId>
     <description>ri integration tests</description>
     <version>1.0.0-SNAPSHOT</version>
 

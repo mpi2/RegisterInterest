@@ -19,20 +19,26 @@ package org.mousephenotype.ri.integrationtest;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mousephenotype.ri.generate.ApplicationGenerateSummary;
 import org.mousephenotype.ri.integrationtest.config.TestConfig;
+import org.mousephenotype.ri.send.ApplicationSend;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.Resource;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
 
 /**
- * Created by mrelac on 21/06/2017.
+ * Created by mrelac on 16-02-2018.
  */
 @RunWith(SpringRunner.class)
-//@WebAppConfiguration
 @ContextConfiguration(classes = TestConfig.class)
-public class RegisterUnregisterTest {
+public class SendSummaryTest {
 
     @NotNull
     @Value("${mail.smtp.host}")
@@ -59,72 +65,68 @@ public class RegisterUnregisterTest {
     String wsPassword;
 
 
-//    @Autowired
-//    private ApplicationGenerate applicationGenerate;
-//
-//    @Autowired
-//    private ApplicationSend applicationSend;
-//
-//    @Autowired
-//    private ApplicationContext context;
-//
+    @Autowired
+    private ApplicationGenerateSummary applicationGenerateSummary;
+
+    @Autowired
+    private ApplicationSend applicationSend;
+
+    @Autowired
+    private ApplicationContext context;
+
 //    @Autowired
 //    private InterestController interestController;
-//
-//    @Autowired
-//    private DataSource riDataSource;
+
+    @Autowired
+    private DataSource riDataSource;
 
 
     /**
      * This is an end-to-end integration test creates, loads, and uses an embedded in-memory h2 database and a local
      * ri-ws web service instance. It tests the following use case:
-     *     register interest
-     *     unregister interest
-     *     generate
+     *     register interest in five genes
+     *     generateSummary
      *     send
      *
-     * Expected results: four e-mails, two to mrelac@ebi.ac.uk and two to mike@foxhill.com (each address gets
-     * two e-mails: one for MGI:1919199 and one for MGI:102851)
+     * Expected results: one e-mail to mrelac@ebi.ac.uk with a summary of the five registered genes
      *
      * @throws Exception
      */
 //@Ignore
     @Test
-    public void testRegisterUnregister() throws Exception {
+    public void testSendSummary() throws Exception {
 
-//        String[] contacts         = new String[]{"mrelac@ebi.ac.uk", "mike@foxhill.com"};
-//        String[] geneAccessionIds = new String[]{"MGI:1919199", "MGI:102851"};
-//
-//        // Load the data
-//        Resource r = context.getResource("classpath:sql/h2/schema.sql");
-//        ScriptUtils.executeSqlScript(riDataSource.getConnection(), r);
-//        r = context.getResource("classpath:sql/h2/registerUnregister-data.sql");
-//        ScriptUtils.executeSqlScript(riDataSource.getConnection(), r);
-//
-//        for (int i = 0; i < contacts.length; i++) {
-//            register(contacts[i], geneAccessionIds[i]);
-//            unregister(contacts[i], geneAccessionIds[i]);
-//        }
-//        String[] args = new String[0];
-//        applicationGenerate.run(args);
-//        applicationSend.run(args);
+        String   contact          = "mrelac@ebi.ac.uk";
+        String[] geneAccessionIds = new String[] {
+                "MGI:103576",
+                "MGI:1919199",
+                "MGI:2443658",
+                "MGI:2444824",
+                "MGI:3576659"
+        };
+
+        // Load the data
+        Resource r = context.getResource("classpath:sql/h2/schema.sql");
+        ScriptUtils.executeSqlScript(riDataSource.getConnection(), r);
+        r = context.getResource("classpath:sql/h2/sendSummary-data.sql");
+        ScriptUtils.executeSqlScript(riDataSource.getConnection(), r);
+
+        for (String geneAccessionId : geneAccessionIds) {
+//            register(contact, geneAccessionId);
+        }
+        String[] args = new String[0];
+        applicationGenerateSummary.run(args);
+        applicationSend.run(args);
     }
-//
-//
-//    // Web Service support routines
-//
-//
-//    private void register(String email, String geneAccessionId) {
-//
+
+
+    // PRIVATE METHODS
+
+
+    private void register(String email, String geneAccessionId) {
+
 //        ResponseEntity<String> response = interestController.register(email, "gene", geneAccessionId);
 //        System.out.println(response.getStatusCode().toString());
 //        System.out.println(response.getBody());
-//    }
-//
-//    private void unregister(String email, String geneAccessionId) {
-//
-//        ResponseEntity<String> response = interestController.unregister(email, "gene", geneAccessionId);
-//        System.out.println(response.getStatusCode().toString());
-//        System.out.println(response.getBody());
-//    }
+    }
 }
