@@ -204,8 +204,8 @@ public class ApplicationSend implements CommandLineRunner {
         try {
             recipient = message.getRecipients(Message.RecipientType.TO)[0].toString();
 
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String invoker = (auth == null ? "Unknown" : auth.getName());
+            Authentication auth    = SecurityContextHolder.getContext().getAuthentication();
+            String         invoker = (auth == null ? "Unknown" : auth.getName());
 
             Transport.send(message);
             geneSent.setSentAt(new Date());

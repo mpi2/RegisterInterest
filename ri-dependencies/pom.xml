@@ -91,19 +91,19 @@
             <!-- org.mousephenotype -->
 
             <dependency>
-                <groupId>org.mousephenotype</groupId>
+                <groupId>org.mousephenotype.ri</groupId>
                 <artifactId>ri-extract</artifactId>
                 <version>${ri-version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.mousephenotype</groupId>
+                <groupId>org.mousephenotype.ri</groupId>
                 <artifactId>ri-ws</artifactId>
                 <version>${ri-version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.mousephenotype</groupId>
+                <groupId>org.mousephenotype.ri</groupId>
                 <artifactId>ri-core</artifactId>
                 <version>${ri-version}</version>
             </dependency>

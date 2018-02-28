@@ -16,56 +16,69 @@
 
 package org.mousephenotype.ri.integrationtest.config;
 
+import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.generate.ApplicationGenerate;
+import org.mousephenotype.ri.generate.ApplicationGenerateSummary;
+import org.mousephenotype.ri.send.ApplicationSend;
+import org.mousephenotype.ri.ws.InterestController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+
+import javax.sql.DataSource;
 
 /**
  * Created by mrelac on 27/06/2017.
  */
 @Configuration
 @PropertySource(value="file:${user.home}/configfiles/${profile}/test.properties")
-//@ComponentScan("org.mousephenotype.ri")
+@ComponentScan
 public class TestConfig {
 
-//    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-//
-//    @Bean
-//    public InterestController interestController() {
-//        return new InterestController(sqlUtils());
-//    }
-//
-//    @Bean
-//    public DataSource riDataSource() {
-//
-//        return new EmbeddedDatabaseBuilder()
-//                .setType(EmbeddedDatabaseType.H2)
-//                .ignoreFailedDrops(true)
-//                .build();
-//    }
-//
-//    @Bean
-//    public NamedParameterJdbcTemplate jdbcRi() {
-//        return new NamedParameterJdbcTemplate(riDataSource());
-//    }
-//
-//    @Bean
-//    public SqlUtils sqlUtils() {
-//        return new SqlUtils(jdbcRi());
-//    }
-//
-//    @Bean
-//    public ApplicationGenerate applicationGenerate() {
-//        return new ApplicationGenerate(sqlUtils());
-//    }
-//
-//    @Bean
-//    public ApplicationGenerateSummary applicationGenerateSummary() {
-//        return new ApplicationGenerateSummary(sqlUtils());
-//    }
-//
-//    @Bean
-//    public ApplicationSend applicationSend() {
-//        return new ApplicationSend(sqlUtils());
-//    }
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @Bean
+    public InterestController interestController() {
+        return new InterestController(sqlUtils());
+    }
+
+    @Bean
+    public DataSource riDataSource() {
+
+        return new EmbeddedDatabaseBuilder()
+                .setType(EmbeddedDatabaseType.H2)
+                .ignoreFailedDrops(true)
+                .build();
+    }
+
+    @Bean
+    public NamedParameterJdbcTemplate jdbcRi() {
+        return new NamedParameterJdbcTemplate(riDataSource());
+    }
+
+    @Bean
+    public SqlUtils sqlUtils() {
+        return new SqlUtils(jdbcRi());
+    }
+
+    @Bean
+    public ApplicationGenerate applicationGenerate() {
+        return new ApplicationGenerate(sqlUtils());
+    }
+
+    @Bean
+    public ApplicationGenerateSummary applicationGenerateSummary() {
+        return new ApplicationGenerateSummary(sqlUtils());
+    }
+
+    @Bean
+    public ApplicationSend applicationSend() {
+        return new ApplicationSend(sqlUtils());
+    }
 }

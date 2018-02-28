@@ -57,7 +57,7 @@
         <!-- ri -->
 
         <dependency>
-            <groupId>org.mousephenotype</groupId>
+            <groupId>org.mousephenotype.ri</groupId>
             <artifactId>ri-core</artifactId>
         </dependency>
 
