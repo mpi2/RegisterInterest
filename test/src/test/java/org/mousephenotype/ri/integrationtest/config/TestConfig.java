@@ -20,6 +20,7 @@ import org.mousephenotype.ri.core.SqlUtils;
 import org.mousephenotype.ri.generate.ApplicationGenerate;
 import org.mousephenotype.ri.generate.ApplicationGenerateSummary;
 import org.mousephenotype.ri.send.ApplicationSend;
+import org.mousephenotype.ri.ws.InterestController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -40,10 +41,10 @@ public class TestConfig {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-//    @Bean
-//    public InterestController interestController() {
-//        return new InterestController(sqlUtils());
-//    }
+    @Bean
+    public InterestController interestController() {
+        return new InterestController(sqlUtils());
+    }
 
     @Bean
     public DataSource riDataSource() {

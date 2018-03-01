@@ -22,10 +22,12 @@ import org.junit.runner.RunWith;
 import org.mousephenotype.ri.generate.ApplicationGenerateSummary;
 import org.mousephenotype.ri.integrationtest.config.TestConfig;
 import org.mousephenotype.ri.send.ApplicationSend;
+import org.mousephenotype.ri.ws.InterestController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -74,8 +76,8 @@ public class SendSummaryTest {
     @Autowired
     private ApplicationContext context;
 
-//    @Autowired
-//    private InterestController interestController;
+    @Autowired
+    private InterestController interestController;
 
     @Autowired
     private DataSource riDataSource;
@@ -112,7 +114,7 @@ public class SendSummaryTest {
         ScriptUtils.executeSqlScript(riDataSource.getConnection(), r);
 
         for (String geneAccessionId : geneAccessionIds) {
-//            register(contact, geneAccessionId);
+            register(contact, geneAccessionId);
         }
         String[] args = new String[0];
         applicationGenerateSummary.run(args);
@@ -125,8 +127,8 @@ public class SendSummaryTest {
 
     private void register(String email, String geneAccessionId) {
 
-//        ResponseEntity<String> response = interestController.register(email, "gene", geneAccessionId);
-//        System.out.println(response.getStatusCode().toString());
-//        System.out.println(response.getBody());
+        ResponseEntity<String> response = interestController.register(email, "gene", geneAccessionId);
+        System.out.println(response.getStatusCode().toString());
+        System.out.println(response.getBody());
     }
 }
