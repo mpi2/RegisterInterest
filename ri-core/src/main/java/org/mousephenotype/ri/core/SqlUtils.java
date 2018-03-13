@@ -187,6 +187,32 @@ public class SqlUtils {
     }
 
     /**
+     *
+     * @return a list of {@link GeneContactReportRow}. Needed by iMits.
+     */
+    public List<GeneContactReportRow> getGeneContactReportRow() {
+        List<GeneContactReportRow> report = new ArrayList<>();
+
+        final String query = "SELECT\n" +
+                "  c.address          AS contact_email,\n" +
+                "  c.active           AS contact_active_state,\n" +
+                "  c.created_at       AS contact_created_at,\n" +
+                "  g.symbol           AS marker_symbol,\n" +
+                "  g.mgi_accession_id AS mgi_accession_id,\n" +
+                "  gc.created_at      AS gene_interest_created_at\n" +
+                "FROM contact c\n" +
+                "JOIN gene_contact gc ON gc.contact_pk = c.pk\n" +
+                "JOIN gene         g  ON g.pk = gc.gene_pk\n" +
+                "WHERE gc.active = 1\n" +
+                "ORDER BY c.address, g.symbol;";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        report = jdbcInterest.query(query, parameterMap, new GeneContactReportRowRowMapper());
+
+        return report;
+    }
+
+    /**
      * @return A map of all genes, indexed by mgi accession id.
      */
     public Map<String, Gene> getGenes() {
