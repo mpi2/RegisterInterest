@@ -64,6 +64,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .hasRole(ROLE_ADMIN)
 
                 .and()
+
+                .authorizeRequests()
+                .antMatchers(HttpMethod.GET, "/reports/**")
+                .hasRole(ROLE_ADMIN)
+
+                .and()
                 .httpBasic()
 
                 .and()

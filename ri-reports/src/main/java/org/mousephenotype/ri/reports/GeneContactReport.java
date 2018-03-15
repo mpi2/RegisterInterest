@@ -28,20 +28,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import javax.inject.Inject;
 import java.beans.Introspector;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
 
 
-@SpringBootApplication
 public class GeneContactReport extends AbstractReport implements CommandLineRunner {
 
     private Logger    logger     = LoggerFactory.getLogger(this.getClass());
@@ -49,9 +43,10 @@ public class GeneContactReport extends AbstractReport implements CommandLineRunn
     private DateUtils dateUtils  = new DateUtils();
     private SqlUtils  sqlUtils;
 
-    @Inject
-    public GeneContactReport(SqlUtils sqlUtils) {
+    public GeneContactReport(SqlUtils sqlUtils, MpCSVWriter csvWriter)
+    {
         this.sqlUtils = sqlUtils;
+        this.csvWriter = csvWriter;
     }
 
     @Override
@@ -60,7 +55,7 @@ public class GeneContactReport extends AbstractReport implements CommandLineRunn
     }
 
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         SpringApplication app = new SpringApplication(GeneContactReport.class);
         app.setWebEnvironment(false);               // Inhibits launching of Tomcat.
         app.setBannerMode(Banner.Mode.OFF);
@@ -75,12 +70,11 @@ public class GeneContactReport extends AbstractReport implements CommandLineRunn
             logger.error(reportName + " parser validation error: " + StringUtils.join(errors, "\n"));
             return;
         }
-        initialise(args);
 
         long start = System.currentTimeMillis();
 
-        List<String> headerParams = Arrays.asList(new String[]{
-                "contact_email", "contact_active_state", "contact_created_at", "marker_symbol", "mgi_accession_id", "gene_interest_created_at"});
+        List<String> headerParams = Arrays.asList(
+                "contact_email", "contact_active_state", "contact_created_at", "marker_symbol", "mgi_accession_id", "gene_interest_created_at");
 
         csvWriter.writeRow(headerParams);
 
@@ -92,7 +86,7 @@ public class GeneContactReport extends AbstractReport implements CommandLineRunn
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd hh:.mm:ss");
         for (GeneContactReportRow geneContactReportRow : geneContacts) {
 
-            List<String> row = Arrays.asList(new String[]{
+            List<String> row = Arrays.asList(
                       geneContactReportRow.getContactEmail()
                     , Integer.toString(geneContactReportRow.getContactActiveState())
                     , (geneContactReportRow.getContactCreatedAt() != null ? fmt.format(geneContactReportRow.getContactCreatedAt()) : NO_DATA)
@@ -100,7 +94,7 @@ public class GeneContactReport extends AbstractReport implements CommandLineRunn
                     , geneContactReportRow.getMgiAccessionId()
                     , (geneContactReportRow.getGeneInterestCreatedDate() != null ? fmt.format(geneContactReportRow.getGeneInterestCreatedDate()) : NO_DATA)
 
-            });
+            );
 
             csvWriter.writeRow(row);
         }
@@ -112,42 +106,5 @@ public class GeneContactReport extends AbstractReport implements CommandLineRunn
         }
 
         logger.info(String.format("Finished. [%s]", dateUtils.msToHms(System.currentTimeMillis() - start)));
-    }
-
-
-    protected void initialise(String[] args) throws ReportException {
-        List<String> errors = parser.validate(parser.parse(args));
-        if ( ! errors.isEmpty()) {
-            for (String error : errors) {
-                System.out.println(error);
-            }
-            System.out.println();
-            usage();
-            System.exit(1);
-        }
-
-        if (parser.showHelp()) {
-            usage();
-            System.exit(0);
-        }
-
-        if (parser.getReportFormat() != null) {
-            this.reportFormat = parser.getReportFormat();
-        }
-        this.targetFilename =
-                parser.getPrefix()
-                        + (parser.getTargetFilename() != null ? parser.getTargetFilename() : getDefaultFilename())
-                        + "."
-                        + reportFormat;
-
-        this.targetFile = new File(Paths.get(parser.getTargetDirectory(), targetFilename).toAbsolutePath().toString());
-        try {
-            FileWriter fileWriter = new FileWriter(targetFile.getAbsoluteFile());
-            this.csvWriter = new MpCSVWriter(fileWriter, reportFormat.getSeparator());
-        } catch (IOException e) {
-            throw new ReportException("Exception opening FileWriter: " + e.getLocalizedMessage());
-        }
-
-        logInputParameters();
     }
 }

@@ -21,6 +21,9 @@ import org.mousephenotype.ri.core.SqlUtils;
 import org.mousephenotype.ri.core.entities.GeneContact;
 import org.mousephenotype.ri.core.entities.Interest;
 import org.mousephenotype.ri.core.exceptions.InterestException;
+import org.mousephenotype.ri.reports.GeneContactReport;
+import org.mousephenotype.ri.reports.support.MpCSVWriter;
+import org.mousephenotype.ri.reports.support.ReportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -33,6 +36,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Date;
 import java.util.List;
 
@@ -174,5 +180,16 @@ public class InterestController {
         }
 
         return new ResponseEntity<>(message, responseHeaders, HttpStatus.OK);
+    }
+
+
+    @RequestMapping(method = GET, value = "/reports/GeneContact.csv")
+    public void getGeneContactReport(HttpServletResponse response) throws IOException, ReportException {
+
+        response.setContentType("text/csv; charset=utf-8");
+        PrintWriter writer = response.getWriter();
+        MpCSVWriter csvWriter = new MpCSVWriter(writer);
+        GeneContactReport report = new GeneContactReport(sqlUtils, csvWriter);
+        report.run(new String[0]);
     }
 }
