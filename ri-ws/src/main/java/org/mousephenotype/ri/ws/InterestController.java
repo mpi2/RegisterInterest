@@ -183,7 +183,7 @@ public class InterestController {
     }
 
 
-    @RequestMapping(method = GET, value = "/reports/GeneContact.csv")
+    @RequestMapping(method = GET, value = "/reports/GeneContact")
     public void getGeneContactReport(HttpServletResponse response) throws IOException, ReportException {
 
         response.setContentType("text/csv; charset=utf-8");
@@ -191,5 +191,7 @@ public class InterestController {
         MpCSVWriter csvWriter = new MpCSVWriter(writer);
         GeneContactReport report = new GeneContactReport(sqlUtils, csvWriter);
         report.run(new String[0]);
+
+        csvWriter.close();
     }
 }
