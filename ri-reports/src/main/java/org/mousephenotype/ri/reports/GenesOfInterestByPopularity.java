@@ -20,7 +20,6 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mousephenotype.ri.core.DateUtils;
 import org.mousephenotype.ri.core.SqlUtils;
-import org.mousephenotype.ri.core.entities.report.GenesOfInterestByPopularity;
 import org.mousephenotype.ri.reports.support.MpCSVWriter;
 import org.mousephenotype.ri.reports.support.ReportException;
 import org.slf4j.Logger;
@@ -28,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 
 import javax.inject.Inject;
 import java.beans.Introspector;
@@ -40,9 +39,8 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
 
-
-@SpringBootApplication
-public class ApplicationGenesOfInterestByPopularity extends AbstractReport implements CommandLineRunner {
+@ComponentScan
+public class GenesOfInterestByPopularity extends AbstractReport implements CommandLineRunner {
 
     private Logger    logger     = LoggerFactory.getLogger(this.getClass());
     private String    reportName = ClassUtils.getShortClassName(this.getClass());
@@ -50,18 +48,18 @@ public class ApplicationGenesOfInterestByPopularity extends AbstractReport imple
     private SqlUtils  sqlUtils;
 
     @Inject
-    public ApplicationGenesOfInterestByPopularity(SqlUtils sqlUtils) {
+    public GenesOfInterestByPopularity(SqlUtils sqlUtils) {
         this.sqlUtils = sqlUtils;
     }
 
     @Override
     public String getDefaultFilename() {
-        return Introspector.decapitalize(this.getClass().getSuperclass().getSimpleName());
+        return Introspector.decapitalize(this.getClass().getSimpleName());
     }
 
 
     public static void main(String[] args) throws Exception {
-        SpringApplication app = new SpringApplication(ApplicationGenesOfInterestByPopularity.class);
+        SpringApplication app = new SpringApplication(GenesOfInterestByPopularity.class);
         app.setWebEnvironment(false);               // Inhibits launching of Tomcat.
         app.setBannerMode(Banner.Mode.OFF);
         app.setLogStartupInfo(false);
@@ -85,12 +83,12 @@ public class ApplicationGenesOfInterestByPopularity extends AbstractReport imple
         csvWriter.writeRow(headerParams);
 
         // Get the genes of interest by popularity
-        List<GenesOfInterestByPopularity> genes = sqlUtils.getGenesOfInterestByPopularity();
+        List<org.mousephenotype.ri.core.entities.report.GenesOfInterestByPopularity> genes = sqlUtils.getGenesOfInterestByPopularity();
 
         // Write the data.
         final String     NO_DATA = "--";
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd hh:.mm:ss");
-        for (GenesOfInterestByPopularity gene : genes) {
+        for (org.mousephenotype.ri.core.entities.report.GenesOfInterestByPopularity gene : genes) {
             String dateString = (gene.getAssignmentStatusDate() != null ? fmt.format(gene.getAssignmentStatusDate()) : NO_DATA);
             List<String> row = Arrays.asList(new String[]{
                       gene.getMgiAccessionId()
@@ -115,7 +113,7 @@ public class ApplicationGenesOfInterestByPopularity extends AbstractReport imple
         logger.info(String.format("Finished. [%s]", dateUtils.msToHms(System.currentTimeMillis() - start)));
     }
 
-
+    @Override
     protected void initialise(String[] args) throws ReportException {
         List<String> errors = parser.validate(parser.parse(args));
         if ( ! errors.isEmpty()) {

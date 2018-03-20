@@ -189,8 +189,8 @@ public class InterestController {
         response.setContentType("text/csv; charset=utf-8");
         PrintWriter writer = response.getWriter();
         MpCSVWriter csvWriter = new MpCSVWriter(writer);
-        GeneContactReport report = new GeneContactReport(sqlUtils, csvWriter);
-        report.run(new String[0]);
+        GeneContactReport report = new GeneContactReport(sqlUtils);
+        report.run(new String[0], csvWriter);
 
         csvWriter.close();
     }

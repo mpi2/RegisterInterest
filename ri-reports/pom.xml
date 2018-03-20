@@ -80,11 +80,12 @@
             <artifactId>jopt-simple</artifactId>
             <version>4.8</version>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.mousephenotype.cda</groupId>-->
-            <!--<artifactId>data-model</artifactId>-->
-            <!--<version>1.0.0</version>-->
-        <!--</dependency>-->
+
+        <dependency>
+            <groupId>org.mousephenotype.cda</groupId>
+            <artifactId>data-model</artifactId>
+            <version>1.0.0</version>
+        </dependency>
 
     </dependencies>
 

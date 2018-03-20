@@ -28,14 +28,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.context.annotation.ComponentScan;
 
+import javax.inject.Inject;
 import java.beans.Introspector;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
 
 
+@ComponentScan
 public class GeneContactReport extends AbstractReport implements CommandLineRunner {
 
     private Logger    logger     = LoggerFactory.getLogger(this.getClass());
@@ -43,15 +49,15 @@ public class GeneContactReport extends AbstractReport implements CommandLineRunn
     private DateUtils dateUtils  = new DateUtils();
     private SqlUtils  sqlUtils;
 
-    public GeneContactReport(SqlUtils sqlUtils, MpCSVWriter csvWriter)
+    @Inject
+    public GeneContactReport(SqlUtils sqlUtils)
     {
         this.sqlUtils = sqlUtils;
-        this.csvWriter = csvWriter;
     }
 
     @Override
     public String getDefaultFilename() {
-        return Introspector.decapitalize(this.getClass().getSuperclass().getSimpleName());
+        return Introspector.decapitalize(this.getClass().getSimpleName());
     }
 
 
@@ -70,6 +76,21 @@ public class GeneContactReport extends AbstractReport implements CommandLineRunn
             logger.error(reportName + " parser validation error: " + StringUtils.join(errors, "\n"));
             return;
         }
+
+        initialise(args);
+
+        createReport();
+    }
+
+    public void run(String[] args, MpCSVWriter cvsWriter) throws ReportException {
+        this.csvWriter = cvsWriter;
+
+        createReport();
+    }
+
+
+
+    private void createReport() throws ReportException {
 
         long start = System.currentTimeMillis();
 
@@ -106,5 +127,43 @@ public class GeneContactReport extends AbstractReport implements CommandLineRunn
         }
 
         logger.info(String.format("Finished. [%s]", dateUtils.msToHms(System.currentTimeMillis() - start)));
+    }
+
+
+    @Override
+    protected void initialise(String[] args) throws ReportException {
+        List<String> errors = parser.validate(parser.parse(args));
+        if ( ! errors.isEmpty()) {
+            for (String error : errors) {
+                System.out.println(error);
+            }
+            System.out.println();
+            usage();
+            System.exit(1);
+        }
+
+        if (parser.showHelp()) {
+            usage();
+            System.exit(0);
+        }
+
+        if (parser.getReportFormat() != null) {
+            this.reportFormat = parser.getReportFormat();
+        }
+        this.targetFilename =
+                parser.getPrefix()
+                        + (parser.getTargetFilename() != null ? parser.getTargetFilename() : getDefaultFilename())
+                        + "."
+                        + reportFormat;
+
+        this.targetFile = new File(Paths.get(parser.getTargetDirectory(), targetFilename).toAbsolutePath().toString());
+        try {
+            FileWriter fileWriter = new FileWriter(targetFile.getAbsoluteFile());
+            this.csvWriter = new MpCSVWriter(fileWriter, reportFormat.getSeparator());
+        } catch (IOException e) {
+            throw new ReportException("Exception opening FileWriter: " + e.getLocalizedMessage());
+        }
+
+        logInputParameters();
     }
 }

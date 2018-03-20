@@ -28,6 +28,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
+import java.io.FileWriter;
 
 /**
  * ReportType bean configuration
