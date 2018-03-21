@@ -7,7 +7,7 @@
 
     <groupId>org.mousephenotype.ri</groupId>
     <artifactId>ri-dependencies</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0-RELEASE</version>
 
     <packaging>pom</packaging>
 
@@ -27,7 +27,7 @@
     <!--<url>http://www.ebi.ac.uk/gwas</url>-->
 
     <properties>
-        <ri-version>1.0.0-SNAPSHOT</ri-version>
+        <ri-version>1.0.0-RELEASE</ri-version>
         <asciidoctor.version>1.5.3</asciidoctor.version>
         <commons-cli.version>1.2</commons-cli.version>
         <commons-net.version>2.0</commons-net.version>

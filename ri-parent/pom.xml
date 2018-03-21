@@ -7,14 +7,14 @@
 
     <groupId>org.mousephenotype.ri</groupId>
     <artifactId>ri-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0-RELEASE</version>
 
     <packaging>pom</packaging>
 
     <parent>
         <groupId>org.mousephenotype.ri</groupId>
         <artifactId>ri-dependencies</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0-RELEASE</version>
         <relativePath>../ri-dependencies/pom.xml</relativePath>
     </parent>
 
