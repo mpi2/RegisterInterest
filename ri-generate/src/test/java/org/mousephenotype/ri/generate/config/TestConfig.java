@@ -44,6 +44,7 @@ public class TestConfig {
                 .build();
     }
 
+    @Bean
     public NamedParameterJdbcTemplate jdbc() {
         return new NamedParameterJdbcTemplate(riDataSource());
     }

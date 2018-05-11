@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.util.HtmlUtils;
 
 import javax.inject.Inject;
@@ -41,14 +41,15 @@ import java.util.Map;
  * This class is intended to be a command-line callable java main program that generates a single e-mail to each
  * contact with a list of genes for which they have registered interest, and the current status of each such gene.
  */
-@SpringBootApplication
+@ComponentScan
 public class ApplicationGenerateSummary implements CommandLineRunner {
 
     private Map<Integer, List<Gene>> genesByContactMap;
     private final Logger             logger = LoggerFactory.getLogger(this.getClass());
     private SqlUtils                 sqlUtils;
     private List<String>             headings = Arrays.asList(new String[]{
-            "Gene Symbol", "Gene MGI Accession Id", "Assignment Status", "Null Allele Production", "Conditional Allele Production", "Phenotyping Data Available", "Action"
+//            "Gene Symbol", "Gene MGI Accession Id", "Assignment Status", "Null Allele Production", "Conditional Allele Production", "Phenotyping Data Available", "Action"
+            "Gene Symbol", "Gene MGI Accession Id", "Assignment Status", "Null Allele Production", "Conditional Allele Production", "Phenotyping Data Available"
     });
 
     private final String             mailto = "mouse-helpdesk@ebi.ac.uk";
@@ -135,6 +136,9 @@ public class ApplicationGenerateSummary implements CommandLineRunner {
             "}";
     private String buildBody(List<Gene> genes) {
 
+        String gdprText1 = "We are temporarily removing Register/Unregister interest functionality from Phenotype Archive web pages while we revamp the application to be compliant with the General Data Protection Regulation (GDPR).";
+        String gdprText2 = "We expect to release a new version of PhenotypeArchive in the autumn which will be GDPR-compliant and will contain Register/Unregister buttons, thus allowing you to manage interest in IMPC genes and to receive updates.";
+
         StringBuilder body = new StringBuilder();
 
         body
@@ -143,6 +147,12 @@ public class ApplicationGenerateSummary implements CommandLineRunner {
                 .append("<br />")
                 .append("<br />")
                 .append("Below please find a summary of the IMPC genes for which you have registered interest.")
+                .append("<br />")
+                .append("<br />")
+                .append(gdprText1)
+                .append("<br />")
+                .append("<br />")
+                .append(gdprText2)
                 .append("<br />")
                 .append("<br />")
                 .append("<style>" + style + "</style>")
@@ -230,11 +240,11 @@ public class ApplicationGenerateSummary implements CommandLineRunner {
         row.append(cell);
 
 
-        // Action
-        anchor = "http://www.mousephenotype.org/data/search/gene?kw=\"" + gene.getMgiAccessionId() + "\"";
-        value = "Unregister";
-        cell = buildHtmlCell("td", value, anchor);
-        row.append(cell);
+//        // Action
+//        anchor = "http://www.mousephenotype.org/data/search/gene?kw=\"" + gene.getMgiAccessionId() + "\"";
+//        value = "Unregister";
+//        cell = buildHtmlCell("td", value, anchor);
+//        row.append(cell);
 
         row.append("</tr>");
 

@@ -21,8 +21,9 @@ SET @PK_PDA = (SELECT pk FROM gene_status WHERE status = @PDA);
 SET @PK_PAPP = (SELECT pk FROM gene_status WHERE status = @PAPP);
 SET @PK_W = (SELECT pk FROM gene_status WHERE status = @W);
 
-INSERT INTO contact (address, active, created_at) VALUES
-  ('mrelac@ebi.ac.uk', 1, @now)
+INSERT INTO contact (pk, address, active, created_at) VALUES
+  (1, 'mrelac@ebi.ac.uk', 1, @now),
+  (2, 'jmason@ebi.ac.uk', 1, @now)
 ;
 
 INSERT INTO gene
@@ -39,5 +40,10 @@ insert into gene_contact(contact_pk, gene_pk, created_at) VALUES
   (1,  2, @now),
   (1,  3, @now),
   (1,  4, @now),
-  (1,  5, @now)
+  (1,  5, @now),
+  (2,  1, @now),
+  (2,  2, @now),
+  (2,  3, @now),
+  (2,  4, @now),
+  (2,  5, @now)
 ;

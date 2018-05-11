@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 
 import javax.inject.Inject;
 import java.text.SimpleDateFormat;
@@ -44,7 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * This class is intended to be a command-line callable java main program that generates e-mails to contacts registered
  * for insterest in specific genes whose status indicates the gene state has changed.
  */
-@SpringBootApplication
+@ComponentScan
 public class ApplicationGenerate implements CommandLineRunner {
 
     private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
