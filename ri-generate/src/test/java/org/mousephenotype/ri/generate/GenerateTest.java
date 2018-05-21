@@ -163,7 +163,7 @@ public class GenerateTest {
         jdbc.getJdbcOperations().execute("CALL CSVWRITE('target/gene_sent_summary2.csv', 'SELECT body FROM gene_sent_summary WHERE sent_at IS NULL', 'charset=UTF-8 fieldSeparator=,')");
 
         Map<Integer, GeneSentSummary> summaryMap = sqlUtils.getGeneSentSummary();
-        Assert.assertEquals(1, summaryMap.size());
+        Assert.assertEquals(2, summaryMap.size());
         GeneSentSummary summary = summaryMap.values().iterator().next();
         Assert.assertNull(summary.getSentAt());
 

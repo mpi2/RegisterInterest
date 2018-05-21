@@ -34,7 +34,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @PropertySource("file:${user.home}/configfiles/${profile}/application.properties")
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Value("${ri-admin-password}")
+    @Value("${ri_admin_password}")
     String riAdminPassword;
 
     public static final String ROLE_USER = "ri-user";

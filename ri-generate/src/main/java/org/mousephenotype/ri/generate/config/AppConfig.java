@@ -41,7 +41,7 @@ import javax.validation.constraints.NotNull;
  * Created by mrelac on 02/05/2017.
  */
 @Configuration
-@PropertySource(value="file:${user.home}/configfiles/${profile}/application.properties")
+@PropertySource("file:${user.home}/configfiles/${profile}/application.properties")
 @EnableAutoConfiguration(exclude = {
         JndiConnectionFactoryAutoConfiguration.class,
         DataSourceAutoConfiguration.class,
