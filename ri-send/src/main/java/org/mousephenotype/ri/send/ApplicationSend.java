@@ -90,8 +90,8 @@ public class ApplicationSend implements CommandLineRunner {
 
 
         // If there are pending gene_sent_summary emails:
-        //    invoke doGeneSentSummary() to send all gene_sent_summary emails with null sent_at dates
-        //    Mark all gene_sent sent_at dates with the current date to clear all gene_sent generated e-mails
+        //    invoke doGeneSentSummary() to send all gene_sent_summary emails with null sent_at dates (they should all be null)
+        //    Mark all gene_sent sent_at dates with the current date to indicate all contact e-mails are up-to-date
         // else
         //    invoke doGeneSent() to send all gene_sent emails with null sent_at dates
 
@@ -99,7 +99,8 @@ public class ApplicationSend implements CommandLineRunner {
         int pendingGeneSentSummaryCount = sqlUtils.getGeneSentSummaryPendingEmailCount();
         if (pendingGeneSentSummaryCount > 0) {
             doGeneSentSummary();
-            // TODO - mark all gene_sent sent_at dates with the current date to clear all gene_sent e-mails
+            // Mark all gene_sent.sent_at dates with the current date to indicate all contact e-mails are up-to-date.
+            sqlUtils.updateAllGeneSentDates(new Date());
         } else {
             doGeneSent();
         }
@@ -231,6 +232,7 @@ public class ApplicationSend implements CommandLineRunner {
 
             Transport.send(message);
             summary.setSentAt(new Date());
+            sqlUtils.updateGeneSentSummary(summary);
             String logMessage = "summary email scheduled for transport " + summary.getSentAt() + " for contactPk " + summary.getContactPk() + ": OK";
             sqlUtils.logSendAction(invoker, null, summary.getContactPk(), logMessage);
 

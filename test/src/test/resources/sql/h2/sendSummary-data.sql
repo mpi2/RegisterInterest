@@ -37,3 +37,7 @@ INSERT INTO gene
   ('MGI:2444824',      'Sirpb1a',  'c-010',      NULL,              @now,                   NULL,                 'caps-010',                            NULL,                                 NULL,                                     @nowplus2,                                 @nowplus1,                                 'naps-010',                     @MP,                           @PK_MP,                            @nowplus4,                          @nowplus3,                         'ps-010',           NULL,               @nowplus5,               NULL,                  NULL,                             @now),
   ('MGI:3576659',      'Ano5',     'c-010',      @PAPP,             @now,                   @PK_PAPP,             'caps-010',                            @MPS,                                 @PK_MPS,                                  @nowplus2,                                 @nowplus1,                                 'naps-010',                     @MPS,                          @PK_MPS,                           @nowplus4,                          @nowplus3,                         'ps-010',           NULL,               @nowplus5,               NULL,                  NULL,                             @now)
 ;
+
+INSERT INTO gene_sent
+(pk, subject, body, gene_contact_pk, created_at, sent_at) VALUES
+  (1, 'Test Subject', 'Test Body', 1, NOW(), NULL);

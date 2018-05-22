@@ -137,6 +137,12 @@ public class ApplicationGenerateSummary implements CommandLineRunner {
 
         StringBuilder body = new StringBuilder();
 
+        String gdpr_link = "https://www.ebi.ac.uk/data-protection/privacy-notice/impc-mailservices";
+        String gdpr_p1 = "You have previously actively joined the IMPC \"Register Interest\" list, which records your email address and genes for which you would like updates on mouse knockout production and phenotyping.";
+        String gdpr_p2 = "You can unsubscribe from any gene for which you have registered interest by clicking on its corresponding unregister link in the Action column below.";
+        String gdpr_p3 = "You can read more about how the IMPC will use your personal data by looking a the IMPC privacy policy here:";
+        String gdpr_p4 = buildHtmlCell("div", gdpr_link, gdpr_link);
+
         body
                 .append("<html>")
                 .append("Dear colleague,")
@@ -145,6 +151,23 @@ public class ApplicationGenerateSummary implements CommandLineRunner {
                 .append("Below please find a summary of the IMPC genes for which you have registered interest.")
                 .append("<br />")
                 .append("<br />")
+
+                .append(gdpr_p1)
+                .append("<br />")
+                .append("<br />")
+
+                .append(gdpr_p2)
+                .append("<br />")
+                .append("<br />")
+
+                .append(gdpr_p3)
+                .append("<br />")
+                .append("<br />")
+
+                .append(gdpr_p4)
+                .append("<br />")
+                .append("<br />")
+
                 .append("<style>" + style + "</style>")
                 .append("<table id=\"genesTable\">")
                 .append(buildRow("th", headings));

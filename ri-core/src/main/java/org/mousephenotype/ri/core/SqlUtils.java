@@ -836,6 +836,44 @@ public class SqlUtils {
         throw new InterestException("Unable to get primary key after INSERT.");
     }
 
+    /**
+     * Updates all gene_sent.sent_at rows with the given {@link Date}.
+     *
+     * @param date the {@link Date } to set gene_sent.sent_at to
+     *
+     * @throws InterestException
+     */
+    public void updateAllGeneSentDates(Date date) throws InterestException {
+
+        String update = "UPDATE gene_sent SET sent_at = :date";
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("date", date);
+
+        jdbcInterest.update(update, parameterMap);
+    }
+
+    /**
+     * Update the given {@link GeneSentSummary} instance.
+     *
+     * @param geneSentSummary the {@link GeneSentSummary } instance to be used to update the database
+     *                        @return the inserted {@link GeneSentSummary} primary key}
+     *
+     * @throws InterestException
+     */
+    public void updateGeneSentSummary(GeneSentSummary geneSentSummary) throws InterestException {
+
+        String update = "UPDATE gene_sent_summary SET subject = :subject, body = :body, contact_pk = :contactPk, created_at = :createdAt, sent_at = :sentAt WHERE pk = :pk";
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("pk", geneSentSummary.getPk());
+        parameterMap.put("subject", geneSentSummary.getSubject());
+        parameterMap.put("body", geneSentSummary.getBody());
+        parameterMap.put("contactPk", geneSentSummary.getContactPk());
+        parameterMap.put("createdAt", geneSentSummary.getCreatedAt());
+        parameterMap.put("sentAt", geneSentSummary.getSentAt());
+
+        jdbcInterest.update(update, parameterMap);
+    }
+
 
     // PRIVATE METHODS
 

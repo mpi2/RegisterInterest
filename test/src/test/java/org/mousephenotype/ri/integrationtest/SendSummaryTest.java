@@ -17,8 +17,11 @@
 package org.mousephenotype.ri.integrationtest;
 
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.entities.GeneSent;
 import org.mousephenotype.ri.generate.ApplicationGenerateSummary;
 import org.mousephenotype.ri.integrationtest.config.TestConfig;
 import org.mousephenotype.ri.send.ApplicationSend;
@@ -34,6 +37,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * Created by mrelac on 16-02-2018.
@@ -82,6 +86,9 @@ public class SendSummaryTest {
     @Autowired
     private DataSource riDataSource;
 
+    @Autowired
+    private SqlUtils sqlUtils;
+
 
     /**
      * This is an end-to-end integration test creates, loads, and uses an embedded in-memory h2 database and a local
@@ -118,7 +125,22 @@ public class SendSummaryTest {
         }
         String[] args = new String[0];
         applicationGenerateSummary.run(args);
+
+        int pendingCount = sqlUtils.getGeneSentSummaryPendingEmailCount();
+        Assert.assertTrue("Expected at least one pending summary count", pendingCount > 0);                                 // There should be at least one pending summary count.
+
+        List<GeneSent> genesScheduledForSending = sqlUtils.getGenesScheduledForSending();
+        pendingCount = genesScheduledForSending.size();
+        Assert.assertTrue("Expected at least one gene scheduled for sending but found " + pendingCount, pendingCount > 0);  // There should be at least one gene scheduled for sending.
+
         applicationSend.run(args);
+
+        pendingCount = sqlUtils.getGeneSentSummaryPendingEmailCount();
+        Assert.assertEquals("Expected no pending summary counts but found " + pendingCount, 0, pendingCount);               // Summary pending count should be reset to 0 by applicationSend.
+
+        genesScheduledForSending = sqlUtils.getGenesScheduledForSending();
+        pendingCount = genesScheduledForSending.size();
+        Assert.assertEquals("Expected no genes scheduled for sending but found " + pendingCount, 0, pendingCount);          // The genes scheduled for sending count should be reset to 0 by applicationSend.
     }
 
 
