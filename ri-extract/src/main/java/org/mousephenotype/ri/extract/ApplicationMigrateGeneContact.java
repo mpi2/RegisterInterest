@@ -169,6 +169,8 @@ public class ApplicationMigrateGeneContact implements CommandLineRunner {
         String[] parts;
         Map<String, Gene> genesMap = sqlUtils.getGenes();
 
+        // To account for unregister requests, set all gene_contact.active to 0. The active flag will be set for every user in the iMits report.
+        sqlUtils.updateAllGeneContactActive(0);
 
         try {
             BufferedReader br = new BufferedReader(new FileReader(targetFilename));

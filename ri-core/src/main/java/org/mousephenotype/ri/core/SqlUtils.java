@@ -837,6 +837,22 @@ public class SqlUtils {
     }
 
     /**
+     * Updates all gene_contact.active rows with the given value.
+     *
+     * @param active the new value
+     *
+     * @throws InterestException
+     */
+    public void updateAllGeneContactActive(int active) throws InterestException {
+
+        String update = "UPDATE gene_contact SET active = :active";
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("active", active);
+
+        jdbcInterest.update(update, parameterMap);
+    }
+
+    /**
      * Updates all gene_sent.sent_at rows with the given {@link Date}.
      *
      * @param date the {@link Date } to set gene_sent.sent_at to
