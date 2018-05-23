@@ -134,6 +134,13 @@ public class ApplicationSend implements CommandLineRunner {
             message = buildEmail(geneSent.getSubject(), geneSent.getBody(), email, isHtml);
             built++;
 
+
+            // Pause for 40 seconds so we don't exceed 100 e-mails per hour.
+            try {
+                Thread.sleep(40000);
+            } catch (InterruptedException e) {
+                throw new InterestException("Attempt to Thread.sleep failed: " + e.getLocalizedMessage());
+            }
             sendEmail(geneContact, geneSent, message);
             sent++;
         }
@@ -156,6 +163,13 @@ public class ApplicationSend implements CommandLineRunner {
             boolean isHtml = true;
             message = buildEmail(summary.getSubject(), summary.getBody(), email, isHtml);
             built++;
+
+            // Pause for 40 seconds so we don't exceed 100 e-mails per hour.
+            try {
+                Thread.sleep(40000);
+            } catch (InterruptedException e) {
+                throw new InterestException("Attempt to Thread.sleep failed: " + e.getLocalizedMessage());
+            }
 
             sendSummaryEmail(summary, message);
             sent++;
