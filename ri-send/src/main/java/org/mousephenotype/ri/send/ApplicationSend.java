@@ -91,18 +91,19 @@ public class ApplicationSend implements CommandLineRunner {
 
         // If there are pending gene_sent_summary emails:
         //    invoke doGeneSentSummary() to send all gene_sent_summary emails with null sent_at dates (they should all be null)
-        //    Mark all gene_sent sent_at dates with the current date to indicate all contact e-mails are up-to-date
         // else
         //    invoke doGeneSent() to send all gene_sent emails with null sent_at dates
 
-
         int pendingGeneSentSummaryCount = sqlUtils.getGeneSentSummaryPendingEmailCount();
         if (pendingGeneSentSummaryCount > 0) {
+
             doGeneSentSummary();
-            // Mark all gene_sent.sent_at dates with the current date to indicate all contact e-mails are up-to-date.
-            sqlUtils.updateAllGeneSentDates(new Date());
+
         } else {
-            doGeneSent();
+
+            // FIXME Don't execute this when mailing summary.
+//            doGeneSent();
+
         }
     }
 
@@ -134,15 +135,15 @@ public class ApplicationSend implements CommandLineRunner {
             message = buildEmail(geneSent.getSubject(), geneSent.getBody(), email, isHtml);
             built++;
 
+            sendEmail(geneContact, geneSent, message);
+            sent++;
 
-            // Pause for 40 seconds so we don't exceed 100 e-mails per hour.
+            // Pause for 36 seconds so we don't exceed 100 e-mails per hour.
             try {
-                Thread.sleep(40000);
+                Thread.sleep(36000);
             } catch (InterruptedException e) {
                 throw new InterestException("Attempt to Thread.sleep failed: " + e.getLocalizedMessage());
             }
-            sendEmail(geneContact, geneSent, message);
-            sent++;
         }
 
         System.out.println("Built " + built + " emails.");
@@ -159,20 +160,33 @@ public class ApplicationSend implements CommandLineRunner {
         for (Map.Entry<Integer, GeneSentSummary> entry : summaryMap.entrySet()) {
             int contactPk = entry.getKey();
             GeneSentSummary summary = entry.getValue();
+
+            // Skip any rows whose summary.getSentAt() is not null. They have already been sent.
+            if (summary.getSentAt() != null) {
+                continue;
+            }
+
             String email = contactMap.get(contactPk).getAddress();
             boolean isHtml = true;
             message = buildEmail(summary.getSubject(), summary.getBody(), email, isHtml);
             built++;
 
-            // Pause for 40 seconds so we don't exceed 100 e-mails per hour.
+            Date now = new Date();
+            summary.setSentAt(now);
+            sendSummaryEmail(summary, message);
+            sent++;
+
+            // Update the contact's gene_sent.sent_at (for all registered genes) with the same sent_at as used for the summary.
+            GeneSent geneSent = new GeneSent();
+
+            sqlUtils.updateGeneSentDates(email, now);
+
+            // Pause for 36 seconds so we don't exceed 100 e-mails per hour.
             try {
-                Thread.sleep(40000);
+                Thread.sleep(36000);
             } catch (InterruptedException e) {
                 throw new InterestException("Attempt to Thread.sleep failed: " + e.getLocalizedMessage());
             }
-
-            sendSummaryEmail(summary, message);
-            sent++;
         }
 
         System.out.println("Built " + built + " emails.");
@@ -245,7 +259,6 @@ public class ApplicationSend implements CommandLineRunner {
             String invoker = (auth == null ? "Unknown" : auth.getName());
 
             Transport.send(message);
-            summary.setSentAt(new Date());
             sqlUtils.updateGeneSentSummary(summary);
             String logMessage = "summary email scheduled for transport " + summary.getSentAt() + " for contactPk " + summary.getContactPk() + ": OK";
             sqlUtils.logSendAction(invoker, null, summary.getContactPk(), logMessage);

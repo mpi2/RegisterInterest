@@ -454,6 +454,54 @@ public class SqlUtils {
         return sentMap;
     }
 
+    /**
+     * Return the {@link GeneSentSummary} for the given {@code address}
+     * @param address the contact e-mail address
+     * @return the {@link GeneSentSummary} if found; null otherwise
+     */
+    public GeneSentSummary getGeneSentSummaryForContact(String address) {
+
+       GeneSentSummary result = null;
+
+        final String query =
+                     "SELECT * FROM gene_sent_summary gss\n" +
+                     "JOIN contact c ON c.pk = gss.contact_pk\n" +
+                     "WHERE c.address = :address";
+
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("address", address);
+
+        List<GeneSentSummary> summaryList = jdbcInterest.query(query, parameterMap, new GeneSentSummaryRowMapper());
+        if (summaryList.size() > 0) {
+            result = summaryList.get(0);
+        }
+
+        return result;
+    }
+
+    /**
+     * Return a list of {@link GeneSent} matching the given {@code address}
+     * @param address the contact e-mail address
+     * @return the list of {@link GeneSent}
+     */
+    public List<GeneSent> getGeneSentForContact(String address) {
+
+        final String query =
+            "SELECT * FROM gene_sent gs\n" +
+            "JOIN gene_contact gc ON gc.pk = gs.gene_contact_pk\n" +
+            "JOIN contact c ON c.pk = gc.contact_pk\n" +
+            "WHERE c.address = :address";
+
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("address", address);
+
+        List<GeneSent> summaryList = jdbcInterest.query(query, parameterMap, new GeneSentRowMapper());
+
+        return summaryList;
+    }
+
     public int getGeneSentSummaryPendingEmailCount() {
 
         final String query = "SELECT COUNT(*) FROM gene_sent_summary WHERE sent_at IS NULL";
@@ -853,19 +901,27 @@ public class SqlUtils {
     }
 
     /**
-     * Updates all gene_sent.sent_at rows with the given {@link Date}.
+     * Updates all of the gene_sent.sent_to columns for the given contact e-mail {@code address} with the given {@link Date}.
      *
+     * @param address the contact e-mail filter
      * @param date the {@link Date } to set gene_sent.sent_at to
      *
      * @throws InterestException
      */
-    public void updateAllGeneSentDates(Date date) throws InterestException {
+    public void updateGeneSentDates(String address, Date date) throws InterestException {
 
-        String update = "UPDATE gene_sent SET sent_at = :date";
+        String update = "UPDATE gene_sent SET sent_at = :date WHERE pk = :pk";
+
+        // NOTE: We cannot use the UPDATE ... JOIN ... SET mysql syntax because H2 (used for testing) doesn't support it.
+        List<GeneSent> genesSent = getGeneSentForContact(address);
+
         Map<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("date", date);
 
-        jdbcInterest.update(update, parameterMap);
+        for (GeneSent geneSent : genesSent) {
+            parameterMap.put("pk", geneSent.getPk());
+            jdbcInterest.update(update, parameterMap);
+        }
     }
 
     /**

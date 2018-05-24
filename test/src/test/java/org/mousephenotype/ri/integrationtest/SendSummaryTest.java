@@ -22,6 +22,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mousephenotype.ri.core.SqlUtils;
 import org.mousephenotype.ri.core.entities.GeneSent;
+import org.mousephenotype.ri.core.entities.GeneSentSummary;
+import org.mousephenotype.ri.generate.ApplicationGenerate;
 import org.mousephenotype.ri.generate.ApplicationGenerateSummary;
 import org.mousephenotype.ri.integrationtest.config.TestConfig;
 import org.mousephenotype.ri.send.ApplicationSend;
@@ -70,6 +72,9 @@ public class SendSummaryTest {
     @Value("${ws-password}")
     String wsPassword;
 
+
+    @Autowired
+    private ApplicationGenerate applicationGenerate;
 
     @Autowired
     private ApplicationGenerateSummary applicationGenerateSummary;
@@ -124,6 +129,9 @@ public class SendSummaryTest {
             register(contact, geneAccessionId);
         }
         String[] args = new String[0];
+
+        applicationGenerate.run(args);
+
         applicationGenerateSummary.run(args);
 
         int pendingCount = sqlUtils.getGeneSentSummaryPendingEmailCount();
@@ -133,6 +141,7 @@ public class SendSummaryTest {
         pendingCount = genesScheduledForSending.size();
         Assert.assertTrue("Expected at least one gene scheduled for sending but found " + pendingCount, pendingCount > 0);  // There should be at least one gene scheduled for sending.
 
+        // NOTE: Remember, applicationSend currently has a 36-second pause built in to avoid being marked as spam.
         applicationSend.run(args);
 
         pendingCount = sqlUtils.getGeneSentSummaryPendingEmailCount();
@@ -141,6 +150,17 @@ public class SendSummaryTest {
         genesScheduledForSending = sqlUtils.getGenesScheduledForSending();
         pendingCount = genesScheduledForSending.size();
         Assert.assertEquals("Expected no genes scheduled for sending but found " + pendingCount, 0, pendingCount);          // The genes scheduled for sending count should be reset to 0 by applicationSend.
+
+        // Assert that the gene_sent dates match the summary sent_at date.
+        GeneSentSummary summary = sqlUtils.getGeneSentSummaryForContact(contact);
+        Assert.assertNotNull("Expected GeneSentSummary value but was null", summary);
+
+        List<GeneSent> genesSent = sqlUtils.getGeneSentForContact(contact);
+        Assert.assertTrue(genesSent.size() > 0);
+
+        for (GeneSent geneSent : genesSent) {
+            Assert.assertEquals(summary.getSentAt(), (geneSent.getSentAt()));
+        }
     }
 
 
