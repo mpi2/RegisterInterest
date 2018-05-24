@@ -590,6 +590,25 @@ public class SqlUtils {
     }
 
     /**
+     *
+     * @return A {@link Map} of {@link GeneStatus} instances, keyed by gene_status.pk
+     */
+    public Map<Integer, GeneStatus> getStatusMapByStatusPk() {
+
+        Map<Integer, GeneStatus> statusMap = new HashMap<>();
+
+        final String query = "SELECT * FROM gene_status";
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        List<GeneStatus> geneStatusList = jdbcInterest.query(query, parameterMap, new GeneStatusRowMapper());
+        for (GeneStatus geneStatus : geneStatusList) {
+            statusMap.put(geneStatus.getPk(), geneStatus);
+        }
+
+        return statusMap;
+    }
+
+    /**
      *Insert or update {@link Gene} and {@link Contact} into the gene_contact table. Return the count of inserted rows.
      *
      * @param genePk The primary key gene to be inserted/updated

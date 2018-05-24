@@ -195,6 +195,7 @@ INSERT INTO imits_status (status, gene_status_pk, created_at) VALUES
     ('Assigned - ES Cell QC Complete', (SELECT pk FROM gene_status WHERE status = 'production_and_phenotyping_planned'), @now),
     ('Assigned - ES Cell QC In Progress', (SELECT pk FROM gene_status WHERE status = 'production_and_phenotyping_planned'), @now),
     ('Assigned', (SELECT pk FROM gene_status WHERE status = 'production_and_phenotyping_planned'), @now),
+    ('Assigned for phenotyping', (SELECT pk FROM gene_status WHERE status = 'production_and_phenotyping_planned'), @now),
     ('Chimeras obtained', (SELECT pk FROM gene_status WHERE status = 'mouse_production_started'), @now),
     ('Chimeras/Founder obtained', (SELECT pk FROM gene_status WHERE status = 'mouse_production_started'), @now),
     ('Conflict', (SELECT pk FROM gene_status WHERE status = 'production_and_phenotyping_planned'), @now),

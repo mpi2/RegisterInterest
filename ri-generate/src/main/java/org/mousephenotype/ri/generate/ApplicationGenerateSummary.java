@@ -53,7 +53,7 @@ public class ApplicationGenerateSummary implements CommandLineRunner {
 
     private final String             mailto = "mouse-helpdesk@ebi.ac.uk";
     private final String             subject = "Complete list of IMPC genes for which you have registered interest";
-
+    private Map<Integer, GeneStatus> geneStatusMap;     // key is gene_status.pk
 
     @Inject
     public ApplicationGenerateSummary(SqlUtils sqlUtils) {
@@ -77,6 +77,7 @@ public class ApplicationGenerateSummary implements CommandLineRunner {
         String message;
 
         genesByContactMap = sqlUtils.getGenesByContactPk();
+        geneStatusMap = sqlUtils.getStatusMapByStatusPk();
 
         /**
          * Truncate the gene_sent_summary table.
@@ -190,6 +191,8 @@ public class ApplicationGenerateSummary implements CommandLineRunner {
         String cell;
         String value;
 
+        GeneStatus geneStatus;
+
         row.append("<tr>");
 
         // Gene symbol
@@ -203,9 +206,11 @@ public class ApplicationGenerateSummary implements CommandLineRunner {
         row.append(cell);
 
         // Assignment status
-        if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatus().equals(GeneStatus.PRODUCTION_AND_PHENOTYPING_PLANNED))) {
+        geneStatus = geneStatusMap.get(gene.getAssignmentStatusPk());
+
+        if ((geneStatus != null) && (geneStatus.getStatus().equalsIgnoreCase(GeneStatus.PRODUCTION_AND_PHENOTYPING_PLANNED))){
             value = "Selected for production and phenotyping";
-        } else if ((gene.getAssignmentStatusPk() != null) && (gene.getAssignmentStatus().equals(GeneStatus.WITHDRAWN))) {
+        } else if ((geneStatus != null) && (geneStatus.getStatus().equalsIgnoreCase(GeneStatus.WITHDRAWN))){
             value = "Withdrawn";
         } else {
             value = "Not planned";
@@ -214,10 +219,12 @@ public class ApplicationGenerateSummary implements CommandLineRunner {
         row.append(cell);
 
         // Null allele production
-        if ((gene.getNullAlleleProductionStatusPk() != null) && (gene.getNullAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCTION_STARTED))) {
+        geneStatus = geneStatusMap.get(gene.getNullAlleleProductionStatusPk());
+
+        if ((geneStatus != null) && (geneStatus.getStatus().equalsIgnoreCase(GeneStatus.MOUSE_PRODUCTION_STARTED))){
             value = "Started";
             anchor = null;
-        } else if ((gene.getNullAlleleProductionStatusPk() != null) && (gene.getNullAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCED))) {
+        } else if ((geneStatus != null) && (geneStatus.getStatus().equalsIgnoreCase(GeneStatus.MOUSE_PRODUCED))){
             value = "Genotype confirmed mice";
             anchor = "http://www.mousephenotype.org/data/search/allele2?kw=\"" + gene.getMgiAccessionId() + "\"";
         } else {
@@ -228,10 +235,12 @@ public class ApplicationGenerateSummary implements CommandLineRunner {
         row.append(cell);
 
         // Conditional allele production
-        if ((gene.getConditionalAlleleProductionStatusPk() != null) && (gene.getConditionalAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCTION_STARTED))) {
+        geneStatus = geneStatusMap.get(gene.getConditionalAlleleProductionStatusPk());
+
+        if ((geneStatus != null) && (geneStatus.getStatus().equalsIgnoreCase(GeneStatus.MOUSE_PRODUCTION_STARTED))){
             value = "Started";
             anchor = null;
-        } else if ((gene.getConditionalAlleleProductionStatusPk() != null) && (gene.getConditionalAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCED))) {
+        } else if ((geneStatus != null) && (geneStatus.getStatus().equalsIgnoreCase(GeneStatus.MOUSE_PRODUCED))){
             value = "Genotype confirmed mice";
             anchor = "http://www.mousephenotype.org/data/search/allele2?kw=\"" + gene.getMgiAccessionId() + "\"";
         } else {
@@ -242,7 +251,8 @@ public class ApplicationGenerateSummary implements CommandLineRunner {
         row.append(cell);
 
         // Phenotyping data available
-        if ((gene.getPhenotypingStatus() != null) && (gene.getPhenotypingStatus().equals(GeneStatus.PHENOTYPING_DATA_AVAILABLE))) {
+        geneStatus = geneStatusMap.get((gene.getPhenotypingStatusPk() == null ? null : gene.getPhenotypingStatusPk()));
+        if ((geneStatus != null) && (geneStatus.getStatus().equalsIgnoreCase(GeneStatus.PHENOTYPING_DATA_AVAILABLE))) {
             value = "Yes";
             anchor = "http://www.mousephenotype.org/data/genes/MGI:1097680#section-associations";
         } else {
