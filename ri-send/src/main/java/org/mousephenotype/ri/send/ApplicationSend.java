@@ -173,7 +173,18 @@ public class ApplicationSend implements CommandLineRunner {
 
             Date now = new Date();
             summary.setSentAt(now);
-            sendSummaryEmail(summary, message);
+
+            try {
+
+                sendSummaryEmail(summary, message);
+                logger.info(email);
+
+            } catch (Exception e) {
+
+                logger.warn("Skipping {}", email);
+                continue;
+
+            }
             sent++;
 
             // Update the contact's gene_sent.sent_at (for all registered genes) with the same sent_at as used for the summary.
@@ -265,7 +276,7 @@ public class ApplicationSend implements CommandLineRunner {
 
         } catch (MessagingException e) {
 
-            throw new InterestException("SEND of message to " + recipient + " failed: " + e.getLocalizedMessage());
+            throw new InterestException("SEND of message to " + recipient + " failed. Skipping... Reason: " + e.getLocalizedMessage());
         }
     }
 }
