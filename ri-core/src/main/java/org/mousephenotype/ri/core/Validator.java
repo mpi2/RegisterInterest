@@ -31,7 +31,7 @@ public class Validator {
     public static Gene validate(Gene gene, Set<String> errMessages) {
 
         if (gene.getAssignmentStatus() != null) {
-            // if assignment_status == not_planned (NP)
+            // if assignment_status == Not planned (NP)
 
             if (gene.getAssignmentStatus().equals(GeneStatus.NOT_PLANNED)) {
                 if ((gene.getConditionalAlleleProductionStatusPk() != null) ||

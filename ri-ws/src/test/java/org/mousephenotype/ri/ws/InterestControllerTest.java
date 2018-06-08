@@ -126,12 +126,24 @@ public class InterestControllerTest {
 
                 .andExpect(jsonPath("$[0].genes[0].mgiAccessionId", Matchers.comparesEqualTo("MGI:0000010")))
                 .andExpect(jsonPath("$[0].genes[0].symbol", Matchers.comparesEqualTo("gene-10")))
+                .andExpect(jsonPath("$[0].genes[0].riAssignmentStatus", Matchers.comparesEqualTo("riAssignmentStatus-1")))
+                .andExpect(jsonPath("$[0].genes[0].riConditionalAlleleProductionStatus", Matchers.comparesEqualTo("riConditionalAlleleProductionStatus-1")))
+                .andExpect(jsonPath("$[0].genes[0].riNullAlleleProductionStatus", Matchers.comparesEqualTo("riNullAlleleProductionStatus-1")))
+                .andExpect(jsonPath("$[0].genes[0].riPhenotypingStatus", Matchers.comparesEqualTo("riPhenotypingStatus-1")))
 
                 .andExpect(jsonPath("$[0].genes[1].mgiAccessionId", Matchers.comparesEqualTo("MGI:0000020")))
                 .andExpect(jsonPath("$[0].genes[1].symbol", Matchers.comparesEqualTo("gene-20")))
+                .andExpect(jsonPath("$[0].genes[1].riAssignmentStatus", Matchers.comparesEqualTo("riAssignmentStatus-2")))
+                .andExpect(jsonPath("$[0].genes[1].riConditionalAlleleProductionStatus", Matchers.comparesEqualTo("riConditionalAlleleProductionStatus-2")))
+                .andExpect(jsonPath("$[0].genes[1].riNullAlleleProductionStatus", Matchers.comparesEqualTo("riNullAlleleProductionStatus-2")))
+                .andExpect(jsonPath("$[0].genes[1].riPhenotypingStatus", Matchers.comparesEqualTo("riPhenotypingStatus-2")))
 
                 .andExpect(jsonPath("$[0].genes[2].mgiAccessionId", Matchers.comparesEqualTo("MGI:0000030")))
                 .andExpect(jsonPath("$[0].genes[2].symbol", Matchers.comparesEqualTo("gene-30")))
+                .andExpect(jsonPath("$[0].genes[2].riAssignmentStatus", Matchers.comparesEqualTo("riAssignmentStatus-3")))
+                .andExpect(jsonPath("$[0].genes[2].riConditionalAlleleProductionStatus", Matchers.comparesEqualTo("riConditionalAlleleProductionStatus-3")))
+                .andExpect(jsonPath("$[0].genes[2].riNullAlleleProductionStatus", Matchers.comparesEqualTo("riNullAlleleProductionStatus-3")))
+                .andExpect(jsonPath("$[0].genes[2].riPhenotypingStatus", Matchers.comparesEqualTo("riPhenotypingStatus-3")))
         ;
     }
 

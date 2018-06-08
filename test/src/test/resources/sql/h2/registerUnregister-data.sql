@@ -5,13 +5,13 @@ SET @nowplus3 = '2017-07-04 11:59:00';
 SET @nowplus4 = '2017-07-05 11:59:00';
 SET @nowplus5 = '2017-07-06 11:59:00';
 
-SET @MPDA = 'more_phenotyping_data_available';
-SET @MP   = 'mouse_produced';
-SET @MPS  = 'mouse_production_started';
-SET @NP   = 'not_planned';
-SET @PDA  = 'phenotyping_data_available';
-SET @PAPP = 'production_and_phenotyping_planned';
-SET @W    = 'withdrawn';
+SET @MPDA = 'More phenotyping data available';
+SET @MP   = 'Genotype confirmed mice';
+SET @MPS  = 'Started';
+SET @NP   = 'Not planned';
+SET @PDA  = 'Phenotyping data available';
+SET @PAPP = 'Selected for production and phenotyping';
+SET @W    = 'Withdrawn';
 
 SET @PK_MPDA = (SELECT pk FROM gene_status WHERE status = @MPDA);
 SET @PK_MP = (SELECT pk FROM gene_status WHERE status = @MP);
@@ -30,7 +30,7 @@ INSERT INTO contact (address, active, created_at) VALUES
 
 
 INSERT INTO gene
-  (mgi_accession_id,   symbol,     assigned_to,  assignment_status, assignment_status_date, assignment_status_pk, conditional_allele_production_centre,  conditional_allele_production_status, conditional_allele_production_status_pk,  conditional_allele_production_status_date, conditional_allele_production_start_date,  null_allele_production_centre,  null_allele_production_status, null_allele_production_status_pk,  null_allele_production_status_date, null_allele_production_start_date, phenotyping_centre, phenotyping_status, phenotyping_status_date, phenotyping_status_pk, number_of_significant_phenotypes, created_at) VALUES
-  ('MGI:1919199',     'Cers5',     'c-010',      @NP,               @now,                   @PK_NP,               'caps-010',                            NULL,                                 NULL,                                     @nowplus2,                                 @nowplus1,                                 'naps-010',                     NULL,                          NULL,                              @nowplus4,                          @nowplus3,                         'ps-010',           NULL,               @nowplus5,               NULL,                  NULL,                             @now),
-  ('MGI:102851',      'Pdx1',      'c-010',      @NP,               @now,                   @PK_NP,               'caps-010',                            NULL,                                 NULL,                                     @nowplus2,                                 @nowplus1,                                 'naps-010',                     NULL,                          NULL,                              @nowplus4,                          @nowplus3,                         'ps-010',           NULL,               @nowplus5,               NULL,                  NULL,                             @now)
+  (mgi_accession_id,   symbol,     assigned_to,  assignment_status, assignment_status_date, assignment_status_pk, ri_assignment_status, conditional_allele_production_centre,  conditional_allele_production_status, conditional_allele_production_status_pk,  ri_conditional_allele_production_status, conditional_allele_production_status_date, conditional_allele_production_start_date,  null_allele_production_centre,  null_allele_production_status, null_allele_production_status_pk,  ri_null_allele_production_status, null_allele_production_status_date, null_allele_production_start_date, phenotyping_centre, phenotyping_status, ri_phenotyping_status, phenotyping_status_date, phenotyping_status_pk, number_of_significant_phenotypes, created_at) VALUES
+  ('MGI:1919199',     'Cers5',     'c-010',      @NP,               @now,                   @PK_NP,               @NP,                  'caps-010',                            NULL,                                 NULL,                                     NULL,                                    @nowplus2,                                 @nowplus1,                                 'naps-010',                     NULL,                          NULL,                              NULL,                                    @nowplus4,                          @nowplus3,                         'ps-010',           NULL,        NULL,                  @nowplus5,               NULL,                  NULL,                             @now),
+  ('MGI:102851',      'Pdx1',      'c-010',      @NP,               @now,                   @PK_NP,               @NP,                  'caps-010',                            NULL,                                 NULL,                                     NULL,                                    @nowplus2,                                 @nowplus1,                                 'naps-010',                     NULL,                          NULL,                              NULL,                                    @nowplus4,                          @nowplus3,                         'ps-010',           NULL,        NULL,                  @nowplus5,               NULL,                  NULL,                             @now)
 ;

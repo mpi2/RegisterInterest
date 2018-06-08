@@ -54,11 +54,15 @@ public class GeneRowMapper implements RowMapper<Gene> {
         gene.setAssignmentStatusDate(ts == null ? null : new Date(ts.getTime()));
         Integer i = rs.getInt("assignment_status_pk");
         gene.setAssignmentStatusPk((i == null) || (i == 0) ? null : i);
+        String s = rs.getString("ri_assignment_status");
+        gene.setRiAssignmentStatus((s == null ? "" : s));
 
         gene.setConditionalAlleleProductionCentre(rs.getString("conditional_allele_production_centre"));
         gene.setConditionalAlleleProductionStatus(rs.getString("conditional_allele_production_status"));
         i = rs.getInt("conditional_allele_production_status_pk");
         gene.setConditionalAlleleProductionStatusPk((i == null) || (i == 0) ? null : i);
+        s = rs.getString("ri_conditional_allele_production_status");
+        gene.setRiConditionalAlleleProductionStatus((s == null ? "" : s));
         ts = rs.getTimestamp("conditional_allele_production_status_date");
         gene.setConditionalAlleleProductionStatusDate(ts == null ? null : new Date(ts.getTime()));
         ts = rs.getTimestamp("conditional_allele_production_start_date");
@@ -68,6 +72,8 @@ public class GeneRowMapper implements RowMapper<Gene> {
         gene.setNullAlleleProductionStatus(rs.getString("null_allele_production_status"));
         i = rs.getInt("null_allele_production_status_pk");
         gene.setNullAlleleProductionStatusPk((i == null) || (i == 0) ? null : i);
+        s = rs.getString("ri_null_allele_production_status");
+        gene.setRiNullAlleleProductionStatus((s == null ? "" : s));
         ts = rs.getTimestamp("null_allele_production_status_date");
         gene.setNullAlleleProductionStatusDate(ts == null ? null : new Date(ts.getTime()));
         ts = rs.getTimestamp("null_allele_production_start_date");
@@ -79,6 +85,8 @@ public class GeneRowMapper implements RowMapper<Gene> {
         gene.setPhenotypingStatusDate(ts == null ? null : new Date(ts.getTime()));
         i = rs.getInt("phenotyping_status_pk");
         gene.setPhenotypingStatusPk((i == null) || (i == 0) ? null : i);
+        s = rs.getString("ri_phenotyping_status");
+        gene.setRiPhenotypingStatus((s == null ? "" : s));
 
         gene.setNumberOfSignificantPhenotypes(rs.getInt("number_of_significant_phenotypes"));
 

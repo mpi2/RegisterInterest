@@ -254,7 +254,7 @@ public class ApplicationGenerateSummary implements CommandLineRunner {
         geneStatus = geneStatusMap.get((gene.getPhenotypingStatusPk() == null ? null : gene.getPhenotypingStatusPk()));
         if ((geneStatus != null) && (geneStatus.getStatus().equalsIgnoreCase(GeneStatus.PHENOTYPING_DATA_AVAILABLE))) {
             value = "Yes";
-            anchor = "http://www.mousephenotype.org/data/genes/MGI:1097680#section-associations";
+            anchor = "http://www.mousephenotype.org/data/genes/" + gene.getMgiAccessionId() + "#section-associations";
         } else {
             value = "No";
             anchor = null;

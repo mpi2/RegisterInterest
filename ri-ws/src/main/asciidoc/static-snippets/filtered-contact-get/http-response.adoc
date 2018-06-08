@@ -4,20 +4,28 @@ HTTP/1.1 200 OK
 Content-Type: application/json;charset=UTF-8
 Content-Length: 360
 
-[ {
-  "contact" : {
-    "pk" : 2065,
-    "address" : "user1@ebi.ac.uk",
-    "createdAt" : "2017-06-30 15:10:43",
-    "updatedAt" : "2017-08-01 11:31:05",
-    "active" : true
-  },
-  "genes" : [ {
-    "pk" : 53016,
-    "mgiAccessionId" : "MGI:103309",
-    "symbol" : "Flot2",
-    "createdAt" : "2017-07-30 23:00:00",
-    "updatedAt" : "2017-07-30 23:00:00"
-  } ]
-} ]
+[
+  {
+    "contact": {
+      "pk": 220,
+      "address": "user1@ebi.ac.uk",
+      "createdAt": "2017-06-30 15:10:43",
+      "updatedAt": "2018-05-24 15:03:51",
+      "active": true
+    },
+    "genes": [
+      {
+        "pk": 171242,
+        "mgiAccessionId": "MGI:103309",
+        "symbol": "Flot2",
+        "riAssignmentStatus": "Selected for production and phenotyping",
+        "riConditionalAlleleProductionStatus": "Genotype confirmed mice",
+        "riNullAlleleProductionStatus": "",
+        "riPhenotypingStatus": "Phenotyping data available",
+        "createdAt": "2018-05-23 23:00:00",
+        "updatedAt": "2018-06-07 23:00:00"
+      }
+    ]
+  }
+]
 ----

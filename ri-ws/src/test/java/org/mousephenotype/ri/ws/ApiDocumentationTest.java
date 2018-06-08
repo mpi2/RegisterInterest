@@ -118,6 +118,10 @@ public class ApiDocumentationTest {
                                 fieldWithPath("[*].genes[*].pk").description("The primary key of the gene instance"),
                                 fieldWithPath("[*].genes[*].mgiAccessionId").description("The gene's MGI gene accession id"),
                                 fieldWithPath("[*].genes[*].symbol").description("The gene's symbol"),
+                                fieldWithPath("[*].genes[*].riAssignmentStatus").description("The gene's register interest Assignment status"),
+                                fieldWithPath("[*].genes[*].riConditionalAlleleProductionStatus").description("The gene's register interest Conditional Allele Production status"),
+                                fieldWithPath("[*].genes[*].riNullAlleleProductionStatus").description("The gene's register interest Null Allele Production status"),
+                                fieldWithPath("[*].genes[*].riPhenotypingStatus").description("The gene's register interest Phenotyping status"),
                                 fieldWithPath("[*].genes[*].createdAt").description("The time and date the gene was created"),
                                 fieldWithPath("[*].genes[*].updatedAt").description("The time and date the gene was last updated")
                         )))

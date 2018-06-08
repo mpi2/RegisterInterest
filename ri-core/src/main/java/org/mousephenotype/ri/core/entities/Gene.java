@@ -45,6 +45,8 @@ public class Gene {
     @JsonIgnore
     private Integer assignmentStatusPk;
 
+    private String riAssignmentStatus;
+
     @JsonIgnore
     private String conditionalAlleleProductionCentre;
 
@@ -65,6 +67,8 @@ public class Gene {
 
     @JsonIgnore
     private Integer conditionalAlleleProductionStatusPk;
+
+    private String riConditionalAlleleProductionStatus;
 
 
     @JsonIgnore
@@ -88,6 +92,8 @@ public class Gene {
     @JsonIgnore
     private Integer nullAlleleProductionStatusPk;
 
+    private String riNullAlleleProductionStatus;
+
 
     @JsonIgnore
     private String phenotypingCentre;
@@ -104,6 +110,8 @@ public class Gene {
     @JsonIgnore
     private Integer phenotypingStatusPk;
 
+    private String riPhenotypingStatus;
+
     @JsonIgnore
     private Integer numberOfSignificantPhenotypes;
 
@@ -113,6 +121,9 @@ public class Gene {
     private Date createdAt;
 
     private Date updatedAt;
+
+
+    // GETTERS AND SETTERS
 
 
     public int getPk() {
@@ -363,6 +374,40 @@ public class Gene {
         this.updatedAt = updatedAt;
     }
 
+
+    public String getRiAssignmentStatus() {
+        return riAssignmentStatus;
+    }
+
+    public void setRiAssignmentStatus(String riAssignmentStatus) {
+        this.riAssignmentStatus = riAssignmentStatus;
+    }
+
+    public String getRiConditionalAlleleProductionStatus() {
+        return riConditionalAlleleProductionStatus;
+    }
+
+    public void setRiConditionalAlleleProductionStatus(String riConditionalAlleleProductionStatus) {
+        this.riConditionalAlleleProductionStatus = riConditionalAlleleProductionStatus;
+    }
+
+    public String getRiNullAlleleProductionStatus() {
+        return riNullAlleleProductionStatus;
+    }
+
+    public void setRiNullAlleleProductionStatus(String riNullAlleleProductionStatus) {
+        this.riNullAlleleProductionStatus = riNullAlleleProductionStatus;
+    }
+
+    public String getRiPhenotypingStatus() {
+        return riPhenotypingStatus;
+    }
+
+    public void setRiPhenotypingStatus(String riPhenotypingStatus) {
+        this.riPhenotypingStatus = riPhenotypingStatus;
+    }
+
+
     @Override
     public String toString() {
         return "Gene{" +
@@ -373,25 +418,30 @@ public class Gene {
                 ", assignmentStatus='" + assignmentStatus + '\'' +
                 ", assignmentStatusDate=" + assignmentStatusDate +
                 ", assignmentStatusPk=" + assignmentStatusPk +
+                ", riAssignmentStatus='" + riAssignmentStatus + '\'' +
                 ", conditionalAlleleProductionCentre='" + conditionalAlleleProductionCentre + '\'' +
                 ", conditionalAlleleProductionStatus='" + conditionalAlleleProductionStatus + '\'' +
                 ", conditionalAlleleProductionStatusPk=" + conditionalAlleleProductionStatusPk +
+                ", riConditionalAlleleProductionStatus='" + riConditionalAlleleProductionStatus + '\'' +
                 ", conditionalAlleleProductionStatusDate=" + conditionalAlleleProductionStatusDate +
                 ", conditionalAlleleProductionStartDate=" + conditionalAlleleProductionStartDate +
                 ", nullAlleleProductionCentre='" + nullAlleleProductionCentre + '\'' +
                 ", nullAlleleProductionStatus='" + nullAlleleProductionStatus + '\'' +
                 ", nullAlleleProductionStatusPk=" + nullAlleleProductionStatusPk +
+                ", riNullAlleleProductionStatus='" + riNullAlleleProductionStatus + '\'' +
                 ", nullAlleleProductionStatusDate=" + nullAlleleProductionStatusDate +
                 ", nullAlleleProductionStartDate=" + nullAlleleProductionStartDate +
                 ", phenotypingCentre='" + phenotypingCentre + '\'' +
                 ", phenotypingStatus='" + phenotypingStatus + '\'' +
                 ", phenotypingStatusDate=" + phenotypingStatusDate +
                 ", phenotypingStatusPk=" + phenotypingStatusPk +
+                ", riPhenotypingStatus='" + riPhenotypingStatus + '\'' +
                 ", numberOfSignificantPhenotypes=" + numberOfSignificantPhenotypes +
                 ", created_at=" + createdAt +
                 ", updated_at=" + updatedAt +
                 '}';
     }
+
 
     @Override
     public boolean equals(Object o) {
@@ -442,6 +492,7 @@ public class Gene {
 
         return true;
     }
+
 
     @Override
     public int hashCode() {

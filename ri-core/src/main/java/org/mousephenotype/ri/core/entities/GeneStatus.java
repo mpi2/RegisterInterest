@@ -29,15 +29,15 @@ public class GeneStatus {
     private Date createdAt;
     private Date updatedAt;
 
-    public static final String MORE_PHENOTYPING_DATA_AVAILABLE      = "more_phenotyping_data_available";
-    public static final String MOUSE_PRODUCED                       = "mouse_produced";
-    public static final String MOUSE_PRODUCTION_STARTED             = "mouse_production_started";
-    public static final String NOT_PLANNED                          = "not_planned";
-    public static final String PHENOTYPING_DATA_AVAILABLE           = "phenotyping_data_available";
-    public static final String PRODUCTION_AND_PHENOTYPING_PLANNED   = "production_and_phenotyping_planned";
+    public static final String MORE_PHENOTYPING_DATA_AVAILABLE      = "More phenotyping data available";
+    public static final String MOUSE_PRODUCED                       = "Genotype confirmed mice";
+    public static final String MOUSE_PRODUCTION_STARTED             = "Started";
+    public static final String NOT_PLANNED                          = "Not planned";
+    public static final String PHENOTYPING_DATA_AVAILABLE           = "Phenotyping data available";
+    public static final String PRODUCTION_AND_PHENOTYPING_PLANNED   = "Selected for production and phenotyping";
     public static final String REGISTER                             = "register";
     public static final String UNREGISTER                           = "unregister";
-    public static final String WITHDRAWN                            = "withdrawn";
+    public static final String WITHDRAWN                            = "Withdrawn";
 
     public int getPk() {
         return pk;
