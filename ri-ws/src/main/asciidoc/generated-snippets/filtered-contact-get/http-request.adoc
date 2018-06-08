@@ -1,0 +1,7 @@
+[source,http,options="nowrap"]
+----
+GET /mi/impc/interest/contacts?type=gene&email=user1@ebi.ac.uk&gene=MGI:0000010 HTTP/1.1
+Accept: application/json
+Host: localhost:8080
+
+----

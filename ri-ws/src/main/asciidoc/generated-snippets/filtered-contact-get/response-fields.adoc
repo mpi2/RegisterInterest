@@ -1,0 +1,60 @@
+|===
+|Path|Type|Description
+
+|`[*].contact.pk`
+|`Number`
+|The primary key of the contact instance
+
+|`[*].contact.address`
+|`String`
+|The contact's email address
+
+|`[*].contact.createdAt`
+|`String`
+|The time and date the contact was created
+
+|`[*].contact.updatedAt`
+|`String`
+|The time and date the contact was last updated
+
+|`[*].contact.active`
+|`Boolean`
+|A flag indicating whether or not the contact is active (true) or inactive (false)
+
+|`[*].genes[*].pk`
+|`Number`
+|The primary key of the gene instance
+
+|`[*].genes[*].mgiAccessionId`
+|`String`
+|The gene's MGI gene accession id
+
+|`[*].genes[*].symbol`
+|`String`
+|The gene's symbol
+
+|`[*].genes[*].riAssignmentStatus`
+|`String`
+|The gene's register interest Assignment status
+
+|`[*].genes[*].riConditionalAlleleProductionStatus`
+|`String`
+|The gene's register interest Conditional Allele Production status
+
+|`[*].genes[*].riNullAlleleProductionStatus`
+|`String`
+|The gene's register interest Null Allele Production status
+
+|`[*].genes[*].riPhenotypingStatus`
+|`String`
+|The gene's register interest Phenotyping status
+
+|`[*].genes[*].createdAt`
+|`String`
+|The time and date the gene was created
+
+|`[*].genes[*].updatedAt`
+|`String`
+|The time and date the gene was last updated
+
+|===

@@ -1,0 +1,13 @@
+|===
+|Parameter|Description
+
+|`type`
+|The type of interest (e.g. gene, disease, phenotype) to unregister (required)
+
+|`gene`
+|The MGI gene accession id to unregister (required)
+
+|`email`
+|The email address to unregister (required)
+
+|===

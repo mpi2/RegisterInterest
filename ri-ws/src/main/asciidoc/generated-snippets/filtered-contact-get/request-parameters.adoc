@@ -1,0 +1,13 @@
+|===
+|Parameter|Description
+
+|`type`
+|The type of register interest (e.g. gene, disease, phenotype) to further filter by (optional)
+
+|`gene`
+|The MGI gene accession id to further filter by (optional)
+
+|`email`
+|The email address to further filter by (optional)
+
+|===
