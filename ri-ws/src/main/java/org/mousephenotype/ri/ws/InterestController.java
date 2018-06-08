@@ -26,6 +26,7 @@ import org.mousephenotype.ri.reports.support.MpCSVWriter;
 import org.mousephenotype.ri.reports.support.ReportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.web.ErrorController;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -45,10 +47,12 @@ import java.util.List;
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 @RestController
-public class InterestController {
+public class InterestController  implements ErrorController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private SqlUtils sqlUtils;
+
+    private static final String PATH = "/error";
 
     @Inject
     public InterestController(SqlUtils sqlUtils) {
@@ -193,5 +197,45 @@ public class InterestController {
         report.run(new String[0], csvWriter);
 
         csvWriter.close();
+    }
+
+    @RequestMapping(value = PATH)
+    public String handleErrors(HttpServletRequest httpRequest) {
+
+        int httpErrorCode = getErrorCode(httpRequest);
+        String errorMsg = "Http Error Code: " + Integer.toString(httpErrorCode) + ".";
+
+        switch (httpErrorCode) {
+            case 400: {
+                errorMsg += " Bad Request";
+                break;
+            }
+            case 401: {
+                errorMsg += " Unauthorized";
+                break;
+            }
+            case 404: {
+                errorMsg += " Resource not found";
+                break;
+            }
+            case 500: {
+                errorMsg += " Internal Server Error";
+                break;
+            }
+        }
+
+        return errorMsg;
+    }
+
+    private int getErrorCode(HttpServletRequest httpRequest) {
+        return (Integer) httpRequest
+                .getAttribute("javax.servlet.error.status_code");
+    }
+
+
+
+    @Override
+    public String getErrorPath() {
+        return PATH;
     }
 }
