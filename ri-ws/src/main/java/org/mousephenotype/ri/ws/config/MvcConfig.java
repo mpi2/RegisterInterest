@@ -16,16 +16,33 @@
 
 package org.mousephenotype.ri.ws.config;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import org.springframework.web.servlet.view.JstlView;
+
+import javax.validation.constraints.NotNull;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by mrelac on 12/06/2017.
  */
 @Configuration
 public class MvcConfig extends WebMvcConfigurerAdapter {
+
+    @NotNull
+    @Value("${paHostname}")
+    private String paHostname;
+
+    @NotNull
+    @Value("${paContextRoot}")
+    private String paContextRoot;
+
 
     @Override
     public void configureContentNegotiation(final ContentNegotiationConfigurer configurer) {
@@ -36,5 +53,23 @@ public class MvcConfig extends WebMvcConfigurerAdapter {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/docs/**").addResourceLocations("/documents/");
+    }
+
+    @Bean(name = "globalConfiguration")
+    public Map<String, String> getGlobalConfig() {
+        Map<String, String> map = new HashMap<>();
+        map.put("paHostname", paHostname);
+        map.put("paContextRoot", paContextRoot);
+        return map;
+    }
+
+    @Bean
+    public InternalResourceViewResolver viewResolver() {
+        InternalResourceViewResolver viewResolver =
+                new InternalResourceViewResolver();
+        viewResolver.setViewClass(JstlView.class);
+        viewResolver.setPrefix("/WEB-INF/views/");
+        viewResolver.setSuffix(".jsp");
+        return viewResolver;
     }
 }

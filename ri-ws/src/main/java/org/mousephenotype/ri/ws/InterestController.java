@@ -47,7 +47,7 @@ import java.util.List;
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 @RestController
-public class InterestController  implements ErrorController {
+public class InterestController implements ErrorController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private SqlUtils sqlUtils;
@@ -231,8 +231,6 @@ public class InterestController  implements ErrorController {
         return (Integer) httpRequest
                 .getAttribute("javax.servlet.error.status_code");
     }
-
-
 
     @Override
     public String getErrorPath() {

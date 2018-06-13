@@ -44,9 +44,22 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-//        http.csrf().disable();
-
         http
+                .authorizeRequests()
+
+                .and()
+
+                .authorizeRequests()
+                .antMatchers("/summary/**")
+                .access("hasRole('" + ROLE_USER + "') or hasRole('" + ROLE_ADMIN + "')")
+
+                .and()
+
+                .formLogin().loginPage("/login")
+                .usernameParameter("ssoId").passwordParameter("password")
+
+                .and()
+
                 .authorizeRequests()
                 .antMatchers(HttpMethod.GET, "/contacts/**")
                 .hasRole(ROLE_ADMIN)
@@ -72,8 +85,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .httpBasic()
 
-                .and()
+                .and().csrf()
 
+                .and().exceptionHandling().accessDeniedPage("/Access_Denied")
+
+                .and()
                 .authorizeRequests()
                 .antMatchers(HttpMethod.GET,"/**")
                 .permitAll()
@@ -81,7 +97,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+    public void configureGlobalSecurity(AuthenticationManagerBuilder auth) throws Exception {
         auth
                 .inMemoryAuthentication()
                 .withUser(ROLE_USER).password(riAdminPassword).roles(ROLE_USER)
