@@ -27,7 +27,7 @@ import org.mousephenotype.ri.generate.ApplicationGenerate;
 import org.mousephenotype.ri.generate.ApplicationGenerateSummary;
 import org.mousephenotype.ri.integrationtest.config.TestConfig;
 import org.mousephenotype.ri.send.ApplicationSend;
-import org.mousephenotype.ri.ws.InterestController;
+import org.mousephenotype.ri.web.controller.InterestController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
