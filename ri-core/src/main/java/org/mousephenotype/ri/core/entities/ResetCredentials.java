@@ -21,19 +21,18 @@ import java.util.Date;
 /**
  * Created by mrelac on 12/05/2017.
  */
-public class Contact {
-    protected int     pk;
-    protected String  address;
-    protected boolean isActive;
-    protected Date    createdAt;
-    protected Date    updatedAt;
+public class ResetCredentials {
+    protected String address;
+    protected String token;
+    protected Date   createdAt;
 
-    public int getPk() {
-        return pk;
+    public ResetCredentials() {
+
     }
-
-    public void setPk(int pk) {
-        this.pk = pk;
+    public ResetCredentials(String address, String token, Date createdAt) {
+        this.address = address;
+        this.token = token;
+        this.createdAt = createdAt;
     }
 
     public String getAddress() {
@@ -44,12 +43,12 @@ public class Contact {
         this.address = address;
     }
 
-    public boolean isActive() {
-        return isActive;
+    public String getToken() {
+        return token;
     }
 
-    public void setActive(boolean active) {
-        isActive = active;
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public Date getCreatedAt() {
@@ -60,11 +59,12 @@ public class Contact {
         this.createdAt = createdAt;
     }
 
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
+    @Override
+    public String toString() {
+        return "ResetCredentials{" +
+                "address='" + address + '\'' +
+                ", token='" + token + '\'' +
+                ", createdAt=" + createdAt +
+                '}';
     }
 }

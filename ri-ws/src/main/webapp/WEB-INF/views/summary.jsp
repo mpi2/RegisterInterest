@@ -14,7 +14,6 @@
 
 <body>
 
-    <a href="<c:url value="/logout" />">Logout</a>
 
     <div class="region region-content">
         <div class="block block-system">
@@ -22,12 +21,21 @@
                 <div class="node node-gene">
                     <h1 class="title" id="top">Register Interest Summary </h1>
 
+
                     <div class="section">
                         <div class="inner">
 
                             <c:forEach var="contactGene" items="${summaryList}" varStatus="loop">
 
-                                <h3>Genes for which <i>${contactGene.contact.address}</i> has registered interest:</h3>
+                                <h3>Username: ${contactGene.contact.address}</h3>
+
+                                <div>
+                                    <a href="<c:url value="/logout" />">Logout</a>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;
+                                    <a href="<c:url value="resetPasswordRequest" />">Reset password</a>
+                                </div>
+
+                                <h4>Genes for which you have registered interest:</h4>
 
                                 <div id="summaryTableDiv">
 

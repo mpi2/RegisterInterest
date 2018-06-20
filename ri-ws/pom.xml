@@ -132,6 +132,10 @@
             <artifactId>ri-reports</artifactId>
             <version>1.0.0-RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+        </dependency>
 
     </dependencies>
 

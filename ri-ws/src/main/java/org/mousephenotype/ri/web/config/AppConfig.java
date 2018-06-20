@@ -27,12 +27,10 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.boot.autoconfigure.jms.JndiConnectionFactoryAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.web.client.RestTemplate;
 
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
@@ -73,6 +71,14 @@ public class AppConfig {
     @Value("${datasource.ri.password}")
     String password;
 
+    @NotNull
+    @Value("${paHostname}")
+    String paHostname;
+
+    @NotNull
+    @Value("${paContextRoot}")
+    String paContextRoot;
+
 
 
     @Bean
@@ -80,27 +86,13 @@ public class AppConfig {
         return SqlUtils.getConfiguredDatasource(riUrl, username, password);
     }
 
-
-
-
-
-
-    @NotNull
-    @Value("${wsuser}")
-    private String wsuser;
-
-    @NotNull
-    @Value("${wspass}")
-    private String wspass;
-
     @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder builder) {
-        return builder
-                .basicAuthorization(wsuser, wspass)
-                .build();
+    public String paHostname() {
+        return paHostname;
     }
 
-
-
-
+    @Bean
+    public String paContextRoot() {
+        return paContextRoot;
+    }
 }

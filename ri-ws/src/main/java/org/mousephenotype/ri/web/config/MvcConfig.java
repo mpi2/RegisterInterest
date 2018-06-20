@@ -44,11 +44,11 @@ public class MvcConfig extends WebMvcConfigurerAdapter {
     private String paContextRoot;
 
 
-    @Override
-    public void configureContentNegotiation(final ContentNegotiationConfigurer configurer) {
-        // Turn off suffix-based content negotiation
-        configurer.favorPathExtension(false);
-    }
+//    @Override
+//    public void configureContentNegotiation(final ContentNegotiationConfigurer configurer) {
+//        // Turn off suffix-based content negotiation
+//        configurer.favorPathExtension(false);
+//    }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {

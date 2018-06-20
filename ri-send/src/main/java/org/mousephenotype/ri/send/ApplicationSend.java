@@ -16,6 +16,7 @@
 
 package org.mousephenotype.ri.send;
 
+import org.mousephenotype.ri.core.EmailUtils;
 import org.mousephenotype.ri.core.SqlUtils;
 import org.mousephenotype.ri.core.entities.Contact;
 import org.mousephenotype.ri.core.entities.GeneContact;
@@ -34,12 +35,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import javax.inject.Inject;
 import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.mail.Session;
 import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import javax.validation.constraints.NotNull;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by mrelac on 05/06/2017.
@@ -69,6 +70,8 @@ public class ApplicationSend implements CommandLineRunner {
     @NotNull
     @Value("${mail.smtp.replyto}")
     private String smtpReplyto;
+
+    private EmailUtils emailUtils = new EmailUtils();
 
 
     @Inject
@@ -132,7 +135,7 @@ public class ApplicationSend implements CommandLineRunner {
             String email = emailAddressesByGeneContactPk.get(geneSent.getGeneContactPk());
             GeneContact geneContact = geneContacts.get(geneSent.getGeneContactPk());
             boolean isHtml = false;
-            message = buildEmail(geneSent.getSubject(), geneSent.getBody(), email, isHtml);
+            message = emailUtils.assembleEmail(smtpHost, smtpPort, smtpFrom, smtpReplyto, geneSent.getSubject(), geneSent.getBody(), email, isHtml);
             built++;
 
             sendEmail(geneContact, geneSent, message);
@@ -168,7 +171,7 @@ public class ApplicationSend implements CommandLineRunner {
 
             String email = contactMap.get(contactPk).getAddress();
             boolean isHtml = true;
-            message = buildEmail(summary.getSubject(), summary.getBody(), email, isHtml);
+            message = emailUtils.assembleEmail(smtpHost, smtpPort, smtpFrom, smtpReplyto, summary.getSubject(), summary.getBody(), email, isHtml);
             built++;
 
             Date now = new Date();
@@ -202,39 +205,6 @@ public class ApplicationSend implements CommandLineRunner {
 
         System.out.println("Built " + built + " emails.");
         System.out.println("Sent " + sent + " emails.");
-    }
-
-
-    private Message buildEmail(String subject, String body, String email, boolean isHtml) {
-
-        Properties smtpProperties = new Properties();
-
-        smtpProperties.put("mail.smtp.host", smtpHost);
-        smtpProperties.put("mail.smtp.port", smtpPort);
-
-        Session session = Session.getInstance(smtpProperties);
-        Message message = new MimeMessage(session);
-
-        try {
-
-            message.setFrom(new InternetAddress(smtpFrom));
-            InternetAddress[] replyToArray = new InternetAddress[] { new InternetAddress(smtpReplyto) };
-            message.setReplyTo(replyToArray);
-            message.setRecipients(Message.RecipientType.TO,
-                                  InternetAddress.parse(email));
-            message.setSubject(subject);
-            if (isHtml) {
-                message.setContent(body, "text/html; charset=utf-8");
-            } else {
-                message.setText(body);
-            }
-
-        } catch (MessagingException e) {
-
-            throw new RuntimeException(e);
-        }
-
-        return message;
     }
 
     private void sendEmail(GeneContact geneContact, GeneSent geneSent, Message message) throws InterestException {

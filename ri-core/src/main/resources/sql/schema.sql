@@ -4,13 +4,41 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS contact;
 CREATE TABLE contact (
-    pk            INT          NOT NULL         AUTO_INCREMENT PRIMARY KEY,
-    address       VARCHAR(255) NOT NULL UNIQUE,
-    active        INT          NOT NULL         DEFAULT 1,                          -- 1 = active; 0 = inactive
+    pk                INT          NOT NULL         AUTO_INCREMENT PRIMARY KEY,
+    address           VARCHAR(255) NOT NULL UNIQUE,
+    password          TEXT         NOT NULL,
+    password_expired  INT          NOT NULL         DEFAULT 1,                          -- 1 = expired; 0 = not expired
+    account_locked    INT          NOT NULL         DEFAULT 0,                          -- 1 = locked; 0 = not locked
+    active            INT          NOT NULL         DEFAULT 1,                          -- 1 = active; 0 = inactive
 
-    created_at    DATETIME     NOT NULL,
-    updated_at    TIMESTAMP    NOT NULL         DEFAULT CURRENT_TIMESTAMP
-                    ON UPDATE CURRENT_TIMESTAMP
+    created_at        DATETIME     NOT NULL,
+    updated_at        TIMESTAMP    NOT NULL         DEFAULT CURRENT_TIMESTAMP
+                        ON UPDATE CURRENT_TIMESTAMP
+
+) COLLATE=utf8_general_ci ENGINE=InnoDb;
+
+
+DROP TABLE IF EXISTS contact_role;
+CREATE TABLE contact_role (
+    pk             INT          NOT NULL      AUTO_INCREMENT PRIMARY KEY,
+    contact_pk     INT          NOT NULL,
+    role           VARCHAR(64)  NOT NULL      DEFAULT 'USER',
+
+    created_at     DATETIME     NOT NULL,
+    updated_at     TIMESTAMP    NOT NULL      DEFAULT CURRENT_TIMESTAMP
+                     ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY contact_pk_fk   (contact_pk) REFERENCES contact(pk),
+    UNIQUE KEY  contact_role_uk (contact_pk, role)
+
+) COLLATE=utf8_general_ci ENGINE=InnoDb;
+
+
+DROP TABLE IF EXISTS reset_credentials;
+CREATE TABLE reset_credentials (
+    email_address  VARCHAR(255) NOT NULL PRIMARY KEY,
+    token          TEXT         NOT NULL,
+    created_at     DATETIME     NOT NULL
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 

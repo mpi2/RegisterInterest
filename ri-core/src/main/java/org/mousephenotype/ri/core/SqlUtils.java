@@ -33,6 +33,8 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
 import javax.inject.Inject;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
 import java.sql.Connection;
@@ -369,6 +371,149 @@ public class SqlUtils {
         return (contacts.isEmpty() ? null : contacts.get(0));
     }
 
+    /**
+     * Get {@link ContactExtended} instance
+     * @param emailAddress contact email address
+     * @return the {@link ContactExtended} instance matching {@code emailAddress} if found; null otherwise
+     */
+    public ContactExtended getContactExtended(String emailAddress) {
+
+        final String query = "SELECT c.*, GROUP_CONCAT(cr.role) AS roles FROM contact c JOIN contact_role cr ON cr.contact_pk = c.pk WHERE address = :emailAddress";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("emailAddress", emailAddress);
+
+        List<ContactExtended> contactsEx = jdbcInterest.query(query, parameterMap, new ContactExtendedRowMapper());
+
+        return (contactsEx.isEmpty() ? null : contactsEx.get(0));
+    }
+
+    /*
+     * Update the raw password for {@code emailAddress}, encrypting it before writing it to the database. If
+     * {@code emailAddress} does not exist, ignore the request.
+     * @param emailAddress contact email address
+     * @param encryptedPassword new, encrypted password
+     * @return 1 if password was successfully updated; 0 otherwise
+     */
+    public int updatePassword(String emailAddress, String encryptedPassword) {
+
+        String update = "UPDATE contact SET password = :password, password_expired = 0 WHERE address = :address";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        parameterMap.put("password", encryptedPassword);
+        parameterMap.put("address", emailAddress);
+
+        return jdbcInterest.update(update, parameterMap);
+    }
+
+    /*
+     * Update the account_locked flag to the supplied value
+     * @param emailAddress contact email address
+     * @param accountLocked new value
+     * @return 1 if account_locked was successfully updated; 0 otherwise
+     */
+    public int updateAccountLocked(String emailAddress, boolean accountLocked) {
+
+        String update = "UPDATE contact SET account_locked = :accountLocked WHERE address = :address";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        parameterMap.put("accountLocked", accountLocked ? 1 : 0);
+        parameterMap.put("address", emailAddress);
+
+        return jdbcInterest.update(update, parameterMap);
+    }
+
+    /*
+     * Update the password_expired flag to the supplied value
+     * @param emailAddress contact email address
+     * @param passwordExpired new value
+     * @return 1 if password_expired was successfully updated; 0 otherwise
+     */
+    public int updatePasswordExpired(String emailAddress, boolean passwordExpired) {
+
+        String update = "UPDATE contact SET password_expired = :passwordExpired WHERE address = :address";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        parameterMap.put("passwordExpired", passwordExpired ? 1 : 0);
+        parameterMap.put("address", emailAddress);
+
+        return jdbcInterest.update(update, parameterMap);
+    }
+
+    /*
+     * If {@code emailAddress} does not have {@code role}, INSERT it; otherwise, ignore the request.
+     * @param emailAddress contact email address
+     * @param role
+     * @return number of records inserted
+     * @throws InterestException
+     */
+    public int updateRole(String emailAddress, String role) throws InterestException {
+
+        int count = 0;
+
+        // Ignore if contact already has the role.
+
+        String insert = "INSERT INTO contact_role (contact_pk, role, created_at)" +
+                        "VALUES ((SELECT pk FROM contact WHERE address = :address), :role, :createdAt)";
+
+        Date createdAt = new Date();
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        try {
+            parameterMap.put("address", emailAddress);
+            parameterMap.put("role", role);
+            parameterMap.put("created_at", createdAt);
+
+            count = jdbcInterest.update(insert, parameterMap);
+
+        } catch (DuplicateKeyException e) {
+
+            // Ignored
+
+        } catch (Exception e) {
+
+            String message = "Error inserting contact_role for contact" + emailAddress + ": " + e.getLocalizedMessage();
+            logger.error(message);
+            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return count;
+    }
+
+    /*
+     * If {@code emailAddress} has {@code role}, remove it from {@code emailAddress}; otherwise, ignore the request.
+     * @param emailAddress contact email address
+     * @param role role to be removed
+     * @return number of records removed
+     * @throws InterestException
+     */
+    public int removeRole(String emailAddress, String role) throws InterestException {
+
+        int count;
+
+        // Ignore if contact doesn't have the role.
+        String delete = "DELETE FROM contact_role WHERE contact_pk = (SELECT pk FROM contact WHERE address = :address) AND role = :role;";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        try {
+            parameterMap.put("address", emailAddress);
+            parameterMap.put("role", role);
+
+            count = jdbcInterest.update(delete, parameterMap);
+
+        } catch (Exception e) {
+
+            String message = "Error inserting contact_role for contact" + emailAddress + ": " + e.getLocalizedMessage();
+            logger.error(message);
+            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return count;
+    }
+
     public Map<Integer, Contact> getContactsIndexedByContactPk() {
         final String query = "SELECT * FROM contact";
 
@@ -571,6 +716,50 @@ public class SqlUtils {
     }
 
     /**
+     * @param token the token to match
+     * @return the most recent {@link ResetCredentials} instance matching {@code token}, if found; null otherwise
+     */
+    public ResetCredentials getResetCredentials(String token) {
+
+        String query =
+                "SELECT * FROM reset_credentials WHERE token = :token";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("token", token);
+
+        List<ResetCredentials> list = jdbcInterest.query(query, parameterMap, new ResetCredentialsRowMapper());
+
+        return (list.isEmpty() ? null : list.get(0));
+    }
+
+    /**
+     * Try to INSERT the {@link ResetCredentials} instance. If the emailAddress already exists, update the instance.
+     * @param resetCredentials the instance to INSERT or UPDATE.
+     */
+    public void updateResetCredentials(ResetCredentials resetCredentials) {
+
+        String insert = "INSERT INTO reset_credentials (email_address, token, created_at) VALUES " +
+                        "(:emailAddress, :token, :createdAt)";
+
+        String update = "UPDATE reset_credentials SET token = :token, created_at = :createdAt " +
+                        "WHERE email_address = :emailAddress";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("emailAddress", resetCredentials.getAddress());
+        parameterMap.put("token", resetCredentials.getToken());
+        parameterMap.put("createdAt", resetCredentials.getCreatedAt());
+
+        try {
+
+            jdbcInterest.update(insert, parameterMap);
+
+        } catch (DuplicateKeyException e) {
+
+            jdbcInterest.update(update, parameterMap);
+        }
+    }
+
+    /**
      *
      * @return A {@link Map} of {@link GeneStatus} instances, keyed by status
      */
@@ -606,6 +795,24 @@ public class SqlUtils {
         }
 
         return statusMap;
+    }
+
+    public boolean isValidEmailAddress(String emailAddress) {
+
+        boolean         retVal = false;
+        InternetAddress ia     = new InternetAddress();
+
+        try {
+
+            ia.setAddress(emailAddress);
+            ia.validate();
+            retVal = true;
+
+    } catch (AddressException e) {
+
+        }
+
+        return retVal;
     }
 
     /**

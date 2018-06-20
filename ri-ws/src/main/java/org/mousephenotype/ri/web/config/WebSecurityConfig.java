@@ -17,7 +17,8 @@
 package org.mousephenotype.ri.web.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpMethod;
@@ -25,6 +26,9 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Created by mrelac on 12/06/2017.
@@ -34,11 +38,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @PropertySource("file:${user.home}/configfiles/${profile}/application.properties")
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Value("${ri_admin_password}")
-    String riAdminPassword;
-
-    public static final String ROLE_USER = "ri-user";
-    public static final String ROLE_ADMIN = "ri-admin";
+    public static final String USER = "USER";
+    public static final String ADMIN = "ADMIN";
 
 
     @Override
@@ -47,47 +48,22 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .authorizeRequests()
 
+                .antMatchers(HttpMethod.GET, "/admin/**").hasRole(ADMIN)
+                .antMatchers(HttpMethod.GET, "/contacts/**").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers(HttpMethod.POST, "/contacts/**").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers(HttpMethod.DELETE, "/contacts/**").access("hasRole('USER') or hasRole('ADMIN')")
+
+                .antMatchers(HttpMethod.GET, "/summary/**").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers(HttpMethod.POST, "/register").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers(HttpMethod.DELETE, "/unregister").access("hasRole('USER') or hasRole('ADMIN')")
+
+                .and().httpBasic()
+                .and().csrf()
+                .and().exceptionHandling().accessDeniedPage("/Access_Denied")
+
                 .and()
-
-                .authorizeRequests()
-                .antMatchers("/summary/**")
-                .access("hasRole('" + ROLE_USER + "') or hasRole('" + ROLE_ADMIN + "')")
-
-                .and()
-
                 .formLogin().loginPage("/login")
                 .usernameParameter("ssoId").passwordParameter("password")
-
-                .and()
-
-                .authorizeRequests()
-                .antMatchers(HttpMethod.GET, "/contacts/**")
-                .hasRole(ROLE_ADMIN)
-
-                .and()
-
-                .authorizeRequests()
-                .antMatchers(HttpMethod.POST, "/contacts/**")
-                .hasRole(ROLE_ADMIN)
-
-                .and()
-
-                .authorizeRequests()
-                .antMatchers(HttpMethod.DELETE, "/contacts/**")
-                .hasRole(ROLE_ADMIN)
-
-                .and()
-
-                .authorizeRequests()
-                .antMatchers(HttpMethod.GET, "/reports/**")
-                .hasRole(ROLE_ADMIN)
-
-                .and()
-                .httpBasic()
-
-                .and().csrf()
-
-                .and().exceptionHandling().accessDeniedPage("/Access_Denied")
 
                 .and()
                 .authorizeRequests()
@@ -96,13 +72,28 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         ;
     }
 
+    // FIXME Replace with db authentication and roles.
     @Autowired
     public void configureGlobalSecurity(AuthenticationManagerBuilder auth) throws Exception {
         auth
                 .inMemoryAuthentication()
-                .withUser(ROLE_USER).password(riAdminPassword).roles(ROLE_USER)
-        .and()
-                .withUser(ROLE_ADMIN).password(riAdminPassword).roles(ROLE_ADMIN)
+                .withUser("user").password("abc").roles(USER)
+                .and()
+                .withUser("mrelac@ebi.ac.uk").password("abc").roles(USER, ADMIN)
+                .and()
+                .withUser("admin").password("aaa").roles(ADMIN)
         ;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        return builder
+                .basicAuthorization("mrelac@ebi.ac.uk", "abc")
+                .build();
     }
 }

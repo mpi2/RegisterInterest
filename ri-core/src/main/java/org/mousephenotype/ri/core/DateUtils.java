@@ -19,6 +19,7 @@ package org.mousephenotype.ri.core;
 import org.mousephenotype.ri.core.exceptions.InterestException;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -83,5 +84,23 @@ public class DateUtils {
         }
 
         return date;
+    }
+
+    /**
+     * Given a base (starting) date and a time to live, in minutes, returns true if the current time is after the
+     * baseDate time + timeToLiveInMinutes; false otherwise
+     *
+     * @param baseDate base (start) time
+     * @param timeToLiveInMinutes the time that gets added to baseDate to create the expiry date
+     * @return
+     */
+    public boolean isExpired(Date baseDate, int timeToLiveInMinutes) {
+        Calendar now        = Calendar.getInstance();
+        Calendar expiryTime = Calendar.getInstance();
+
+        expiryTime.setTime(baseDate);
+        expiryTime.add(Calendar.MINUTE, timeToLiveInMinutes);
+
+        return now.after(expiryTime);
     }
 }
