@@ -16,17 +16,22 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
     <title>Reset Password Sent</title>
+    <link href="<c:url value='/resources/css/bootstrap.css' />"  rel="stylesheet"></link>
+    <link href="<c:url value='/resources/css/login.css' />" rel="stylesheet"></link>
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.css" />
 </head>
 
 <body>
 
-<div>
-    <jsp:useBean id="current" class="java.util.Date" />
-    ${current.toLocaleString()} - An e-mail containing a reset password link has been sent to <i>${emailAddress}</i>. The link is valid for ${PASSWORD_RESET_TTL_MINUTES} minutes.
-    <br /><br />
+<jsp:useBean id="current" class="java.util.Date" />
+
+<div class="alert alert-success">
+ <p>${current.toLocaleString()}: An e-mail containing a reset password link has been sent to <i>${emailAddress}</i>. The link is valid for ${PASSWORD_RESET_TTL_MINUTES} minutes.</p>
+
+    <br />
+
     <a href="<c:url value="/login" />">Login</a>
     &nbsp;&nbsp;&nbsp;&nbsp;
-
 </div>
 
 </body>

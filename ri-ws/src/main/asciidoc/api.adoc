@@ -1,7 +1,7 @@
-= REGISTER INTEREST API Guide
+= Register Interest API Guide
 :doctype: book
 :toc: left
-:toc-title: REGISTER INTEREST API
+:toc-title: Register Interest API
 :sectanchors:
 :sectlinks:
 :toclevels: 4

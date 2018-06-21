@@ -31,14 +31,10 @@
                 <c:url var="resetPasswordUrl" value="resetPassword" />
 
                 <form action="${resetPasswordUrl}" method="post" class="form-horizontal">
-                    <c:if test="${error != null}">
+
+                    <c:if test="${not empty error}">
                         <div class="alert alert-danger">
                             <p>${error}</p>
-                        </div>
-                    </c:if>
-                    <c:if test="${status != null}">
-                        <div class="alert alert-success">
-                            <p>Password changed successfully.</p>
                         </div>
                     </c:if>
 

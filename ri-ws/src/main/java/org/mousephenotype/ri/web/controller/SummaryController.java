@@ -93,6 +93,10 @@ public class SummaryController {
     private String smtpReplyto;
 
     private final int PASSWORD_RESET_TTL_MINUTES = 10;
+    private final int INVALID_PASSWORD_SLEEP_SECONDS = 3;
+
+    // Error messages
+    public final static String ERR_INVALID_TOKEN = "Invalid token.";
 
 
     @Resource(name = "globalConfiguration")
@@ -107,10 +111,20 @@ public class SummaryController {
     }
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
-    public String loginPage(HttpServletRequest request) {
+    public String loginPage(ModelMap model, HttpServletRequest request) {
+
+        String error = request.getQueryString();
+
+        if (error != null) {
+            try {
+                Thread.sleep(INVALID_PASSWORD_SLEEP_SECONDS * 1000);
+            } catch (InterruptedException e) {
+            }
+        }
 
         return "login";
     }
+
 
     @RequestMapping(value="/logout", method = RequestMethod.GET)
     public String logoutPage (HttpServletRequest request, HttpServletResponse response) {
@@ -164,13 +178,12 @@ public class SummaryController {
 
 
     @RequestMapping(value = "resetPasswordRequest", method = RequestMethod.GET)
-    public String resetPasswordRequestGet(ModelMap model, HttpServletRequest request, HttpServletResponse response) {
+    public String resetPasswordRequestGet(ModelMap model) {
 
         String user = getPrincipal();
-        if ( ! user.equalsIgnoreCase("anonymousUser")) {
-            model.addAttribute("user", user);
-            model.addAttribute("emailAddress", user);
 
+        if ( ! user.equalsIgnoreCase("anonymousUser")) {
+            model.addAttribute("emailAddress", user);
         }
 
         return "resetPasswordRequest";
@@ -180,18 +193,18 @@ public class SummaryController {
     @RequestMapping(value = "resetPasswordEmail", method = RequestMethod.POST)
     public String resetPasswordEmail(
             ModelMap model,
-            HttpServletRequest request,
-            HttpServletResponse response,
-            @RequestParam ("emailAddress") String emailAddress
-    ) throws InterestException {
+            @RequestParam (value = "emailAddress", required = false) String emailAddress) throws InterestException
+    {
+        if (emailAddress == null) {
+            emailAddress = getPrincipal();
+        }
 
+        if ( ! sqlUtils.isValidEmailAddress(emailAddress)) {
+            return "redirect:/resetPasswordRequest?error=true";
+        }
 
         model.addAttribute("PASSWORD_RESET_TTL_MINUTES", PASSWORD_RESET_TTL_MINUTES);
         model.addAttribute("emailAddress", emailAddress);
-
-        if ( ! sqlUtils.isValidEmailAddress(emailAddress)) {
-            return "resetPasswordRequest";
-        }
 
         // Generate and assemble email with password reset
         String token = buildToken(emailAddress);
@@ -208,12 +221,12 @@ public class SummaryController {
         // Send e-mail
         emailUtils.sendEmail(message);
 
-        return "resetPasswordSent";
+        return "resetPasswordSend";
     }
 
 
     @RequestMapping(value = "resetPassword", method = RequestMethod.GET)
-    public String resetPasswordGet(ModelMap model, HttpServletRequest request, HttpServletResponse response) {
+    public String resetPasswordGet(ModelMap model, HttpServletRequest request) {
 
         // Parse out query string for token value.
         String token = getTokenFromQueryString(request.getQueryString());
@@ -221,14 +234,16 @@ public class SummaryController {
         // Look up user from reset_credentials table
         ResetCredentials resetCredentials = sqlUtils.getResetCredentials(token);
 
-        // If not found, return to invalidToken page.
+        // If not found, return to resetPasswordFail page.
         if (resetCredentials == null) {
-            return "invalidToken";
+            model.addAttribute("error", ERR_INVALID_TOKEN);
+            return "resetPasswordFail";
         }
 
-        // If token has expired, return to invalidToken page.
+        // If token has expired, return to resetPasswordFail page.
         if (dateUtils.isExpired(resetCredentials.getCreatedAt(), PASSWORD_RESET_TTL_MINUTES)) {
-            return "invalidToken";
+            model.addAttribute("error", ERR_INVALID_TOKEN);
+            return "resetPasswordFail";
         }
 
         // Add token to model and return "resetPassword"
@@ -237,13 +252,14 @@ public class SummaryController {
         return "resetPassword";
     }
 
-
     @RequestMapping(value = "resetPassword", method = RequestMethod.POST)
     public String resetPasswordPost(ModelMap model, HttpServletRequest request, HttpServletResponse response,
                                 @RequestParam ("token") String token,
                                 @RequestParam ("newPassword") String newPassword,
                                 @RequestParam ("repeatPassword") String repeatPassword)
     {
+        model.addAttribute("token", token);
+
         // Validate the new password. Return to resetPassword page if validation fails.
         String error = validateNewPassword(newPassword, repeatPassword);
         if ( ! error.isEmpty()) {
@@ -254,9 +270,10 @@ public class SummaryController {
         // Look up user from reset_credentials table
         ResetCredentials resetCredentials = sqlUtils.getResetCredentials(token);
 
-        // If not found, return to invalidToken page.
+        // If not found, return to resetPasswordFail page.
         if (resetCredentials == null) {
-            return "invalidToken";
+            model.addAttribute("error", ERR_INVALID_TOKEN);
+            return "resetPasswordFail";
         }
 
         String emailAddress = resetCredentials.getAddress();
