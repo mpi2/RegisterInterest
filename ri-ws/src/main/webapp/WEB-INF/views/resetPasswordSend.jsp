@@ -26,7 +26,8 @@
 <jsp:useBean id="current" class="java.util.Date" />
 
 <div class="alert alert-success">
- <p>${current.toLocaleString()}: An e-mail containing a reset password link has been sent to <i>${emailAddress}</i>. The link is valid for ${PASSWORD_RESET_TTL_MINUTES} minutes.</p>
+ <p>${current.toLocaleString()}: An e-mail containing a reset password link has been sent to <i>${emailAddress}</i>.
+     Any previous links are no longer valid. This link is valid for ${PASSWORD_RESET_TTL_MINUTES} minutes.</p>
 
     <br />
 

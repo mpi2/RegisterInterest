@@ -29,11 +29,20 @@
             <div class="login-form">
                 <c:url var="resetPasswordEmail" value="resetPasswordEmail?${emailAddress}" />
                 <form action="${resetPasswordEmail}" method="post" class="form-horizontal">
-                    <c:if test="${param.error != null}">
-                        <div class="alert alert-danger">
-                            <p>Invalid email address.</p>
-                        </div>
-                    </c:if>
+
+                    <c:choose>
+                        <c:when test="${param.error != null}">
+                            <div class="alert alert-danger">
+                                <p>Invalid email address.</p>
+                            </div>
+                        </c:when>
+                        <c:when test="${not empty status}">
+                            <div class="alert alert-success">
+                                <p>${status}</p>
+                            </div>
+                        </c:when>
+                    </c:choose>
+
                     <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
 
                     Send an e-mail to the address below to reset the password.

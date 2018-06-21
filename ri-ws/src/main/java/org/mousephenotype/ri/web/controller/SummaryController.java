@@ -97,18 +97,12 @@ public class SummaryController {
 
     // Error messages
     public final static String ERR_INVALID_TOKEN = "Invalid token.";
+    public final static String ERR_ACCOUNT_LOCKED = "Your account is locked.";
 
 
     @Resource(name = "globalConfiguration")
     private Map<String, String> config;
 
-
-
-    @RequestMapping(value = "/Access_Denied", method = RequestMethod.GET)
-    public String accessDeniedPage(ModelMap model) {
-        model.addAttribute("user", getPrincipal());
-        return "accessDenied";
-    }
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String loginPage(ModelMap model, HttpServletRequest request) {
@@ -141,9 +135,25 @@ public class SummaryController {
 
 
 
+
+
+
     public final String SUMMARY = "summary";
     @RequestMapping(value = {SUMMARY }, method = RequestMethod.GET)
-    public String summary(HttpServletRequest request, ModelMap model) {
+    public String summary(ModelMap model, HttpServletRequest request) {
+
+        String emailAddress = getPrincipal();
+        ContactExtended contactEx = sqlUtils.getContactExtended(emailAddress);
+        if (contactEx.isAccountLocked()) {
+            model.addAttribute("error", ERR_ACCOUNT_LOCKED);
+            return "errorPage";
+        }
+
+        if (contactEx.isPasswordExpired()) {
+            model.addAttribute("emailAddress", emailAddress);
+            model.addAttribute("status", "Your password is expired. Please choose a new password.");
+            return "resetPasswordRequest";
+        }
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -208,9 +218,9 @@ public class SummaryController {
 
         // Generate and assemble email with password reset
         String token = buildToken(emailAddress);
-        String tokenLink = buildTokenLink(emailAddress, token);
+        String tokenLink = buildTokenLink(token);
         System.out.println("tokenLink = " + tokenLink);
-        String body = generateResetPasswordEmail(emailAddress, tokenLink);
+        String body = generateResetPasswordEmail(tokenLink);
         String subject = "Reset IMPC Register Interest password link";
         Message message = emailUtils.assembleEmail(smtpHost, smtpPort, smtpFrom, smtpReplyto, subject, body, emailAddress, true);
 
@@ -234,16 +244,16 @@ public class SummaryController {
         // Look up user from reset_credentials table
         ResetCredentials resetCredentials = sqlUtils.getResetCredentials(token);
 
-        // If not found, return to resetPasswordFail page.
+        // If not found, return to errorPage page.
         if (resetCredentials == null) {
             model.addAttribute("error", ERR_INVALID_TOKEN);
-            return "resetPasswordFail";
+            return "errorPage";
         }
 
-        // If token has expired, return to resetPasswordFail page.
+        // If token has expired, return to errorPage page.
         if (dateUtils.isExpired(resetCredentials.getCreatedAt(), PASSWORD_RESET_TTL_MINUTES)) {
             model.addAttribute("error", ERR_INVALID_TOKEN);
-            return "resetPasswordFail";
+            return "errorPage";
         }
 
         // Add token to model and return "resetPassword"
@@ -270,10 +280,10 @@ public class SummaryController {
         // Look up user from reset_credentials table
         ResetCredentials resetCredentials = sqlUtils.getResetCredentials(token);
 
-        // If not found, return to resetPasswordFail page.
+        // If not found, return to errorPage page.
         if (resetCredentials == null) {
             model.addAttribute("error", ERR_INVALID_TOKEN);
-            return "resetPasswordFail";
+            return "errorPage";
         }
 
         String emailAddress = resetCredentials.getAddress();
@@ -312,17 +322,16 @@ public class SummaryController {
 
     /**
      * return a hyperlink containing the token suitable for sending to the contact asking for password reset
-     * @param emailAddress
      * @param token
      * @return
      * @throws InterestException
      */
-    private String buildTokenLink(String emailAddress, String token) throws InterestException {
+    private String buildTokenLink(String token) {
 
         return paHostname + paContextRoot + "/resetPassword?token=" + token;
     }
 
-    private String generateResetPasswordEmail(String emailAddress, String tokenLink) {
+    private String generateResetPasswordEmail(String tokenLink) {
 
         String style = new StringBuilder()
                 .append(    "<style>")
