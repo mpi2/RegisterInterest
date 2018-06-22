@@ -16,21 +16,20 @@
 
 package org.mousephenotype.ri.core.rowmappers;
 
-import org.apache.commons.lang3.StringUtils;
-import org.mousephenotype.ri.core.entities.ContactExtended;
+import org.mousephenotype.ri.core.entities.ContactRole;
 import org.mousephenotype.ri.core.entities.RIGrantedAuthority;
+import org.mousephenotype.ri.core.entities.RIRole;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Date;
 
 /**
  * Created by mrelac on 12/05/2017.
  */
-public class ContactExtendedRowMapper implements RowMapper<ContactExtended> {
+public class ContactRoleRowMapper implements RowMapper<ContactRole> {
 
     /**
      * Implementations must implement this method to map each row of data
@@ -44,27 +43,20 @@ public class ContactExtendedRowMapper implements RowMapper<ContactExtended> {
      *                      column values (that is, there's no need to catch SQLException)
      */
     @Override
-    public ContactExtended mapRow(ResultSet rs, int rowNum) throws SQLException {
+    public ContactRole mapRow(ResultSet rs, int rowNum) throws SQLException {
 
-        ContactExtended contactExtended = new ContactExtended();
+        ContactRole contactRole = new ContactRole();
 
-        contactExtended.setContact(new ContactRowMapper().mapRow(rs, rowNum));
-        contactExtended.setPassword(rs.getString("password"));
-        Integer passwordExpired = rs.getInt("password_expired");
-        contactExtended.setPasswordExpired(passwordExpired == 1 ? true : false);
-        Integer accountLocked = rs.getInt("account_locked");
-        contactExtended.setAccountLocked(accountLocked == 1 ? true : false);
+        contactRole.setPk(rs.getInt("pk"));
+        contactRole.setContactPk(rs.getInt("contact_pk"));
 
-        // Create GrantedAuthority roles
-        Collection<GrantedAuthority> authorities = new ArrayList<>();
-        String roles = rs.getString("roles");
-        String[] rolesArray = StringUtils.split(roles, ",");
-        for (String role : rolesArray) {
-            GrantedAuthority authority = new RIGrantedAuthority(RIGrantedAuthority.ROLE.valueOf(role));
-            authorities.add(authority);
-        }
-        contactExtended.setRoles(authorities);
+        String sRole = rs.getString("role");
+        GrantedAuthority authority = new RIGrantedAuthority(RIRole.valueOf(sRole));
+        contactRole.setRole(authority);
 
-        return contactExtended;
+        contactRole.setCreatedAt(new Date(rs.getTimestamp("created_at").getTime()));
+        contactRole.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));
+
+        return contactRole;
     }
 }

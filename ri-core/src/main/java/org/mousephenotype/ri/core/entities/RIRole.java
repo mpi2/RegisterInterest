@@ -16,29 +16,11 @@
 
 package org.mousephenotype.ri.core.entities;
 
-import org.mousephenotype.ri.core.exceptions.InterestException;
-import org.springframework.security.core.GrantedAuthority;
+/*
+ * This enum encapsulates all of the available Register Interest roles.
+ */
+public enum RIRole {
 
-public class RIGrantedAuthority implements GrantedAuthority {
-
-
-
-    private RIRole role;
-
-    public RIGrantedAuthority() {
-        role = RIRole.USER;
-    }
-
-    public RIGrantedAuthority(RIRole role) {
-        this.role = role;
-    }
-
-    public RIGrantedAuthority(String role) {
-        this.role = RIRole.valueOf(role);
-    }
-
-    @Override
-    public String getAuthority() {
-        return "ROLE_" + role.toString();
-    }
+    USER,
+    ADMIN
 }

@@ -15,7 +15,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-    <title>Reset password</title>
+    <title>Register</title>
     <link href="<c:url value='/resources/css/bootstrap.css' />"  rel="stylesheet"></link>
     <link href="<c:url value='/resources/css/login.css' />" rel="stylesheet"></link>
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.css" />
@@ -27,8 +27,8 @@
     <div class="login-container">
         <div class="login-card">
             <div class="login-form">
-                <c:url var="resetPasswordEmail" value="resetPasswordEmail" />
-                <form action="${resetPasswordEmail}" method="post" class="form-horizontal">
+                <c:url var="newAccountEmail" value="newAccountEmail" />
+                <form action="${newAccountEmail}" method="post" class="form-horizontal">
 
                     <c:choose>
                         <c:when test="${param.error != null}">
@@ -45,7 +45,7 @@
 
                     <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
 
-                    Send an e-mail to the address below to reset the password.
+                    Send an e-mail to the address below to choose a password.
 
                     <br />
 
@@ -64,7 +64,7 @@
                     </c:choose>
 
                     <div class="form-actions">
-                        <input type="submit" class="btn btn-block btn-primary btn-default" value="Send e-mail to reset password" />
+                        <input type="submit" class="btn btn-block btn-primary btn-default" value="Send e-mail to choose password" />
                     </div>
 
                     <br />

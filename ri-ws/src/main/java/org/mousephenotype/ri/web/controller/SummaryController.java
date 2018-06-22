@@ -21,9 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.mousephenotype.ri.core.DateUtils;
 import org.mousephenotype.ri.core.EmailUtils;
 import org.mousephenotype.ri.core.SqlUtils;
-import org.mousephenotype.ri.core.entities.ContactExtended;
-import org.mousephenotype.ri.core.entities.ResetCredentials;
-import org.mousephenotype.ri.core.entities.Summary;
+import org.mousephenotype.ri.core.entities.*;
 import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +33,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -187,8 +186,203 @@ public class SummaryController {
 
 
 
+    @RequestMapping(value = "newAccountRequest", method = RequestMethod.GET)
+    public String newAccountRequest(ModelMap model) {
+
+        return "newAccountRequest";
+    }
+
+
+    @RequestMapping(value = "newAccountEmail", method = RequestMethod.POST)
+    public String newAccountEmail(
+            ModelMap model,
+            @RequestParam ("emailAddress") String emailAddress) throws InterestException
+    {
+        if ( ! sqlUtils.isValidEmailAddress(emailAddress)) {
+            return "redirect:/newAccountRequest?error=true";
+        }
+
+        model.addAttribute("PASSWORD_RESET_TTL_MINUTES", PASSWORD_RESET_TTL_MINUTES);
+        model.addAttribute("emailAddress", emailAddress);
+
+        // Ignore the request if the account already exists.
+        ContactExtended contactEx = sqlUtils.getContactExtended(emailAddress);
+        if (contactEx == null) {
+
+
+            // Generate and assemble email with password reset
+            String token     = buildToken(emailAddress);
+            String tokenLink = paHostname + paContextRoot + "/newAccount?token=" + token;
+            System.out.println("tokenLink = " + tokenLink);
+            String  body    = generateNewAccountEmail(tokenLink);
+            String  subject = "Request to register for new IMPC Register Interest account";
+            Message message = emailUtils.assembleEmail(smtpHost, smtpPort, smtpFrom, smtpReplyto, subject, body, emailAddress, true);
+
+            // Insert add request to reset_credentials table
+            ResetCredentials resetCredentials = new ResetCredentials(emailAddress, token, new Date());
+            sqlUtils.updateResetCredentials(resetCredentials);
+
+            // Send e-mail
+            emailUtils.sendEmail(message);
+        }
+
+        return "newAccountSend";
+    }
+
+
+    @RequestMapping(value = "newAccount", method = RequestMethod.GET)
+    public String newAccountGet(ModelMap model, HttpServletRequest request) {
+
+        // Parse out query string for token value.
+        String token = getTokenFromQueryString(request.getQueryString());
+
+        // Look up user from reset_credentials table
+        ResetCredentials resetCredentials = sqlUtils.getResetCredentials(token);
+
+        // If not found, return to errorPage page.
+        if (resetCredentials == null) {
+            model.addAttribute("error", ERR_INVALID_TOKEN);
+            return "errorPage";
+        }
+
+        // If token has expired, return to errorPage page.
+        if (dateUtils.isExpired(resetCredentials.getCreatedAt(), PASSWORD_RESET_TTL_MINUTES)) {
+            model.addAttribute("error", ERR_INVALID_TOKEN);
+            return "errorPage";
+        }
+
+        // Add token to model and return "resetPassword"
+        model.addAttribute("token", token);
+
+        return "newAccount";
+    }
+
+    @RequestMapping(value = "newAccount", method = RequestMethod.POST)
+    public String newAccountPost(ModelMap model, HttpServletRequest request, HttpServletResponse response,
+                                 @RequestParam("token") String token,
+                                 @RequestParam("newPassword") String newPassword,
+                                 @RequestParam("repeatPassword") String repeatPassword) throws InterestException
+    {
+        model.addAttribute("token", token);
+
+        // Validate the new password. Return to resetPassword page if validation fails.
+        String error = validateNewPassword(newPassword, repeatPassword);
+        if ( ! error.isEmpty()) {
+            model.addAttribute("error", error);
+            return "newAccount";
+        }
+
+        // Look up user from reset_credentials table
+        ResetCredentials resetCredentials = sqlUtils.getResetCredentials(token);
+
+        // If not found, return to errorPage page.
+        if (resetCredentials == null) {
+            logger.warn("No credentials found for {}", token);
+            model.addAttribute("error", ERR_INVALID_TOKEN);
+            return "errorPage";
+        }
+
+        String emailAddress = resetCredentials.getAddress();
+
+        try {
+            addUser(emailAddress, newPassword);
+        } catch (InterestException e) {
+
+            model.addAttribute("error", e.getLocalizedMessage());
+            return "errorPage";
+        }
+
+
+
+        // Add the new contact to the database.
+//        Contact contact = sqlUtils.updateOrInsertContact("SummaryController", emailAddress, 1, new Date());
+//        if (contact == null) {
+//            String message = "Contact " + emailAddress + " not INSERTed/UPDATEd";
+//            logger.warn(message, emailAddress);
+//            model.addAttribute("error", "We were unable to register you with the specified e-mail address. Please contact the EBI mouse helpdesk for assistance.");
+//            return "errorPage";
+//        }
+//
+//        // Add the USER role to the database.
+//        ContactRole role = new ContactRole(RIRole.USER);
+//        sqlUtils.updateContactRole(emailAddress, role);
+//
+//        // Update the password
+//        int rowsUpdated = updatePassword(emailAddress, newPassword);
+//        if (rowsUpdated < 1) {
+//            String message = "Password not updated for " + emailAddress;
+//            logger.warn(message, emailAddress);
+//            model.addAttribute("error", "Your password could not be updated. Please contact the EBI mouse helpdesk for assistance.");
+//            return "errorPage";
+//        }
+
+        // Get the user's roles and mark the user as authenticated.
+        ContactExtended contactExtended = sqlUtils.getContactExtended(emailAddress);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(emailAddress, null, contactExtended.getRoles());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        model.addAttribute("statusTitle", "Welcome");
+        model.addAttribute("status", "You are now registered for IMPC Register Interest.");
+
+        return "statusPage";
+    }
+
+
+    /**
+     * Adds new contact to the database in a transaction.
+     *
+     * @param emailAddress contact email address to be added
+     * @param newPassword new raw password chosen by contact
+     *
+     * @throws InterestException if an error occurs. The supplied string is suitable for end-user display.
+     */
+
+    // FIXME FIXME FIXME THIS DOESN'T ROLL BACK WHEN InterestException IS THROWN!!!!!
+    // FIXME FIXME FIXME THIS DOESN'T ROLL BACK WHEN InterestException IS THROWN!!!!!
+    // FIXME FIXME FIXME THIS DOESN'T ROLL BACK WHEN InterestException IS THROWN!!!!!
+    // FIXME FIXME FIXME THIS DOESN'T ROLL BACK WHEN InterestException IS THROWN!!!!!
+    // FIXME FIXME FIXME THIS DOESN'T ROLL BACK WHEN InterestException IS THROWN!!!!!
+    @Transactional(rollbackFor = Exception.class)
+    public void addUser(String emailAddress, String newPassword) throws InterestException {
+
+        int rowsUpdated;
+        final String ERROR_MESSAGE = "We were unable to register you with the specified e-mail address. Please contact the EBI mouse helpdesk for assistance.";
+
+        try {
+
+            // Add the new contact to the database.
+            Contact contact = sqlUtils.updateOrInsertContact("SummaryController", emailAddress, 1, new Date());
+            if (contact == null) {
+                logger.warn("updateOrInsertContact failed for " + emailAddress);
+                throw new InterestException(ERROR_MESSAGE);
+            }
+
+            // Add the USER role to the database.
+            rowsUpdated = sqlUtils.updateContactRole(contact.getPk(), new ContactRole(RIRole.USER));
+            if (rowsUpdated < 1) {
+                logger.warn("updateContactRole failed for " + emailAddress);
+                throw new InterestException(ERROR_MESSAGE);
+            }
+
+            // Update the password
+            rowsUpdated = updatePassword(emailAddress, newPassword);
+            if (rowsUpdated < 1) {
+                logger.warn("updatePassword failed for " + emailAddress);
+                throw new InterestException(ERROR_MESSAGE);
+            }
+
+        } catch (InterestException e) {
+
+            logger.warn("addUser failed: " + e.getLocalizedMessage());
+            throw new InterestException(ERROR_MESSAGE);
+        }
+    }
+
+
+
+
     @RequestMapping(value = "resetPasswordRequest", method = RequestMethod.GET)
-    public String resetPasswordRequestGet(ModelMap model) {
+    public String resetPasswordRequest(ModelMap model) {
 
         String user = getPrincipal();
 
@@ -218,7 +412,7 @@ public class SummaryController {
 
         // Generate and assemble email with password reset
         String token = buildToken(emailAddress);
-        String tokenLink = buildTokenLink(token);
+        String tokenLink = paHostname + paContextRoot + "/resetPassword?token=" + token;
         System.out.println("tokenLink = " + tokenLink);
         String body = generateResetPasswordEmail(tokenLink);
         String subject = "Reset IMPC Register Interest password link";
@@ -320,20 +514,7 @@ public class SummaryController {
         return token;
     }
 
-    /**
-     * return a hyperlink containing the token suitable for sending to the contact asking for password reset
-     * @param token
-     * @return
-     * @throws InterestException
-     */
-    private String buildTokenLink(String token) {
-
-        return paHostname + paContextRoot + "/resetPassword?token=" + token;
-    }
-
-    private String generateResetPasswordEmail(String tokenLink) {
-
-        String style = new StringBuilder()
+    private final String EMAIL_STYLE = new StringBuilder()
                 .append(    "<style>")
                 .append(    ".button {")
                 .append(       "background-color: #286090;")
@@ -350,11 +531,40 @@ public class SummaryController {
                 .append(     "}")
                 .append(    "</style>").toString();
 
-        StringBuilder body = new StringBuilder();
+    private String generateNewAccountEmail(String tokenLink) {
 
-        body
+        StringBuilder body = new StringBuilder()
                 .append("<html>")
-                .append(  style)
+                .append(  EMAIL_STYLE)
+                .append(  "<table>")
+                .append(    "<tr>")
+                .append(      "<td>")
+                .append(        "Dear colleague,")
+                .append(        "<br />")
+                .append(        "<br />")
+                .append(        "This e-mail was sent in response to a request to create a new IMPC Register Interest account. ")
+                .append(        "If you made no such request, please ignore this e-mail; otherwise, please click on the link ")
+                .append(        "below to set your IMPC Register Interest password and create your account.")
+                .append(        "<br />")
+                .append(        "<br />")
+                .append(      "</td>")
+                .append(    "</tr>")
+                .append(    "<tr>")
+                .append(      "<td class=\"button\">")
+                .append(        "<a href=\"" + tokenLink + "\">Reset password</a>")
+                .append(      "</td>")
+                .append(    "</tr>")
+                .append(  "</table>")
+                .append("</html>");
+
+        return body.toString();
+    }
+
+    private String generateResetPasswordEmail(String tokenLink) {
+
+        StringBuilder body = new StringBuilder()
+                .append("<html>")
+                .append(  EMAIL_STYLE)
                 .append(  "<table>")
                 .append(    "<tr>")
                 .append(      "<td>")

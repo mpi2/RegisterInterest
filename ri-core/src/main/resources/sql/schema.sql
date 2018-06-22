@@ -6,7 +6,7 @@ DROP TABLE IF EXISTS contact;
 CREATE TABLE contact (
     pk                INT          NOT NULL         AUTO_INCREMENT PRIMARY KEY,
     address           VARCHAR(255) NOT NULL UNIQUE,
-    password          TEXT         NOT NULL,
+    password          TEXT,
     password_expired  INT          NOT NULL         DEFAULT 1,                          -- 1 = expired; 0 = not expired
     account_locked    INT          NOT NULL         DEFAULT 0,                          -- 1 = locked; 0 = not locked
     active            INT          NOT NULL         DEFAULT 1,                          -- 1 = active; 0 = inactive

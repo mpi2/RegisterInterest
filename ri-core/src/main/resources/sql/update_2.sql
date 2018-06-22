@@ -29,7 +29,7 @@ CREATE TABLE reset_credentials (
 
 -- Add password and password_expired columns to contact.
 ALTER TABLE `ri`.`contact`
-  ADD COLUMN `password` TEXT NOT NULL AFTER `address`,
+  ADD COLUMN `password` TEXT AFTER `address`,
   ADD COLUMN `password_expired` INT NOT NULL DEFAULT 1 AFTER `password`,
   ADD COLUMN `account_locked` INT NOT NULL DEFAULT 0 AFTER `password_expired`;
 

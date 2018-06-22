@@ -31,6 +31,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.security.core.GrantedAuthority;
 
 import javax.inject.Inject;
 import javax.mail.internet.AddressException;
@@ -43,6 +44,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Created by mrelac on 12/05/2017.
@@ -378,14 +380,35 @@ public class SqlUtils {
      */
     public ContactExtended getContactExtended(String emailAddress) {
 
-        final String query = "SELECT c.*, GROUP_CONCAT(cr.role) AS roles FROM contact c JOIN contact_role cr ON cr.contact_pk = c.pk WHERE address = :emailAddress";
+        ContactExtended contactEx;
+
+        final String contactQuery = "SELECT * FROM contact WHERE address = :address";
 
         Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("emailAddress", emailAddress);
+        parameterMap.put("address", emailAddress);
 
-        List<ContactExtended> contactsEx = jdbcInterest.query(query, parameterMap, new ContactExtendedRowMapper());
+        List<Contact> contacts = jdbcInterest.query(contactQuery, parameterMap, new ContactRowMapper());
 
-        return (contactsEx.isEmpty() ? null : contactsEx.get(0));
+        // If the contact doesn't exist, return a null contactExtended.
+        if (contacts.isEmpty()) {
+            return null;
+        }
+
+        Contact contact = contacts.get(0);
+        contactEx = new ContactExtended();
+        contactEx.setContact(contacts.get(0));
+
+        final String contactRoleQuery = "SELECT * FROM contact_role WHERE contact_pk = :contactPk";
+        parameterMap.put("contactPk", contact.getPk());
+
+        List<ContactRole> contactRoles = jdbcInterest.query(contactRoleQuery, parameterMap, new ContactRoleRowMapper());
+        List<GrantedAuthority> roles = contactRoles.stream().map(ContactRole::getRole).collect(Collectors.toList());
+        contactEx.setRoles(roles);
+
+        contactEx.setCreatedAt(contact.getCreatedAt());
+        contactEx.setUpdatedAt(contact.getUpdatedAt());
+
+        return contactEx;
     }
 
     /*
@@ -450,22 +473,22 @@ public class SqlUtils {
      * @return number of records inserted
      * @throws InterestException
      */
-    public int updateRole(String emailAddress, String role) throws InterestException {
+    public int updateContactRole(int contactPk, ContactRole role) throws InterestException {
 
         int count = 0;
 
         // Ignore if contact already has the role.
 
         String insert = "INSERT INTO contact_role (contact_pk, role, created_at)" +
-                        "VALUES ((SELECT pk FROM contact WHERE address = :address), :role, :createdAt)";
+                        "VALUES (:contactPk, :role, :createdAt)";
 
         Date createdAt = new Date();
 
         Map<String, Object> parameterMap = new HashMap<>();
         try {
-            parameterMap.put("address", emailAddress);
-            parameterMap.put("role", role);
-            parameterMap.put("created_at", createdAt);
+            parameterMap.put("contactPk", contactPk);
+            parameterMap.put("role", role.
+            parameterMap.put("createdAt", createdAt);
 
             count = jdbcInterest.update(insert, parameterMap);
 
@@ -475,7 +498,7 @@ public class SqlUtils {
 
         } catch (Exception e) {
 
-            String message = "Error inserting contact_role for contact" + emailAddress + ": " + e.getLocalizedMessage();
+            String message = "Error inserting contact_role for contactPk" + contactPk + ": " + e.getLocalizedMessage();
             logger.error(message);
             throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -968,18 +991,18 @@ public class SqlUtils {
      *
      * Return the contact (pk is guaranteed to be set)
      *
-     * @param email The e-mail address of the contact to be inserted
+     * @param emailAddress The e-mail address of the contact to be inserted
      *
      * @return the {@link Contact}
      */
-    public Contact updateOrInsertContact(String invoker, String email, int active, Date createdAt) throws InterestException {
+    public Contact updateOrInsertContact(String invoker, String emailAddress, int active, Date createdAt) throws InterestException {
 
         final String update = "UPDATE contact SET address = :address, active = :active, created_at = :createdAt WHERE address = :address";
         final String insert = "INSERT INTO contact(address, active, created_at) " +
                               "VALUES (:address, :active, :createdAt)";
 
         Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("address", email);
+        parameterMap.put("address", emailAddress);
         parameterMap.put("active", active <= 0 ? 0 : 1);
         parameterMap.put("createdAt", createdAt);
 
@@ -994,13 +1017,13 @@ public class SqlUtils {
 
         } catch (Exception e) {
 
-            String message = "Error inserting contact '" + email + "': " + e.getLocalizedMessage() + ".";
+            String message = "Error inserting contact '" + emailAddress + "': " + e.getLocalizedMessage() + ".";
             logSendAction(invoker, null, null, message);
             logger.error(message);
             throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return getContact(email);
+        return getContact(emailAddress);
     }
 
     /**
