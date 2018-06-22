@@ -16,12 +16,9 @@
 
 package org.mousephenotype.ri.core.entities;
 
-import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.springframework.security.core.GrantedAuthority;
 
 public class RIGrantedAuthority implements GrantedAuthority {
-
-
 
     private RIRole role;
 
@@ -33,12 +30,15 @@ public class RIGrantedAuthority implements GrantedAuthority {
         this.role = role;
     }
 
-    public RIGrantedAuthority(String role) {
-        this.role = RIRole.valueOf(role);
-    }
-
     @Override
     public String getAuthority() {
         return "ROLE_" + role.toString();
+    }
+
+    @Override
+    public String toString() {
+        return "RIGrantedAuthority{" +
+                "role=" + role +
+                '}';
     }
 }

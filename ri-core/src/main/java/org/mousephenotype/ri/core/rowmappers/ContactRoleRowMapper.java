@@ -17,10 +17,8 @@
 package org.mousephenotype.ri.core.rowmappers;
 
 import org.mousephenotype.ri.core.entities.ContactRole;
-import org.mousephenotype.ri.core.entities.RIGrantedAuthority;
 import org.mousephenotype.ri.core.entities.RIRole;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.security.core.GrantedAuthority;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -51,8 +49,7 @@ public class ContactRoleRowMapper implements RowMapper<ContactRole> {
         contactRole.setContactPk(rs.getInt("contact_pk"));
 
         String sRole = rs.getString("role");
-        GrantedAuthority authority = new RIGrantedAuthority(RIRole.valueOf(sRole));
-        contactRole.setRole(authority);
+        contactRole.setRole(RIRole.valueOf(sRole));
 
         contactRole.setCreatedAt(new Date(rs.getTimestamp("created_at").getTime()));
         contactRole.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));

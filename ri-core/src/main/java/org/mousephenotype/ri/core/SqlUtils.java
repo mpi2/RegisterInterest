@@ -402,7 +402,7 @@ public class SqlUtils {
         parameterMap.put("contactPk", contact.getPk());
 
         List<ContactRole> contactRoles = jdbcInterest.query(contactRoleQuery, parameterMap, new ContactRoleRowMapper());
-        List<GrantedAuthority> roles = contactRoles.stream().map(ContactRole::getRole).collect(Collectors.toList());
+        List<GrantedAuthority> roles = contactRoles.stream().map(ContactRole::getAuthority).collect(Collectors.toList());
         contactEx.setRoles(roles);
 
         contactEx.setCreatedAt(contact.getCreatedAt());
@@ -487,7 +487,7 @@ public class SqlUtils {
         Map<String, Object> parameterMap = new HashMap<>();
         try {
             parameterMap.put("contactPk", contactPk);
-            parameterMap.put("role", role.
+            parameterMap.put("role", role.getRole().toString());
             parameterMap.put("createdAt", createdAt);
 
             count = jdbcInterest.update(insert, parameterMap);

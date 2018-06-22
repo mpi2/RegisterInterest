@@ -24,22 +24,29 @@ import java.util.Date;
  * Created by mrelac on 12/05/2017.
  */
 public class ContactRole {
-    protected int              pk;
-    protected int              contactPk;
-    protected GrantedAuthority role;
-    protected Date             createdAt;
-    protected Date             updatedAt;
+    protected int    pk;
+    protected int    contactPk;
+    protected RIRole role;
+    protected Date   createdAt;
+    protected Date   updatedAt;
+
 
     public ContactRole() {
     }
 
-    public ContactRole(String role) {
-        this.role = new RIGrantedAuthority(role);
+    public ContactRole(RIRole role) {
+        this.role = role;
     }
 
-    public ContactRole(RIRole role) {
-        this.role = new RIGrantedAuthority(role);
+
+
+    public GrantedAuthority getAuthority() {
+        return new RIGrantedAuthority(role);
     }
+
+
+    // AUTOMATICALLY GENERATED GETTERS AND SETTERS
+
 
     public int getPk() {
         return pk;
@@ -57,11 +64,11 @@ public class ContactRole {
         this.contactPk = contactPk;
     }
 
-    public GrantedAuthority getRole() {
+    public RIRole getRole() {
         return role;
     }
 
-    public void setRole(GrantedAuthority role) {
+    public void setRole(RIRole role) {
         this.role = role;
     }
 

@@ -115,7 +115,7 @@ public class SummaryController {
             }
         }
 
-        return "login";
+        return "loginPage";
     }
 
 
@@ -137,8 +137,7 @@ public class SummaryController {
 
 
 
-    public final String SUMMARY = "summary";
-    @RequestMapping(value = {SUMMARY }, method = RequestMethod.GET)
+    @RequestMapping(value = "summary", method = RequestMethod.GET)
     public String summary(ModelMap model, HttpServletRequest request) {
 
         String emailAddress = getPrincipal();
@@ -151,7 +150,7 @@ public class SummaryController {
         if (contactEx.isPasswordExpired()) {
             model.addAttribute("emailAddress", emailAddress);
             model.addAttribute("status", "Your password is expired. Please choose a new password.");
-            return "resetPasswordRequest";
+            return "resetPasswordRequestPage";
         }
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -172,13 +171,15 @@ public class SummaryController {
                 "http://localhost:8081/data/interest/contacts?email=" + user , Summary[].class
         );
 
-        List<Summary.Gene> genes = summary[0].getGenes();
+        if (summary.length > 0) {
+            List<Summary.Gene> genes = summary[0].getGenes();
 
-        genes.sort(Comparator.comparing(Summary.Gene::getSymbol));
+            genes.sort(Comparator.comparing(Summary.Gene::getSymbol));
+        }
 
         model.addAttribute(summary);
 
-        return SUMMARY;
+        return "summaryPage";
     }
 
 
@@ -189,7 +190,7 @@ public class SummaryController {
     @RequestMapping(value = "newAccountRequest", method = RequestMethod.GET)
     public String newAccountRequest(ModelMap model) {
 
-        return "newAccountRequest";
+        return "newAccountRequestPage";
     }
 
 
@@ -226,7 +227,7 @@ public class SummaryController {
             emailUtils.sendEmail(message);
         }
 
-        return "newAccountSend";
+        return "newAccountSendPage";
     }
 
 
@@ -254,8 +255,9 @@ public class SummaryController {
         // Add token to model and return "resetPassword"
         model.addAttribute("token", token);
 
-        return "newAccount";
+        return "newAccountPage";
     }
+
 
     @RequestMapping(value = "newAccount", method = RequestMethod.POST)
     public String newAccountPost(ModelMap model, HttpServletRequest request, HttpServletResponse response,
@@ -269,7 +271,7 @@ public class SummaryController {
         String error = validateNewPassword(newPassword, repeatPassword);
         if ( ! error.isEmpty()) {
             model.addAttribute("error", error);
-            return "newAccount";
+            return "newAccountPage";
         }
 
         // Look up user from reset_credentials table
@@ -291,30 +293,6 @@ public class SummaryController {
             model.addAttribute("error", e.getLocalizedMessage());
             return "errorPage";
         }
-
-
-
-        // Add the new contact to the database.
-//        Contact contact = sqlUtils.updateOrInsertContact("SummaryController", emailAddress, 1, new Date());
-//        if (contact == null) {
-//            String message = "Contact " + emailAddress + " not INSERTed/UPDATEd";
-//            logger.warn(message, emailAddress);
-//            model.addAttribute("error", "We were unable to register you with the specified e-mail address. Please contact the EBI mouse helpdesk for assistance.");
-//            return "errorPage";
-//        }
-//
-//        // Add the USER role to the database.
-//        ContactRole role = new ContactRole(RIRole.USER);
-//        sqlUtils.updateContactRole(emailAddress, role);
-//
-//        // Update the password
-//        int rowsUpdated = updatePassword(emailAddress, newPassword);
-//        if (rowsUpdated < 1) {
-//            String message = "Password not updated for " + emailAddress;
-//            logger.warn(message, emailAddress);
-//            model.addAttribute("error", "Your password could not be updated. Please contact the EBI mouse helpdesk for assistance.");
-//            return "errorPage";
-//        }
 
         // Get the user's roles and mark the user as authenticated.
         ContactExtended contactExtended = sqlUtils.getContactExtended(emailAddress);
@@ -380,7 +358,6 @@ public class SummaryController {
 
 
 
-
     @RequestMapping(value = "resetPasswordRequest", method = RequestMethod.GET)
     public String resetPasswordRequest(ModelMap model) {
 
@@ -390,7 +367,7 @@ public class SummaryController {
             model.addAttribute("emailAddress", user);
         }
 
-        return "resetPasswordRequest";
+        return "resetPasswordRequestPage";
     }
 
 
@@ -425,7 +402,7 @@ public class SummaryController {
         // Send e-mail
         emailUtils.sendEmail(message);
 
-        return "resetPasswordSend";
+        return "resetPasswordSendPage";
     }
 
 
@@ -453,7 +430,7 @@ public class SummaryController {
         // Add token to model and return "resetPassword"
         model.addAttribute("token", token);
 
-        return "resetPassword";
+        return "resetPasswordPage";
     }
 
     @RequestMapping(value = "resetPassword", method = RequestMethod.POST)
@@ -468,7 +445,7 @@ public class SummaryController {
         String error = validateNewPassword(newPassword, repeatPassword);
         if ( ! error.isEmpty()) {
             model.addAttribute("error", error);
-            return "resetPassword";
+            return "resetPasswordPage";
         }
 
         // Look up user from reset_credentials table

@@ -59,10 +59,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .and().httpBasic()
                 .and().csrf()
-                .and().exceptionHandling().accessDeniedPage("/login")
+                .and().exceptionHandling().accessDeniedPage("/loginPage")
 
                 .and()
-                .formLogin().loginPage("/login")
+                .formLogin().loginPage("/loginPage")
                 .defaultSuccessUrl("/summary")
                 .usernameParameter("ssoId").passwordParameter("password")
 
