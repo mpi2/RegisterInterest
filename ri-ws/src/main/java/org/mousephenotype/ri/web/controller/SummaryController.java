@@ -108,11 +108,15 @@ public class SummaryController {
     private String smtpReplyto;
 
     private final int PASSWORD_RESET_TTL_MINUTES = 10;
+
+    // Sleep intervals
     private final int INVALID_PASSWORD_SLEEP_SECONDS = 3;
+    private final int SHORT_SLEEP_SECONDS = 1;
 
     // Error messages
     public final static String ERR_INVALID_TOKEN = "Invalid token.";
     public final static String ERR_ACCOUNT_LOCKED = "Your account is locked.";
+    public final static String ERR_PASSWORD_MISMATCH = "Passwords do not match.";
 
 
     @NotNull
@@ -126,10 +130,7 @@ public class SummaryController {
         String error = request.getQueryString();
 
         if (error != null) {
-            try {
-                Thread.sleep(INVALID_PASSWORD_SLEEP_SECONDS * 1000);
-            } catch (InterruptedException e) {
-            }
+            sleep(INVALID_PASSWORD_SLEEP_SECONDS);
         }
 
         return "loginPage";
@@ -162,12 +163,22 @@ public class SummaryController {
         ContactExtended contactEx = sqlUtils.getContactExtended(emailAddress);
         if (contactEx.isAccountLocked()) {
             model.addAttribute("error", ERR_ACCOUNT_LOCKED);
+
+            logger.info("User {} tried to log in to locked account", emailAddress);
+
+            sleep(SHORT_SLEEP_SECONDS);
+
             return "errorPage";
         }
 
         if (contactEx.isPasswordExpired()) {
             model.addAttribute("emailAddress", emailAddress);
             model.addAttribute("status", "Your password is expired. Please choose a new password.");
+
+            logger.info("User {} tried to log in to password-expired account", emailAddress);
+
+            sleep(SHORT_SLEEP_SECONDS);
+
             return "resetPasswordRequestPage";
         }
 
@@ -219,17 +230,20 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
             @RequestParam ("emailAddress") String emailAddress) throws InterestException
     {
         if ( ! sqlUtils.isValidEmailAddress(emailAddress)) {
+            logger.info("Invalid email address '{}' created by anonymous user was rejected.", emailAddress);
+
+            sleep(SHORT_SLEEP_SECONDS);
+
             return "redirect:/newAccountRequest?error=true";
         }
 
         model.addAttribute("PASSWORD_RESET_TTL_MINUTES", PASSWORD_RESET_TTL_MINUTES);
         model.addAttribute("emailAddress", emailAddress);
 
-        // Ignore the request if the account already exists.
         ContactExtended contactEx = sqlUtils.getContactExtended(emailAddress);
+
+        // Ignore the request if the account already exists.
         if (contactEx == null) {
-
-
             // Generate and assemble email with password reset
             String token     = buildToken(emailAddress);
             String tokenLink = paHostname + paContextRoot + "/newAccount?token=" + token;
@@ -244,6 +258,9 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
 
             // Send e-mail
             emailUtils.sendEmail(message);
+            logger.info("Sent New Account email to {}", emailAddress);
+        } else {
+            logger.info("Ignored New Account email request to {}. emailAddress already exists.", emailAddress);
         }
 
         return "newAccountSendPage";
@@ -262,12 +279,18 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
         // If not found, return to errorPage page.
         if (resetCredentials == null) {
             model.addAttribute("error", ERR_INVALID_TOKEN);
+
+            sleep(SHORT_SLEEP_SECONDS);
+
             return "errorPage";
         }
 
         // If token has expired, return to errorPage page.
         if (dateUtils.isExpired(resetCredentials.getCreatedAt(), PASSWORD_RESET_TTL_MINUTES)) {
             model.addAttribute("error", ERR_INVALID_TOKEN);
+
+            sleep(SHORT_SLEEP_SECONDS);
+
             return "errorPage";
         }
 
@@ -289,7 +312,10 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
         // Validate the new password. Return to resetPassword page if validation fails.
         String error = validateNewPassword(newPassword, repeatPassword);
         if ( ! error.isEmpty()) {
-            model.addAttribute("error", error);
+            model.addAttribute("error", ERR_PASSWORD_MISMATCH);
+
+            sleep(SHORT_SLEEP_SECONDS);
+
             return "newAccountPage";
         }
 
@@ -298,8 +324,12 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
 
         // If not found, return to errorPage page.
         if (resetCredentials == null) {
-            logger.warn("No credentials found for {}", token);
             model.addAttribute("error", ERR_INVALID_TOKEN);
+
+            logger.info("No credentials found for {}", token);
+
+            sleep(SHORT_SLEEP_SECONDS);
+
             return "errorPage";
         }
 
@@ -309,7 +339,12 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
             sqlUtils.insertContact(emailAddress, newPassword);
         } catch (InterestException e) {
 
-            model.addAttribute("error", e.getLocalizedMessage());
+            model.addAttribute("error", ERR_INVALID_TOKEN);
+
+            logger.info("Error adding new user {} to database: {}", emailAddress, e.getLocalizedMessage());
+
+            sleep(SHORT_SLEEP_SECONDS);
+
             return "errorPage";
         }
 
@@ -322,6 +357,8 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
         model.addAttribute("status", "You are now registered for IMPC Register Interest.");
         model.addAttribute("emailAddress", emailAddress);
 
+        logger.info("New password successfully set for {}", emailAddress);
+
         return "statusPage";
     }
 
@@ -332,6 +369,7 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
         String emailAddress = getPrincipal();
 
         if ( ! emailAddress.equalsIgnoreCase("anonymousUser")) {
+            logger.info("Invalid email address '{}' created by anonymous user was rejected.", emailAddress);
             model.addAttribute("emailAddress", emailAddress);
         }
 
@@ -344,11 +382,19 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
             ModelMap model,
             @RequestParam (value = "emailAddress", required = false) String emailAddress) throws InterestException
     {
+
+        String originalEmailAddress = emailAddress;
+
         if (emailAddress == null) {
             emailAddress = getPrincipal();
         }
 
         if ( ! sqlUtils.isValidEmailAddress(emailAddress)) {
+
+            logger.info("Invalid email address '{}' created by " + (originalEmailAddress == null ? "anonymous user" : originalEmailAddress) + " was rejected.", emailAddress);
+
+            sleep(SHORT_SLEEP_SECONDS);
+
             return "redirect:/resetPasswordRequest?error=true";
         }
 
@@ -370,6 +416,8 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
         // Send e-mail
         emailUtils.sendEmail(message);
 
+        logger.info("Sent Reset Password email to {}", emailAddress);
+
         return "resetPasswordSendPage";
     }
 
@@ -386,12 +434,22 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
         // If not found, return to errorPage page.
         if (resetCredentials == null) {
             model.addAttribute("error", ERR_INVALID_TOKEN);
+
+            logger.info("Token {} not found", token);
+
+            sleep(SHORT_SLEEP_SECONDS);
+
             return "errorPage";
         }
 
         // If token has expired, return to errorPage page.
         if (dateUtils.isExpired(resetCredentials.getCreatedAt(), PASSWORD_RESET_TTL_MINUTES)) {
             model.addAttribute("error", ERR_INVALID_TOKEN);
+
+            logger.info("Token {} has expired", token);
+
+            sleep(SHORT_SLEEP_SECONDS);
+
             return "errorPage";
         }
 
@@ -412,7 +470,12 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
         // Validate the new password. Return to resetPassword page if validation fails.
         String error = validateNewPassword(newPassword, repeatPassword);
         if ( ! error.isEmpty()) {
-            model.addAttribute("error", error);
+            model.addAttribute("error", ERR_PASSWORD_MISMATCH);
+
+            logger.info("Token {} not found", token);
+
+            sleep(SHORT_SLEEP_SECONDS);
+
             return "resetPasswordPage";
         }
 
@@ -422,6 +485,11 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
         // If not found, return to errorPage page.
         if (resetCredentials == null) {
             model.addAttribute("error", ERR_INVALID_TOKEN);
+
+            logger.info("Token {} not found", token);
+
+            sleep(SHORT_SLEEP_SECONDS);
+
             return "errorPage";
         }
 
@@ -429,6 +497,7 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
 
         // Update the password
         updatePassword(emailAddress, newPassword);
+        logger.info("Password successfully reset for {}", emailAddress);
 
         // Get the user's roles and mark the user as authenticated.
         ContactExtended contactExtended = sqlUtils.getContactExtended(emailAddress);
@@ -500,7 +569,7 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
                 .append(    "</tr>")
                 .append(    "<tr>")
                 .append(      "<td class=\"button\">")
-                .append(        "<a href=\"" + tokenLink + "\">Reset password</a>")
+                .append(        "<a href=\"" + tokenLink + "\">Set password</a>")
                 .append(      "</td>")
                 .append(    "</tr>")
                 .append(  "</table>")
@@ -579,6 +648,14 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
         }
 
         return pieces[1];
+    }
+
+    private void sleep(int numSeconds) {
+        try {
+            Thread.sleep(numSeconds * 1000);
+
+        } catch (InterruptedException e) {
+        }
     }
 
     private int updatePassword(String emailAddress, String rawPassword) {
