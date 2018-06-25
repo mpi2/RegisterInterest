@@ -32,6 +32,7 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import javax.mail.internet.AddressException;
@@ -1074,6 +1075,50 @@ public class SqlUtils {
         results.put("updateCount", updateCount);
 
         return results;
+    }
+
+    /**
+     * Adds a new contact to the database wrapped in a transaction.
+     *
+     * @param emailAddress contact email address to be added
+     * @param newPassword new raw password chosen by contact
+     *
+     * @throws InterestException if an error occurs. The supplied string is suitable for end-user display.
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void insertContact(String emailAddress, String newPassword) throws InterestException {
+
+        int          rowsUpdated;
+        final String ERROR_MESSAGE = "We were unable to register you with the specified e-mail address. Please contact the EBI mouse helpdesk for assistance.";
+
+        try {
+
+            // Add the new contact to the database.
+            Contact contact = updateOrInsertContact("SummaryController", emailAddress, 1, new Date());
+            if (contact == null) {
+                logger.warn("updateOrInsertContact failed for " + emailAddress);
+                throw new InterestException(ERROR_MESSAGE);
+            }
+
+            // Add the USER role to the database.
+            rowsUpdated = updateContactRole(contact.getPk(), new ContactRole(RIRole.USER));
+            if (rowsUpdated < 1) {
+                logger.warn("updateContactRole failed for " + emailAddress);
+                throw new InterestException(ERROR_MESSAGE);
+            }
+
+            // Update the password
+            rowsUpdated = updatePassword(emailAddress, newPassword);
+            if (rowsUpdated < 1) {
+                logger.warn("updatePassword failed for " + emailAddress);
+                throw new InterestException(ERROR_MESSAGE);
+            }
+
+        } catch (InterestException e) {
+
+            logger.warn("addUser failed: " + e.getLocalizedMessage());
+            throw new InterestException(ERROR_MESSAGE);
+        }
     }
 
     /**

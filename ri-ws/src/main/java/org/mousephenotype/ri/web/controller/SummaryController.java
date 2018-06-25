@@ -21,10 +21,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.mousephenotype.ri.core.DateUtils;
 import org.mousephenotype.ri.core.EmailUtils;
 import org.mousephenotype.ri.core.SqlUtils;
-import org.mousephenotype.ri.core.entities.*;
+import org.mousephenotype.ri.core.entities.ContactExtended;
+import org.mousephenotype.ri.core.entities.ResetCredentials;
+import org.mousephenotype.ri.core.entities.Summary;
 import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -33,7 +34,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -41,6 +41,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import javax.inject.Inject;
 import javax.mail.Message;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -60,20 +61,35 @@ public class SummaryController {
     private DateUtils dateUtils = new DateUtils();
 
 
-    @Autowired
+    @NotNull
     RestTemplate restTemplate;
 
-    @Autowired
+    @NotNull
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
+    @NotNull
     private SqlUtils sqlUtils;
 
-    @Autowired
+    @NotNull
     private String paHostname;
 
-    @Autowired
+    @NotNull
     private String paContextRoot;
+
+    @Inject
+    public SummaryController(
+            RestTemplate restTemplate,
+            PasswordEncoder passwordEncoder,
+            SqlUtils sqlUtils,
+            String paHostname,
+            String paContextRoot
+    ) {
+        this.restTemplate = restTemplate;
+        this.passwordEncoder = passwordEncoder;
+        this.sqlUtils = sqlUtils;
+        this.paHostname = paHostname;
+        this.paContextRoot = paContextRoot;
+    }
 
     @NotNull
     @Value("${mail.smtp.host}")
@@ -99,6 +115,7 @@ public class SummaryController {
     public final static String ERR_ACCOUNT_LOCKED = "Your account is locked.";
 
 
+    @NotNull
     @Resource(name = "globalConfiguration")
     private Map<String, String> config;
 
@@ -289,7 +306,7 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
         String emailAddress = resetCredentials.getAddress();
 
         try {
-            addUser(emailAddress, newPassword);
+            sqlUtils.insertContact(emailAddress, newPassword);
         } catch (InterestException e) {
 
             model.addAttribute("error", e.getLocalizedMessage());
@@ -307,58 +324,6 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
 
         return "statusPage";
     }
-
-
-    /**
-     * Adds new contact to the database in a transaction.
-     *
-     * @param emailAddress contact email address to be added
-     * @param newPassword new raw password chosen by contact
-     *
-     * @throws InterestException if an error occurs. The supplied string is suitable for end-user display.
-     */
-
-    // FIXME FIXME FIXME THIS DOESN'T ROLL BACK WHEN InterestException IS THROWN!!!!!
-    // FIXME FIXME FIXME THIS DOESN'T ROLL BACK WHEN InterestException IS THROWN!!!!!
-    // FIXME FIXME FIXME THIS DOESN'T ROLL BACK WHEN InterestException IS THROWN!!!!!
-    // FIXME FIXME FIXME THIS DOESN'T ROLL BACK WHEN InterestException IS THROWN!!!!!
-    // FIXME FIXME FIXME THIS DOESN'T ROLL BACK WHEN InterestException IS THROWN!!!!!
-    @Transactional(rollbackFor = Exception.class)
-    public void addUser(String emailAddress, String newPassword) throws InterestException {
-
-        int rowsUpdated;
-        final String ERROR_MESSAGE = "We were unable to register you with the specified e-mail address. Please contact the EBI mouse helpdesk for assistance.";
-
-        try {
-
-            // Add the new contact to the database.
-            Contact contact = sqlUtils.updateOrInsertContact("SummaryController", emailAddress, 1, new Date());
-            if (contact == null) {
-                logger.warn("updateOrInsertContact failed for " + emailAddress);
-                throw new InterestException(ERROR_MESSAGE);
-            }
-
-            // Add the USER role to the database.
-            rowsUpdated = sqlUtils.updateContactRole(contact.getPk(), new ContactRole(RIRole.USER));
-            if (rowsUpdated < 1) {
-                logger.warn("updateContactRole failed for " + emailAddress);
-                throw new InterestException(ERROR_MESSAGE);
-            }
-
-            // Update the password
-            rowsUpdated = updatePassword(emailAddress, newPassword);
-            if (rowsUpdated < 1) {
-                logger.warn("updatePassword failed for " + emailAddress);
-                throw new InterestException(ERROR_MESSAGE);
-            }
-
-        } catch (InterestException e) {
-
-            logger.warn("addUser failed: " + e.getLocalizedMessage());
-            throw new InterestException(ERROR_MESSAGE);
-        }
-    }
-
 
 
     @RequestMapping(value = "resetPasswordRequest", method = RequestMethod.GET)
