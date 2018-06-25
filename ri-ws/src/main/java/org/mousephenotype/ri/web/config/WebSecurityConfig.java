@@ -59,10 +59,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .and().httpBasic()
                 .and().csrf()
-                .and().exceptionHandling().accessDeniedPage("/loginPage")
+                .and().exceptionHandling().accessDeniedPage("/login")
 
                 .and()
-                .formLogin().loginPage("/loginPage")
+                .formLogin().loginPage("/login")
                 .defaultSuccessUrl("/summary")
                 .usernameParameter("ssoId").passwordParameter("password")
 
@@ -78,8 +78,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public void configureGlobalSecurity(AuthenticationManagerBuilder auth) throws Exception {
         auth
                 .inMemoryAuthentication()
-                .withUser("user").password("abc").roles(USER)
-                .and()
                 .withUser("mrelac@ebi.ac.uk").password("abc").roles(USER, ADMIN)
                 .and()
                 .withUser("admin").password("aaa").roles(ADMIN)

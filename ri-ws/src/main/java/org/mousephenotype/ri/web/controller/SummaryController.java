@@ -104,7 +104,7 @@ public class SummaryController {
 
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
-    public String loginPage(ModelMap model, HttpServletRequest request) {
+    public String loginUrl(ModelMap model, HttpServletRequest request) {
 
         String error = request.getQueryString();
 
@@ -120,7 +120,7 @@ public class SummaryController {
 
 
     @RequestMapping(value="/logout", method = RequestMethod.GET)
-    public String logoutPage (HttpServletRequest request, HttpServletResponse response) {
+    public String logoutUrl (HttpServletRequest request, HttpServletResponse response) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null){
             new SecurityContextLogoutHandler().logout(request, response, auth);
@@ -138,9 +138,10 @@ public class SummaryController {
 
 
     @RequestMapping(value = "summary", method = RequestMethod.GET)
-    public String summary(ModelMap model, HttpServletRequest request) {
+    public String summaryUrl(ModelMap model, HttpServletRequest request) {
 
         String emailAddress = getPrincipal();
+
         ContactExtended contactEx = sqlUtils.getContactExtended(emailAddress);
         if (contactEx.isAccountLocked()) {
             model.addAttribute("error", ERR_ACCOUNT_LOCKED);
@@ -155,20 +156,20 @@ public class SummaryController {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        String user = getPrincipal();
-        model.addAttribute("user", user);
+        emailAddress = getPrincipal();
+
+        model.addAllAttributes(config);
         model.addAttribute("uri", request.getRequestURI());
         model.addAttribute("roles", auth.getAuthorities());
-        model.addAllAttributes(config);
 
-        System.out.println("user/principal = " + getPrincipal());
-        System.out.println("uri = " + request.getRequestURI());
-        System.out.println("url = " + request.getRequestURL());
-        System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
+System.out.println("emailAddress = " + emailAddress);
+System.out.println("uri = " + request.getRequestURI());
+System.out.println("url = " + request.getRequestURL());
+System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
 
         // FIXME Restrict web service by ROLE and URL. Replace embedded Summary.Gene class with real Gene class.
         Summary[]  summary = restTemplate.getForObject(
-                "http://localhost:8081/data/interest/contacts?email=" + user , Summary[].class
+                "http://localhost:8081/data/interest/contacts?email=" + emailAddress , Summary[].class
         );
 
         if (summary.length > 0) {
@@ -178,6 +179,7 @@ public class SummaryController {
         }
 
         model.addAttribute(summary);
+        model.addAttribute("emailAddress", emailAddress);
 
         return "summaryPage";
     }
@@ -188,14 +190,14 @@ public class SummaryController {
 
 
     @RequestMapping(value = "newAccountRequest", method = RequestMethod.GET)
-    public String newAccountRequest(ModelMap model) {
+    public String newAccountRequestUrl() {
 
         return "newAccountRequestPage";
     }
 
 
     @RequestMapping(value = "newAccountEmail", method = RequestMethod.POST)
-    public String newAccountEmail(
+    public String newAccountEmailUrl(
             ModelMap model,
             @RequestParam ("emailAddress") String emailAddress) throws InterestException
     {
@@ -232,12 +234,12 @@ public class SummaryController {
 
 
     @RequestMapping(value = "newAccount", method = RequestMethod.GET)
-    public String newAccountGet(ModelMap model, HttpServletRequest request) {
+    public String newAccountUrlGet(ModelMap model, HttpServletRequest request) {
 
         // Parse out query string for token value.
         String token = getTokenFromQueryString(request.getQueryString());
 
-        // Look up user from reset_credentials table
+        // Look up email address from reset_credentials table
         ResetCredentials resetCredentials = sqlUtils.getResetCredentials(token);
 
         // If not found, return to errorPage page.
@@ -252,7 +254,7 @@ public class SummaryController {
             return "errorPage";
         }
 
-        // Add token to model and return "resetPassword"
+        // Add token to model.
         model.addAttribute("token", token);
 
         return "newAccountPage";
@@ -260,7 +262,7 @@ public class SummaryController {
 
 
     @RequestMapping(value = "newAccount", method = RequestMethod.POST)
-    public String newAccountPost(ModelMap model, HttpServletRequest request, HttpServletResponse response,
+    public String newAccountUrlPost(ModelMap model, HttpServletRequest request, HttpServletResponse response,
                                  @RequestParam("token") String token,
                                  @RequestParam("newPassword") String newPassword,
                                  @RequestParam("repeatPassword") String repeatPassword) throws InterestException
@@ -274,7 +276,7 @@ public class SummaryController {
             return "newAccountPage";
         }
 
-        // Look up user from reset_credentials table
+        // Look up email address from reset_credentials table
         ResetCredentials resetCredentials = sqlUtils.getResetCredentials(token);
 
         // If not found, return to errorPage page.
@@ -301,6 +303,7 @@ public class SummaryController {
 
         model.addAttribute("statusTitle", "Welcome");
         model.addAttribute("status", "You are now registered for IMPC Register Interest.");
+        model.addAttribute("emailAddress", emailAddress);
 
         return "statusPage";
     }
@@ -359,12 +362,12 @@ public class SummaryController {
 
 
     @RequestMapping(value = "resetPasswordRequest", method = RequestMethod.GET)
-    public String resetPasswordRequest(ModelMap model) {
+    public String resetPasswordRequestUrl(ModelMap model) {
 
-        String user = getPrincipal();
+        String emailAddress = getPrincipal();
 
-        if ( ! user.equalsIgnoreCase("anonymousUser")) {
-            model.addAttribute("emailAddress", user);
+        if ( ! emailAddress.equalsIgnoreCase("anonymousUser")) {
+            model.addAttribute("emailAddress", emailAddress);
         }
 
         return "resetPasswordRequestPage";
@@ -372,7 +375,7 @@ public class SummaryController {
 
 
     @RequestMapping(value = "resetPasswordEmail", method = RequestMethod.POST)
-    public String resetPasswordEmail(
+    public String resetPasswordEmailUrl(
             ModelMap model,
             @RequestParam (value = "emailAddress", required = false) String emailAddress) throws InterestException
     {
@@ -407,12 +410,12 @@ public class SummaryController {
 
 
     @RequestMapping(value = "resetPassword", method = RequestMethod.GET)
-    public String resetPasswordGet(ModelMap model, HttpServletRequest request) {
+    public String resetPasswordUrlGet(ModelMap model, HttpServletRequest request) {
 
         // Parse out query string for token value.
         String token = getTokenFromQueryString(request.getQueryString());
 
-        // Look up user from reset_credentials table
+        // Look up email address from reset_credentials table
         ResetCredentials resetCredentials = sqlUtils.getResetCredentials(token);
 
         // If not found, return to errorPage page.
@@ -434,7 +437,7 @@ public class SummaryController {
     }
 
     @RequestMapping(value = "resetPassword", method = RequestMethod.POST)
-    public String resetPasswordPost(ModelMap model, HttpServletRequest request, HttpServletResponse response,
+    public String resetPasswordUrlPost(ModelMap model, HttpServletRequest request, HttpServletResponse response,
                                 @RequestParam ("token") String token,
                                 @RequestParam ("newPassword") String newPassword,
                                 @RequestParam ("repeatPassword") String repeatPassword)
@@ -448,7 +451,7 @@ public class SummaryController {
             return "resetPasswordPage";
         }
 
-        // Look up user from reset_credentials table
+        // Look up email address from reset_credentials table
         ResetCredentials resetCredentials = sqlUtils.getResetCredentials(token);
 
         // If not found, return to errorPage page.
@@ -467,7 +470,11 @@ public class SummaryController {
         Authentication authentication = new UsernamePasswordAuthenticationToken(emailAddress, null, contactExtended.getRoles());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        return "redirect:/summary";
+        model.addAttribute("statusTitle", "Password is reset");
+        model.addAttribute("status", "Your password has been reset.");
+        model.addAttribute("emailAddress", emailAddress);
+
+        return "statusPage";
     }
 
 
