@@ -26,12 +26,18 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
 
+import javax.sql.DataSource;
+
 /**
  * Created by mrelac on 12/06/2017.
+ *
+ * Design of sample login screen taken from http://websystique.com/spring-security/spring-security-4-hibernate-annotation-example/
  */
 @Configuration
 @EnableWebSecurity
@@ -40,6 +46,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     public static final String USER = "USER";
     public static final String ADMIN = "ADMIN";
+
+
+    @Autowired
+    public DataSource riDataSource;
 
 
     @Override
@@ -57,30 +67,37 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/register").access("hasRole('USER') or hasRole('ADMIN')")
                 .antMatchers(HttpMethod.DELETE, "/unregister").access("hasRole('USER') or hasRole('ADMIN')")
 
-                .and().httpBasic()
                 .and().csrf()
-                .and().exceptionHandling().accessDeniedPage("/login")
+                .and().exceptionHandling().accessDeniedPage("/Access_Denied")
 
                 .and()
-                .formLogin().loginPage("/login")
-                .defaultSuccessUrl("/summary")
-                .usernameParameter("ssoId").passwordParameter("password")
+                    .formLogin()
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/summary")
+                        .usernameParameter("ssoId")
+                        .passwordParameter("password")
 
                 .and()
-                .authorizeRequests()
-                .antMatchers(HttpMethod.GET,"/**")
-                .permitAll()
+                    .authorizeRequests()
+                    .antMatchers(HttpMethod.GET,"/**")
+                    .permitAll()
         ;
     }
 
-    // FIXME Replace with db authentication and roles.
     @Autowired
     public void configureGlobalSecurity(AuthenticationManagerBuilder auth) throws Exception {
+
         auth
-                .inMemoryAuthentication()
-                .withUser("mrelac@ebi.ac.uk").password("abc").roles(USER, ADMIN)
+                .userDetailsService(userDetailsService()).passwordEncoder(passwordEncoder())
+
                 .and()
-                .withUser("admin").password("aaa").roles(ADMIN)
+
+                .jdbcAuthentication()
+                .dataSource(riDataSource)
+                .rolePrefix("ROLE_")
+                .usersByUsernameQuery("SELECT address AS username, password, 'true' AS enabled FROM contact WHERE address = ?")
+                .authoritiesByUsernameQuery("SELECT c.address AS username, cr.role FROM contact c JOIN contact_role cr ON cr.contact_pk = c.pk WHERE c.address = ?")
+
         ;
     }
 
@@ -94,5 +111,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return builder
                 .basicAuthorization("mrelac@ebi.ac.uk", "abc")
                 .build();
+    }
+
+    private String getPrincipal(){
+        String userName;
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof UserDetails) {
+            userName = ((UserDetails)principal).getUsername();
+        } else {
+            userName = principal.toString();
+        }
+        return userName;
     }
 }

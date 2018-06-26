@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -48,10 +49,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
 import java.net.URL;
 import java.security.SecureRandom;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 public class SummaryController {
@@ -114,8 +113,9 @@ public class SummaryController {
     private final int SHORT_SLEEP_SECONDS = 1;
 
     // Error messages
-    public final static String ERR_INVALID_TOKEN = "Invalid token.";
     public final static String ERR_ACCOUNT_LOCKED = "Your account is locked.";
+    public final static String ERR_INVALID_TOKEN = "Invalid token.";
+    public final static String ERR_NO_PERMISSION = "You do not have permission to access this page.";
     public final static String ERR_PASSWORD_MISMATCH = "Passwords do not match.";
 
 
@@ -125,17 +125,49 @@ public class SummaryController {
 
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
-    public String loginUrl(ModelMap model, HttpServletRequest request) {
-
+    public String loginUrl(
+            HttpServletRequest request,
+            ModelMap model,
+            @RequestParam (value = "username", defaultValue = "anonymousUser") String username)
+    {
         String error = request.getQueryString();
 
         if (error != null) {
+
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+            // Access is denied. Return to errorPage page.
+            model.addAttribute("error", ERR_NO_PERMISSION);
+
+            List<String> roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+            logger.info("No permission to access page for user {} with role {}", getPrincipal(), StringUtils.join(roles, ", "));
             sleep(INVALID_PASSWORD_SLEEP_SECONDS);
+
+            model.addAttribute("username", username);
         }
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        List<String> roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+        logger.info("user {} with role {}", getPrincipal(), StringUtils.join(roles, ", "));
 
         return "loginPage";
     }
 
+    @RequestMapping(value = "/Access_Denied", method = RequestMethod.GET)
+    public String accessDeniedPage(ModelMap model) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        // Access is denied. Return to errorPage page.
+        model.addAttribute("error", ERR_NO_PERMISSION);
+
+        List<String> roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+        logger.info("No permission to access page for user {} with role {}", getPrincipal(), StringUtils.join(roles, ", "));
+
+        sleep(SHORT_SLEEP_SECONDS);
+
+        return "errorPage";
+    }
 
     @RequestMapping(value="/logout", method = RequestMethod.GET)
     public String logoutUrl (HttpServletRequest request, HttpServletResponse response) {
@@ -196,9 +228,31 @@ System.out.println("url = " + request.getRequestURL());
 System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
 
         // FIXME Restrict web service by ROLE and URL. Replace embedded Summary.Gene class with real Gene class.
-        Summary[]  summary = restTemplate.getForObject(
-                "http://localhost:8081/data/interest/contacts?email=" + emailAddress , Summary[].class
-        );
+        // FIXME Restrict web service by ROLE and URL. Replace embedded Summary.Gene class with real Gene class.
+        // FIXME Restrict web service by ROLE and URL. Replace embedded Summary.Gene class with real Gene class.
+//        Summary[]  summary = restTemplate.getForObject(
+//                "http://localhost:8081/data/interest/contacts?email=" + emailAddress , Summary[].class
+//        );
+        Summary sum = new Summary();
+
+        Summary.Contact c = new Summary.Contact();
+        c.setActive(true);
+        c.setAddress(emailAddress);
+        c.setCreatedAt(new Date());
+        sum.setContact(c);
+        sum.setGenes(new ArrayList<>());
+        Summary[] summary = new Summary[1];
+        summary[0] = sum;
+
+        // FIXME Restrict web service by ROLE and URL. Replace embedded Summary.Gene class with real Gene class.
+        // FIXME Restrict web service by ROLE and URL. Replace embedded Summary.Gene class with real Gene class.
+        // FIXME Restrict web service by ROLE and URL. Replace embedded Summary.Gene class with real Gene class.
+
+
+
+
+
+
 
         if (summary.length > 0) {
             List<Summary.Gene> genes = summary[0].getGenes();
@@ -280,6 +334,8 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
         if (resetCredentials == null) {
             model.addAttribute("error", ERR_INVALID_TOKEN);
 
+            logger.info("Token {} not found.", token);
+
             sleep(SHORT_SLEEP_SECONDS);
 
             return "errorPage";
@@ -288,6 +344,8 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
         // If token has expired, return to errorPage page.
         if (dateUtils.isExpired(resetCredentials.getCreatedAt(), PASSWORD_RESET_TTL_MINUTES)) {
             model.addAttribute("error", ERR_INVALID_TOKEN);
+
+            logger.info("Token {} has expired.", token);
 
             sleep(SHORT_SLEEP_SECONDS);
 
@@ -497,6 +555,7 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
 
         // Update the password
         updatePassword(emailAddress, newPassword);
+
         logger.info("Password successfully reset for {}", emailAddress);
 
         // Get the user's roles and mark the user as authenticated.
