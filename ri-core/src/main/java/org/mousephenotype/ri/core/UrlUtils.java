@@ -16,6 +16,7 @@
 
 package org.mousephenotype.ri.core;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -169,5 +170,27 @@ public class UrlUtils {
         }
 
         return result;
+    }
+
+    /**
+     *
+     * @param request
+     * @return the name of the referring page, if available; an empty string otherwise
+     */
+    public String getReferer(HttpServletRequest request) {
+
+        String referer = request.getHeader("referer");
+        URL    url;
+
+        try {
+
+            url = new URL(referer);
+            return url.getPath().replace(request.getContextPath() + "/", "");
+
+        } catch (Exception e) {
+
+        }
+
+        return "";
     }
 }

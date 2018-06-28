@@ -23,7 +23,7 @@
                     <div class="section">
                         <div class="inner">
 
-                            <h3>Username: ${emailAddress}</h3>
+                            <h3>Username: ${summary.emailAddress}</h3>
 
                             <div>
                                 <a href="logout">Logout</a>
@@ -32,7 +32,7 @@
                             </div>
 
                             <c:choose>
-                                <c:when test="${fn:length(summaryList[0].genes) eq 0}">
+                                <c:when test="${fn:length(summary.genes) eq 0}">
                                     <h4>You have not yet registered interest in any genes.</h4>
 
                                     <a href='${paHostname}${paContextRoot}/search?kw=*"'>IMPC Gene page</a>
@@ -40,7 +40,7 @@
                                 </c:when>
                                 <c:otherwise>
 
-                                    <h4>You have registered interest in the following ${fn:length(summaryList)} genes:</h4>
+                                    <h4>You have registered interest in the following ${fn:length(summary.genes)} genes:</h4>
 
                                     <div id="summaryTableDiv">
 
@@ -58,8 +58,7 @@
                                             tr:nth-child(even) {
                                                 background-color: #dddddd;}
                                         </style>
-                                        <table id="summary-table"
-                                               class='table tableSorter'>
+                                        <table id="summary-table" class='table tableSorter'>
                                             <thead>
                                                 <tr>
                                                     <th>Gene Symbol</th>
@@ -73,56 +72,53 @@
                                             </thead>
 
                                             <tbody>
-                                                <c:forEach var="contactGene" items="${summaryList}" varStatus="loop">
 
-                                                    <c:forEach var="gene" items="${contactGene.genes}" varStatus="loop">
+                                                <c:forEach var="gene" items="${summary.genes}" varStatus="loop">
 
-                                                        <tr>
-                                                            <td>
-                                                                <a href='${paHostname}${paContextRoot}/genes/${gene.mgiAccessionId}'>${gene.symbol}</a>
-                                                            </td>
-                                                            <td><a href="//www.informatics.jax.org/marker/${gene.mgiAccessionId}">${gene.mgiAccessionId}</a></td>
-                                                            <td>${gene.riAssignmentStatus}</td>
-                                                            <td>
-                                                                <c:choose>
-                                                                    <c:when test="${gene.riNullAlleleProductionStatus == 'Genotype confirmed mice'}">
-                                                                        <a href='${paHostname}${paContextRoot}/search/allele2?kw="${gene.mgiAccessionId}"'>${gene.riNullAlleleProductionStatus}</a>
-                                                                    </c:when>
-                                                                    <c:otherwise>
-                                                                        ${gene.riNullAlleleProductionStatus}
-                                                                    </c:otherwise>
-                                                                </c:choose>
-                                                            </td>
-                                                            <td>
-                                                                <c:choose>
-                                                                    <c:when test="${gene.riConditionalAlleleProductionStatus == 'Genotype confirmed mice'}">
-                                                                        <a href='${paHostname}${paContextRoot}/search/allele2?kw="${gene.mgiAccessionId}"'>${gene.riConditionalAlleleProductionStatus}</a>
-                                                                    </c:when>
-                                                                    <c:otherwise>
-                                                                        ${gene.riConditionalAlleleProductionStatus}
-                                                                    </c:otherwise>
-                                                                </c:choose>
-                                                            </td>
-                                                            <td>
-                                                                <c:choose>
-                                                                    <c:when test="${gene.riPhenotypingStatus == 'Yes'}">
-                                                                        <a href='${paHostname}${paContextRoot}/genes/${gene.mgiAccessionId}#section-associations'>${gene.riPhenotypingStatus}</a>
-                                                                    </c:when>
-                                                                    <c:otherwise>
-                                                                        ${gene.riPhenotypingStatus}
-                                                                    </c:otherwise>
-                                                                </c:choose>
-                                                            </td>
-                                                            <td>Unregister</td>
-                                                        </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <a href='${paHostname}${paContextRoot}/genes/${gene.mgiAccessionId}'>${gene.symbol}</a>
+                                                        </td>
+                                                        <td><a href="//www.informatics.jax.org/marker/${gene.mgiAccessionId}">${gene.mgiAccessionId}</a></td>
+                                                        <td>${gene.riAssignmentStatus}</td>
+                                                        <td>
+                                                            <c:choose>
+                                                                <c:when test="${gene.riNullAlleleProductionStatus == 'Genotype confirmed mice'}">
+                                                                    <a href='${paHostname}${paContextRoot}/search/allele2?kw="${gene.mgiAccessionId}"'>${gene.riNullAlleleProductionStatus}</a>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    ${gene.riNullAlleleProductionStatus}
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </td>
+                                                        <td>
+                                                            <c:choose>
+                                                                <c:when test="${gene.riConditionalAlleleProductionStatus == 'Genotype confirmed mice'}">
+                                                                    <a href='${paHostname}${paContextRoot}/search/allele2?kw="${gene.mgiAccessionId}"'>${gene.riConditionalAlleleProductionStatus}</a>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    ${gene.riConditionalAlleleProductionStatus}
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </td>
+                                                        <td>
+                                                            <c:choose>
+                                                                <c:when test="${gene.riPhenotypingStatus == 'Yes'}">
+                                                                    <a href='${paHostname}${paContextRoot}/genes/${gene.mgiAccessionId}#section-associations'>${gene.riPhenotypingStatus}</a>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    ${gene.riPhenotypingStatus}
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </td>
+                                                        <td>Unregister</td>
+                                                    </tr>
 
-                                                    </c:forEach>
+                                                </c:forEach>
 
-                                                </tbody>
-                                            </table>
-                                        </div>
-
-                                    </c:forEach>
+                                            </tbody>
+                                        </table>
+                                    </div>
 
                                 </c:otherwise>
                             </c:choose>

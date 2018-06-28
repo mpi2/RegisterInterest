@@ -236,6 +236,24 @@ public class SqlUtils {
         return genes;
     }
 
+    public Summary getSummary(String emailAddress) {
+        final String query =
+                     "SELECT g.* FROM gene g\n" +
+                     "LEFT OUTER JOIN gene_contact gc ON gc.gene_pk = g.pk\n" +
+                     "JOIN contact      c  ON c. pk      = gc.contact_pk\n" +
+                     "WHERE c.address = :emailAddress\n";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("emailAddress", emailAddress);
+
+        Summary summary = new Summary();
+        summary.setEmailAddress(emailAddress);
+        List<Gene> genes = jdbcInterest.query(query, parameterMap, new GeneRowMapper());
+        summary.setGenes(genes);
+
+        return summary;
+    }
+
     /**
      * @return A map of all genes, indexed by primary key.
      */

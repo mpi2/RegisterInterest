@@ -78,7 +78,6 @@
         </dependency>
 
 
-
         <!-- Java -->
 
         <dependency>
@@ -127,11 +126,13 @@
             <groupId>commons-dbcp</groupId>
             <artifactId>commons-dbcp</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.mousephenotype.ri</groupId>
             <artifactId>ri-reports</artifactId>
             <version>1.0.0-RELEASE</version>
         </dependency>
+
         <dependency>
             <groupId>javax.mail</groupId>
             <artifactId>mail</artifactId>

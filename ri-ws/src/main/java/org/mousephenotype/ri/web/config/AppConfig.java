@@ -32,8 +32,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
+import javax.annotation.Resource;
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
+import java.util.Map;
 
 /**
  * Created by mrelac on 02/05/2017.
@@ -52,6 +54,21 @@ public class AppConfig {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+
+    // Database properties
+
+    @NotNull
+    @Value("${datasource.ri.password}")
+    private String dbPassword;
+
+    @NotNull
+    @Value("${datasource.ri.username}")
+    private String dbUsername;
+
+    @NotNull
+    @Value("${datasource.ri.url}")
+    private String riUrl;
+
     @Bean
     public NamedParameterJdbcTemplate jdbc() {
         return new NamedParameterJdbcTemplate(riDataSource());
@@ -62,28 +79,64 @@ public class AppConfig {
         return new SqlUtils(jdbc());
     }
 
-    @Value("${datasource.ri.url}")
-    String riUrl;
+    @Bean
+    public DataSource riDataSource() {
+        return SqlUtils.getConfiguredDatasource(riUrl, dbUsername, dbPassword);
+    }
 
-    @Value("${datasource.ri.username}")
-    String username;
 
-    @Value("${datasource.ri.password}")
-    String password;
+    // e-mail server properties
 
     @NotNull
-    @Value("${paHostname}")
-    String paHostname;
+    @Value("${mail.smtp.from}")
+    private String smtpFrom;
+
+    @NotNull
+    @Value("${mail.smtp.host}")
+    private String smtpHost;
+
+    @NotNull
+    @Value("${mail.smtp.port}")
+    private Integer smtpPort;
+
+    @NotNull
+    @Value("${mail.smtp.replyto}")
+    private String smtpReplyto;
+
+    @Bean
+    public String smtpFrom() {
+        return smtpFrom;
+    }
+
+    @Bean
+    public String smtpHost() {
+        return smtpHost;
+    }
+
+    @Bean
+    public int smtpPort() {
+        return smtpPort;
+    }
+
+    @Bean
+    public String smtpReplyto() {
+        return smtpReplyto;
+    }
+
+
+    // phenotype archive properties
 
     @NotNull
     @Value("${paContextRoot}")
     String paContextRoot;
 
-
+    @NotNull
+    @Value("${paHostname}")
+    String paHostname;
 
     @Bean
-    public DataSource riDataSource() {
-        return SqlUtils.getConfiguredDatasource(riUrl, username, password);
+    public String paContextRoot() {
+        return paContextRoot;
     }
 
     @Bean
@@ -91,8 +144,15 @@ public class AppConfig {
         return paHostname;
     }
 
+
+    // Environment properties
+
+    @NotNull
+    @Resource(name = "globalConfiguration")
+    private Map<String, String> config;
+
     @Bean
-    public String paContextRoot() {
-        return paContextRoot;
+    public Map<String, String> config() {
+        return config;
     }
 }

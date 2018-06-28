@@ -17,7 +17,6 @@
 package org.mousephenotype.ri.web.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -26,11 +25,8 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.client.RestTemplate;
 
 import javax.sql.DataSource;
 
@@ -59,13 +55,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
 
                 .antMatchers(HttpMethod.GET, "/admin/**").hasRole(ADMIN)
-                .antMatchers(HttpMethod.GET, "/contacts/**").access("hasRole('USER') or hasRole('ADMIN')")
-                .antMatchers(HttpMethod.POST, "/contacts/**").access("hasRole('USER') or hasRole('ADMIN')")
-                .antMatchers(HttpMethod.DELETE, "/contacts/**").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers(HttpMethod.GET, "/api/summary/**").access("hasRole('USER') or hasRole('ADMIN')")
+//                .antMatchers(HttpMethod.GET, "/contacts/**").access("hasRole('USER') or hasRole('ADMIN')")
+//                .antMatchers(HttpMethod.POST, "/contacts/**").access("hasRole('USER') or hasRole('ADMIN')")
+//                .antMatchers(HttpMethod.DELETE, "/contacts/**").access("hasRole('USER') or hasRole('ADMIN')")
 
-                .antMatchers(HttpMethod.GET, "/summary/**").access("hasRole('USER') or hasRole('ADMIN')")
-                .antMatchers(HttpMethod.POST, "/register").access("hasRole('USER') or hasRole('ADMIN')")
-                .antMatchers(HttpMethod.DELETE, "/unregister").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers(HttpMethod.GET, "/summary").access("hasRole('USER') or hasRole('ADMIN')")
+//                .antMatchers(HttpMethod.POST, "/register").access("hasRole('USER') or hasRole('ADMIN')")
+//                .antMatchers(HttpMethod.DELETE, "/unregister").access("hasRole('USER') or hasRole('ADMIN')")
 
                 .and().csrf()
                 .and().exceptionHandling().accessDeniedPage("/Access_Denied")
@@ -81,14 +78,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .authorizeRequests()
                     .antMatchers(HttpMethod.GET,"/**")
                     .permitAll()
-        ;
+                ;
     }
 
     @Autowired
-    public void configureGlobalSecurity(AuthenticationManagerBuilder auth) throws Exception {
+    public void configureGlobalSecurityJdbc(AuthenticationManagerBuilder auth) throws Exception {
 
         auth
-                .userDetailsService(userDetailsService()).passwordEncoder(passwordEncoder())
+                .userDetailsService(userDetailsService()).passwordEncoder(bcryptPasswordEncoder())
 
                 .and()
 
@@ -97,31 +94,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .rolePrefix("ROLE_")
                 .usersByUsernameQuery("SELECT address AS username, password, 'true' AS enabled FROM contact WHERE address = ?")
                 .authoritiesByUsernameQuery("SELECT c.address AS username, cr.role FROM contact c JOIN contact_role cr ON cr.contact_pk = c.pk WHERE c.address = ?")
-
         ;
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    public PasswordEncoder bcryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder builder) {
-        return builder
-                .basicAuthorization("mrelac@ebi.ac.uk", "abc")
-                .build();
-    }
-
-    private String getPrincipal(){
-        String userName;
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (principal instanceof UserDetails) {
-            userName = ((UserDetails)principal).getUsername();
-        } else {
-            userName = principal.toString();
-        }
-        return userName;
     }
 }

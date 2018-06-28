@@ -20,18 +20,21 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mousephenotype.ri.core.DateUtils;
 import org.mousephenotype.ri.core.EmailUtils;
+import org.mousephenotype.ri.core.SecurityUtils;
 import org.mousephenotype.ri.core.SqlUtils;
 import org.mousephenotype.ri.core.entities.ContactExtended;
 import org.mousephenotype.ri.core.entities.ResetCredentials;
 import org.mousephenotype.ri.core.entities.Summary;
 import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
@@ -41,95 +44,79 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.mail.Message;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.NotNull;
-import java.net.URL;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
 
 @Controller
 public class SummaryController {
-
-    private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
-    private EmailUtils emailUtils = new EmailUtils();
-    private DateUtils dateUtils = new DateUtils();
-
-
-    @NotNull
-    RestTemplate restTemplate;
-
-    @NotNull
-    private PasswordEncoder passwordEncoder;
-
-    @NotNull
-    private SqlUtils sqlUtils;
-
-    @NotNull
-    private String paHostname;
-
-    @NotNull
-    private String paContextRoot;
-
-    @Inject
-    public SummaryController(
-            RestTemplate restTemplate,
-            PasswordEncoder passwordEncoder,
-            SqlUtils sqlUtils,
-            String paHostname,
-            String paContextRoot
-    ) {
-        this.restTemplate = restTemplate;
-        this.passwordEncoder = passwordEncoder;
-        this.sqlUtils = sqlUtils;
-        this.paHostname = paHostname;
-        this.paContextRoot = paContextRoot;
-    }
-
-    @NotNull
-    @Value("${mail.smtp.host}")
-    private String smtpHost;
-
-    @NotNull
-    @Value("${mail.smtp.port}")
-    private Integer smtpPort;
-
-    @NotNull
-    @Value("${mail.smtp.from}")
-    private String smtpFrom;
-
-    @NotNull
-    @Value("${mail.smtp.replyto}")
-    private String smtpReplyto;
 
     private final int PASSWORD_RESET_TTL_MINUTES = 10;
 
     // Sleep intervals
     private final int INVALID_PASSWORD_SLEEP_SECONDS = 3;
-    private final int SHORT_SLEEP_SECONDS = 1;
+    private final int SHORT_SLEEP_SECONDS            = 1;
 
     // Error messages
-    public final static String ERR_ACCOUNT_LOCKED = "Your account is locked.";
-    public final static String ERR_INVALID_TOKEN = "Invalid token.";
-    public final static String ERR_NO_PERMISSION = "You do not have permission to access this page.";
+    public final static String ERR_ACCOUNT_LOCKED    = "Your account is locked.";
+    public final static String ERR_INVALID_TOKEN     = "Invalid token.";
+    public final static String ERR_NO_PERMISSION     = "You do not have permission to access this page.";
     public final static String ERR_PASSWORD_MISMATCH = "Passwords do not match.";
 
+    private final org.slf4j.Logger logger        = LoggerFactory.getLogger(this.getClass());
+    private       DateUtils        dateUtils     = new DateUtils();
+    private       EmailUtils       emailUtils    = new EmailUtils();
+    private       SecurityUtils    securityUtils = new SecurityUtils();
 
-    @NotNull
-    @Resource(name = "globalConfiguration")
+    // Properties
     private Map<String, String> config;
+    private String              paContextRoot;
+    private String              paHostname;
+    private PasswordEncoder     passwordEncoder;
+    private SqlUtils            sqlUtils;
+    private String              smtpFrom;
+    private String              smtpHost;
+    private int                 smtpPort;
+    private String              smtpReplyto;
+
+
+    @Inject
+    public SummaryController(
+            String paContextRoot,
+            String paHostname,
+            PasswordEncoder passwordEncoder,
+            SqlUtils sqlUtils,
+            String smtpFrom,
+            String smtpHost,
+            int smtpPort,
+            String smtpReplyto,
+            Map<String, String> config
+    ) {
+        this.paContextRoot = paContextRoot;
+        this.paHostname = paHostname;
+        this.passwordEncoder = passwordEncoder;
+        this.sqlUtils = sqlUtils;
+        this.smtpFrom = smtpFrom;
+        this.smtpHost = smtpHost;
+        this.smtpPort = smtpPort;
+        this.smtpReplyto = smtpReplyto;
+        this.config = config;
+    }
 
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String loginUrl(
             HttpServletRequest request,
             ModelMap model,
-            @RequestParam (value = "username", defaultValue = "anonymousUser") String username)
-    {
+            @RequestParam(value = "username", defaultValue = "anonymousUser") String username) {
         String error = request.getQueryString();
 
         if (error != null) {
@@ -140,15 +127,11 @@ public class SummaryController {
             model.addAttribute("error", ERR_NO_PERMISSION);
 
             List<String> roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
-            logger.info("No permission to access page for user {} with role {}", getPrincipal(), StringUtils.join(roles, ", "));
+            logger.info("/login: No permission to access page for user {} with role {}", securityUtils.getPrincipal(), StringUtils.join(roles, ", "));
             sleep(INVALID_PASSWORD_SLEEP_SECONDS);
 
             model.addAttribute("username", username);
         }
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        List<String> roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
-        logger.info("user {} with role {}", getPrincipal(), StringUtils.join(roles, ", "));
 
         return "loginPage";
     }
@@ -162,17 +145,17 @@ public class SummaryController {
         model.addAttribute("error", ERR_NO_PERMISSION);
 
         List<String> roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
-        logger.info("No permission to access page for user {} with role {}", getPrincipal(), StringUtils.join(roles, ", "));
+        logger.info("/Access_Denied: No permission to access page for user {} with role {}", securityUtils.getPrincipal(), StringUtils.join(roles, ", "));
 
         sleep(SHORT_SLEEP_SECONDS);
 
         return "errorPage";
     }
 
-    @RequestMapping(value="/logout", method = RequestMethod.GET)
-    public String logoutUrl (HttpServletRequest request, HttpServletResponse response) {
+    @RequestMapping(value = "/logout", method = RequestMethod.GET)
+    public String logoutUrl(HttpServletRequest request, HttpServletResponse response) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null){
+        if (auth != null) {
             new SecurityContextLogoutHandler().logout(request, response, auth);
         }
 
@@ -180,17 +163,10 @@ public class SummaryController {
     }
 
 
-
-
-
-
-
-
-
     @RequestMapping(value = "summary", method = RequestMethod.GET)
-    public String summaryUrl(ModelMap model, HttpServletRequest request) {
+    public String summaryUrl(ModelMap model, HttpServletRequest request) throws InterestException {
 
-        String emailAddress = getPrincipal();
+        String emailAddress = securityUtils.getPrincipal();
 
         ContactExtended contactEx = sqlUtils.getContactExtended(emailAddress);
         if (contactEx.isAccountLocked()) {
@@ -215,60 +191,20 @@ public class SummaryController {
         }
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        logger.info("emailAddress = " + emailAddress);
+        logger.info("url = " + request.getRequestURL());
+        logger.info("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
 
-        emailAddress = getPrincipal();
+        // Use the web service to get the data for the page.
+        String cookie = getMySessionCookie(request);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cookie", cookie);
+        ResponseEntity<Summary> response = new RestTemplate().exchange("http://localhost:8081/data/interest/api/summary", HttpMethod.GET, new HttpEntity<String>(headers), Summary.class);
 
-        model.addAllAttributes(config);
-        model.addAttribute("uri", request.getRequestURI());
-        model.addAttribute("roles", auth.getAuthorities());
-
-System.out.println("emailAddress = " + emailAddress);
-System.out.println("uri = " + request.getRequestURI());
-System.out.println("url = " + request.getRequestURL());
-System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
-
-        // FIXME Restrict web service by ROLE and URL. Replace embedded Summary.Gene class with real Gene class.
-        // FIXME Restrict web service by ROLE and URL. Replace embedded Summary.Gene class with real Gene class.
-        // FIXME Restrict web service by ROLE and URL. Replace embedded Summary.Gene class with real Gene class.
-//        Summary[]  summary = restTemplate.getForObject(
-//                "http://localhost:8081/data/interest/contacts?email=" + emailAddress , Summary[].class
-//        );
-        Summary sum = new Summary();
-
-        Summary.Contact c = new Summary.Contact();
-        c.setActive(true);
-        c.setAddress(emailAddress);
-        c.setCreatedAt(new Date());
-        sum.setContact(c);
-        sum.setGenes(new ArrayList<>());
-        Summary[] summary = new Summary[1];
-        summary[0] = sum;
-
-        // FIXME Restrict web service by ROLE and URL. Replace embedded Summary.Gene class with real Gene class.
-        // FIXME Restrict web service by ROLE and URL. Replace embedded Summary.Gene class with real Gene class.
-        // FIXME Restrict web service by ROLE and URL. Replace embedded Summary.Gene class with real Gene class.
-
-
-
-
-
-
-
-        if (summary.length > 0) {
-            List<Summary.Gene> genes = summary[0].getGenes();
-
-            genes.sort(Comparator.comparing(Summary.Gene::getSymbol));
-        }
-
-        model.addAttribute(summary);
-        model.addAttribute("emailAddress", emailAddress);
+        model.addAttribute("summary", response.getBody());
 
         return "summaryPage";
     }
-
-
-
-
 
 
     @RequestMapping(value = "newAccountRequest", method = RequestMethod.GET)
@@ -281,9 +217,8 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
     @RequestMapping(value = "newAccountEmail", method = RequestMethod.POST)
     public String newAccountEmailUrl(
             ModelMap model,
-            @RequestParam ("emailAddress") String emailAddress) throws InterestException
-    {
-        if ( ! sqlUtils.isValidEmailAddress(emailAddress)) {
+            @RequestParam("emailAddress") String emailAddress) throws InterestException {
+        if (!sqlUtils.isValidEmailAddress(emailAddress)) {
             logger.info("Invalid email address '{}' created by anonymous user was rejected.", emailAddress);
 
             sleep(SHORT_SLEEP_SECONDS);
@@ -361,15 +296,14 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
 
     @RequestMapping(value = "newAccount", method = RequestMethod.POST)
     public String newAccountUrlPost(ModelMap model, HttpServletRequest request, HttpServletResponse response,
-                                 @RequestParam("token") String token,
-                                 @RequestParam("newPassword") String newPassword,
-                                 @RequestParam("repeatPassword") String repeatPassword) throws InterestException
-    {
+                                    @RequestParam("token") String token,
+                                    @RequestParam("newPassword") String newPassword,
+                                    @RequestParam("repeatPassword") String repeatPassword) throws InterestException {
         model.addAttribute("token", token);
 
         // Validate the new password. Return to resetPassword page if validation fails.
         String error = validateNewPassword(newPassword, repeatPassword);
-        if ( ! error.isEmpty()) {
+        if (!error.isEmpty()) {
             model.addAttribute("error", ERR_PASSWORD_MISMATCH);
 
             sleep(SHORT_SLEEP_SECONDS);
@@ -408,7 +342,7 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
 
         // Get the user's roles and mark the user as authenticated.
         ContactExtended contactExtended = sqlUtils.getContactExtended(emailAddress);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(emailAddress, null, contactExtended.getRoles());
+        Authentication  authentication  = new UsernamePasswordAuthenticationToken(emailAddress, null, contactExtended.getRoles());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         model.addAttribute("statusTitle", "Welcome");
@@ -424,9 +358,9 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
     @RequestMapping(value = "resetPasswordRequest", method = RequestMethod.GET)
     public String resetPasswordRequestUrl(ModelMap model) {
 
-        String emailAddress = getPrincipal();
+        String emailAddress = securityUtils.getPrincipal();
 
-        if ( ! emailAddress.equalsIgnoreCase("anonymousUser")) {
+        if (!emailAddress.equalsIgnoreCase("anonymousUser")) {
             logger.info("Invalid email address '{}' created by anonymous user was rejected.", emailAddress);
             model.addAttribute("emailAddress", emailAddress);
         }
@@ -438,16 +372,15 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
     @RequestMapping(value = "resetPasswordEmail", method = RequestMethod.POST)
     public String resetPasswordEmailUrl(
             ModelMap model,
-            @RequestParam (value = "emailAddress", required = false) String emailAddress) throws InterestException
-    {
+            @RequestParam(value = "emailAddress", required = false) String emailAddress) throws InterestException {
 
         String originalEmailAddress = emailAddress;
 
         if (emailAddress == null) {
-            emailAddress = getPrincipal();
+            emailAddress = securityUtils.getPrincipal();
         }
 
-        if ( ! sqlUtils.isValidEmailAddress(emailAddress)) {
+        if (!sqlUtils.isValidEmailAddress(emailAddress)) {
 
             logger.info("Invalid email address '{}' created by " + (originalEmailAddress == null ? "anonymous user" : originalEmailAddress) + " was rejected.", emailAddress);
 
@@ -460,11 +393,11 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
         model.addAttribute("emailAddress", emailAddress);
 
         // Generate and assemble email with password reset
-        String token = buildToken(emailAddress);
+        String token     = buildToken(emailAddress);
         String tokenLink = paHostname + paContextRoot + "/resetPassword?token=" + token;
         System.out.println("tokenLink = " + tokenLink);
-        String body = generateResetPasswordEmail(tokenLink);
-        String subject = "Reset IMPC Register Interest password link";
+        String  body    = generateResetPasswordEmail(tokenLink);
+        String  subject = "Reset IMPC Register Interest password link";
         Message message = emailUtils.assembleEmail(smtpHost, smtpPort, smtpFrom, smtpReplyto, subject, body, emailAddress, true);
 
         // Insert add request to reset_credentials table
@@ -519,15 +452,14 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
 
     @RequestMapping(value = "resetPassword", method = RequestMethod.POST)
     public String resetPasswordUrlPost(ModelMap model, HttpServletRequest request, HttpServletResponse response,
-                                @RequestParam ("token") String token,
-                                @RequestParam ("newPassword") String newPassword,
-                                @RequestParam ("repeatPassword") String repeatPassword)
-    {
+                                       @RequestParam("token") String token,
+                                       @RequestParam("newPassword") String newPassword,
+                                       @RequestParam("repeatPassword") String repeatPassword) {
         model.addAttribute("token", token);
 
         // Validate the new password. Return to resetPassword page if validation fails.
         String error = validateNewPassword(newPassword, repeatPassword);
-        if ( ! error.isEmpty()) {
+        if (!error.isEmpty()) {
             model.addAttribute("error", ERR_PASSWORD_MISMATCH);
 
             logger.info("Token {} not found", token);
@@ -560,7 +492,7 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
 
         // Get the user's roles and mark the user as authenticated.
         ContactExtended contactExtended = sqlUtils.getContactExtended(emailAddress);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(emailAddress, null, contactExtended.getRoles());
+        Authentication  authentication  = new UsernamePasswordAuthenticationToken(emailAddress, null, contactExtended.getRoles());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         model.addAttribute("statusTitle", "Password is reset");
@@ -576,6 +508,7 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
 
     /**
      * Build and return a unique hash token for this email address
+     *
      * @param emailAddress
      * @return a unique hash token for this email address
      */
@@ -583,8 +516,8 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
 
         String token;
 
-        SecureRandom random = new SecureRandom();
-        String randomDouble = Double.toString(random.nextDouble());
+        SecureRandom random       = new SecureRandom();
+        String       randomDouble = Double.toString(random.nextDouble());
 
         token = DigestUtils.sha256Hex(randomDouble + emailAddress);
 
@@ -592,46 +525,46 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
     }
 
     private final String EMAIL_STYLE = new StringBuilder()
-                .append(    "<style>")
-                .append(    ".button {")
-                .append(       "background-color: #286090;")
-                .append(       "border-color: #204d74;")
-                .append(       "border-radius: 5px;")
-                .append(       "text-align: center;")
-                .append(       "padding: 10px;")
-                .append(     "}")
-                .append(    ".button a {")
-                .append(       "color: #ffffff;")
-                .append(       "display: block;")
-                .append(       "font-size: 14px;")
-                .append(       "text-decoration: none;")
-                .append(     "}")
-                .append(    "</style>").toString();
+            .append("<style>")
+            .append(".button {")
+            .append("background-color: #286090;")
+            .append("border-color: #204d74;")
+            .append("border-radius: 5px;")
+            .append("text-align: center;")
+            .append("padding: 10px;")
+            .append("}")
+            .append(".button a {")
+            .append("color: #ffffff;")
+            .append("display: block;")
+            .append("font-size: 14px;")
+            .append("text-decoration: none;")
+            .append("}")
+            .append("</style>").toString();
 
     private String generateNewAccountEmail(String tokenLink) {
 
         StringBuilder body = new StringBuilder()
                 .append("<html>")
-                .append(  EMAIL_STYLE)
-                .append(  "<table>")
-                .append(    "<tr>")
-                .append(      "<td>")
-                .append(        "Dear colleague,")
-                .append(        "<br />")
-                .append(        "<br />")
-                .append(        "This e-mail was sent in response to a request to create a new IMPC Register Interest account. ")
-                .append(        "If you made no such request, please ignore this e-mail; otherwise, please click on the link ")
-                .append(        "below to set your IMPC Register Interest password and create your account.")
-                .append(        "<br />")
-                .append(        "<br />")
-                .append(      "</td>")
-                .append(    "</tr>")
-                .append(    "<tr>")
-                .append(      "<td class=\"button\">")
-                .append(        "<a href=\"" + tokenLink + "\">Set password</a>")
-                .append(      "</td>")
-                .append(    "</tr>")
-                .append(  "</table>")
+                .append(EMAIL_STYLE)
+                .append("<table>")
+                .append("<tr>")
+                .append("<td>")
+                .append("Dear colleague,")
+                .append("<br />")
+                .append("<br />")
+                .append("This e-mail was sent in response to a request to create a new IMPC Register Interest account. ")
+                .append("If you made no such request, please ignore this e-mail; otherwise, please click on the link ")
+                .append("below to set your IMPC Register Interest password and create your account.")
+                .append("<br />")
+                .append("<br />")
+                .append("</td>")
+                .append("</tr>")
+                .append("<tr>")
+                .append("<td class=\"button\">")
+                .append("<a href=\"" + tokenLink + "\">Set password</a>")
+                .append("</td>")
+                .append("</tr>")
+                .append("</table>")
                 .append("</html>");
 
         return body.toString();
@@ -641,58 +574,50 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
 
         StringBuilder body = new StringBuilder()
                 .append("<html>")
-                .append(  EMAIL_STYLE)
-                .append(  "<table>")
-                .append(    "<tr>")
-                .append(      "<td>")
-                .append(        "Dear colleague,")
-                .append(        "<br />")
-                .append(        "<br />")
-                .append(        "This e-mail was sent in response to a request to reset your IMPC Register Interest password. ")
-                .append(        "If you made no such request, please ignore this e-mail; otherwise, please click on the link ")
-                .append(        "below to reset your IMPC Register Interest password.")
-                .append(        "<br />")
-                .append(        "<br />")
-                .append(      "</td>")
-                .append(    "</tr>")
-                .append(    "<tr>")
-                .append(      "<td class=\"button\">")
-                .append(        "<a href=\"" + tokenLink + "\">Reset password</a>")
-                .append(      "</td>")
-                .append(    "</tr>")
-                .append(  "</table>")
+                .append(EMAIL_STYLE)
+                .append("<table>")
+                .append("<tr>")
+                .append("<td>")
+                .append("Dear colleague,")
+                .append("<br />")
+                .append("<br />")
+                .append("This e-mail was sent in response to a request to reset your IMPC Register Interest password. ")
+                .append("If you made no such request, please ignore this e-mail; otherwise, please click on the link ")
+                .append("below to reset your IMPC Register Interest password.")
+                .append("<br />")
+                .append("<br />")
+                .append("</td>")
+                .append("</tr>")
+                .append("<tr>")
+                .append("<td class=\"button\">")
+                .append("<a href=\"" + tokenLink + "\">Reset password</a>")
+                .append("</td>")
+                .append("</tr>")
+                .append("</table>")
                 .append("</html>");
 
         return body.toString();
     }
 
-    private String getPrincipal(){
-        String userName;
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    /**
+     * @return my JSESSIONID cookie string
+     *
+     */
+    private String getMySessionCookie(HttpServletRequest request) {
 
-        if (principal instanceof UserDetails) {
-            userName = ((UserDetails)principal).getUsername();
-        } else {
-            userName = principal.toString();
-        }
-        return userName;
-    }
+        String session = "";
 
-    private String getReferer(HttpServletRequest request) {
-
-        String referer = request.getHeader("referer");
-        URL url;
-
-        try {
-
-            url = new URL(referer);
-            return url.getPath().replace(request.getContextPath() + "/", "");
-
-        } catch (Exception e) {
-
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("JSESSIONID")) {
+                    session = cookie.getName() + "=" + cookie.getValue();
+                    break;
+                }
+            }
         }
 
-        return "";
+        return session;
     }
 
     private String getTokenFromQueryString(String queryString) {
@@ -701,8 +626,8 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
             return "";
         }
 
-        String[] pieces = StringUtils.split(queryString,"=");
-        if ((pieces.length != 2) && ( ! pieces[0].equals("token"))) {
+        String[] pieces = StringUtils.split(queryString, "=");
+        if ((pieces.length != 2) && (!pieces[0].equals("token"))) {
             return "";
         }
 
@@ -729,7 +654,7 @@ System.out.println("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
             return "Please specify a new password";
         }
 
-        if ( ! newPassword.equals(repeatPassword)) {
+        if (!newPassword.equals(repeatPassword)) {
             return "Passwords do not match";
         }
 

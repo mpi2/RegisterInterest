@@ -17,9 +17,11 @@
 package org.mousephenotype.ri.web.controller;
 
 import org.apache.commons.validator.routines.EmailValidator;
+import org.mousephenotype.ri.core.SecurityUtils;
 import org.mousephenotype.ri.core.SqlUtils;
 import org.mousephenotype.ri.core.entities.GeneContact;
 import org.mousephenotype.ri.core.entities.Interest;
+import org.mousephenotype.ri.core.entities.Summary;
 import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.mousephenotype.ri.reports.GeneContactReport;
 import org.mousephenotype.ri.reports.support.MpCSVWriter;
@@ -46,10 +48,13 @@ import java.util.List;
 
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
+
 @RestController
 public class InterestController implements ErrorController {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger        logger        = LoggerFactory.getLogger(this.getClass());
+    private       SecurityUtils securityUtils = new SecurityUtils();
+
     private SqlUtils sqlUtils;
 
     private static final String PATH = "/error";
@@ -62,6 +67,24 @@ public class InterestController implements ErrorController {
     public final static String INTEREST_DISEASE = "disease";
     public final static String INTEREST_GENE = "gene";
     public final static String INTEREST_PHENOTYPE = "phenotype";
+
+
+    @RequestMapping(method = GET, value = "/api/summary")
+    public ResponseEntity<Summary> getSummary() {
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        HttpStatus  status          = HttpStatus.OK;
+        Summary     summary;
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth.isAuthenticated()) {
+            summary = sqlUtils.getSummary(securityUtils.getPrincipal());
+        } else {
+            summary = new Summary();
+        }
+
+        return new ResponseEntity<>(summary, responseHeaders, status);
+    }
 
 
     @RequestMapping(method = GET, value = "/contacts")
