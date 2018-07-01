@@ -5,11 +5,11 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS contact;
 CREATE TABLE contact (
     pk                INT          NOT NULL         AUTO_INCREMENT PRIMARY KEY,
+
     address           VARCHAR(255) NOT NULL UNIQUE,
-    password          TEXT,
+    password          VARCHAR(256) NOT NULL         DEFAULT '',
     password_expired  INT          NOT NULL         DEFAULT 1,                          -- 1 = expired; 0 = not expired
     account_locked    INT          NOT NULL         DEFAULT 0,                          -- 1 = locked; 0 = not locked
-    active            INT          NOT NULL         DEFAULT 1,                          -- 1 = active; 0 = inactive
 
     created_at        DATETIME     NOT NULL,
     updated_at        TIMESTAMP    NOT NULL         DEFAULT CURRENT_TIMESTAMP
@@ -21,6 +21,7 @@ CREATE TABLE contact (
 DROP TABLE IF EXISTS contact_role;
 CREATE TABLE contact_role (
     pk             INT          NOT NULL      AUTO_INCREMENT PRIMARY KEY,
+
     contact_pk     INT          NOT NULL,
     role           VARCHAR(64)  NOT NULL      DEFAULT 'USER',
 
@@ -46,9 +47,9 @@ CREATE TABLE reset_credentials (
 DROP TABLE IF EXISTS gene_contact;
 CREATE TABLE gene_contact (
     pk             INT          NOT NULL      AUTO_INCREMENT PRIMARY KEY,
+
     contact_pk     INT          NOT NULL,
     gene_pk        INT          NOT NULL,
-    active         INT          NOT NULL      DEFAULT 1,                            -- 1 = active; 0 = inactive; -1 = WebSerivce has marked for unregister. The generate process generates unregister e-mail, then sets the flag to 0.
 
     created_at     DATETIME     NOT NULL,
     updated_at     TIMESTAMP    NOT NULL        DEFAULT CURRENT_TIMESTAMP
@@ -64,11 +65,11 @@ CREATE TABLE gene_contact (
 DROP TABLE IF EXISTS gene_status;
 CREATE TABLE gene_status (
     pk          INT          NOT NULL           AUTO_INCREMENT PRIMARY KEY,
+
     status      VARCHAR(64)  NOT NULL UNIQUE,
-    active      INT          NOT NULL           DEFAULT 1,                          -- 1 = active; 0 = inactive
 
     created_at  DATETIME     NOT NULL,
-    updated_at  TIMESTAMP    NOT NULL            DEFAULT CURRENT_TIMESTAMP
+    updated_at  TIMESTAMP    NOT NULL           DEFAULT CURRENT_TIMESTAMP
                   ON UPDATE CURRENT_TIMESTAMP
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
@@ -77,9 +78,9 @@ CREATE TABLE gene_status (
 DROP TABLE IF EXISTS imits_status;
 CREATE TABLE imits_status (
     pk              INT          NOT NULL           AUTO_INCREMENT PRIMARY KEY,
+
     gene_status_pk  INT                             DEFAULT NULL,
     status          VARCHAR(64)  NOT NULL UNIQUE,
-    active          INT          NOT NULL           DEFAULT 1,                      -- 1 = active; 0 = inactive
 
     created_at      DATETIME     NOT NULL,
     updated_at      TIMESTAMP    NOT NULL           DEFAULT CURRENT_TIMESTAMP
@@ -100,16 +101,19 @@ CREATE TABLE gene (
     assignment_status                                           VARCHAR(128) DEFAULT NULL,
     assignment_status_date                                      DATETIME     DEFAULT NULL,
     assignment_status_pk                                        INT          DEFAULT NULL,
+    ri_assignment_status                                        VARCHAR(64)  DEFAULT NULL,
 
     conditional_allele_production_centre                        VARCHAR(128) DEFAULT NULL,
     conditional_allele_production_status                        VARCHAR(128) DEFAULT NULL,
     conditional_allele_production_status_pk                     INT          DEFAULT NULL,
+    ri_conditional_allele_production_status                     VARCHAR(64)  DEFAULT NULL,
     conditional_allele_production_status_date                   DATETIME     DEFAULT NULL,
     conditional_allele_production_start_date                    DATETIME     DEFAULT NULL,
 
     null_allele_production_centre                               VARCHAR(128) DEFAULT NULL,
     null_allele_production_status                               VARCHAR(128) DEFAULT NULL,
     null_allele_production_status_pk                            INT          DEFAULT NULL,
+    ri_null_allele_production_status                            VARCHAR(64)  DEFAULT NULL,
     null_allele_production_status_date                          DATETIME     DEFAULT NULL,
     null_allele_production_start_date                           DATETIME     DEFAULT NULL,
 
@@ -117,6 +121,7 @@ CREATE TABLE gene (
     phenotyping_status                                          VARCHAR(128) DEFAULT NULL,
     phenotyping_status_date                                     DATETIME     DEFAULT NULL,
     phenotyping_status_pk                                       INT          DEFAULT NULL,
+    ri_phenotyping_status                                       VARCHAR(64)  DEFAULT NULL,
 
     number_of_significant_phenotypes                            INT          DEFAULT 0,
 
@@ -134,6 +139,7 @@ CREATE TABLE gene (
 DROP TABLE IF EXISTS gene_sent;
 CREATE TABLE gene_sent (
     pk                                          INT             NOT NULL        AUTO_INCREMENT PRIMARY KEY,
+
     subject                                     VARCHAR(78)     NOT NULL,
     body                                        VARCHAR(2048)   NOT NULL,
     gene_contact_pk                             INT             NOT NULL,
@@ -158,6 +164,7 @@ CREATE TABLE gene_sent (
 DROP TABLE IF EXISTS gene_sent_summary;
 CREATE TABLE gene_sent_summary (
     pk                                          INT             NOT NULL        AUTO_INCREMENT PRIMARY KEY,
+
     subject                                     VARCHAR(78)     NOT NULL,
     body                                        MEDIUMTEXT      NOT NULL,
     contact_pk                                  INT             NOT NULL,
@@ -175,6 +182,7 @@ CREATE TABLE gene_sent_summary (
 DROP TABLE IF EXISTS log;
 CREATE TABLE log (
     pk                                      INT             NOT NULL      AUTO_INCREMENT PRIMARY KEY,
+
     invoker                                 VARCHAR(64)     DEFAULT NULL,       -- This is the user that initiated the logged action (e.g. register, unregister)
     contact_pk                              INT             DEFAULT NULL,
 

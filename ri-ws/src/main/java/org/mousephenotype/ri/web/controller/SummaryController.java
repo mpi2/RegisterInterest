@@ -22,21 +22,25 @@ import org.mousephenotype.ri.core.DateUtils;
 import org.mousephenotype.ri.core.EmailUtils;
 import org.mousephenotype.ri.core.SecurityUtils;
 import org.mousephenotype.ri.core.SqlUtils;
-import org.mousephenotype.ri.core.entities.ContactExtended;
+import org.mousephenotype.ri.core.entities.Contact;
 import org.mousephenotype.ri.core.entities.ResetCredentials;
 import org.mousephenotype.ri.core.entities.Summary;
 import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationListener;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
+import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -69,7 +73,18 @@ public class SummaryController {
     public final static String ERR_ACCOUNT_LOCKED    = "Your account is locked.";
     public final static String ERR_INVALID_TOKEN     = "Invalid token.";
     public final static String ERR_NO_PERMISSION     = "You do not have permission to access this page.";
+    public final static String ERR_PASSWORD_BAD      = "Invalid username and password";
     public final static String ERR_PASSWORD_MISMATCH = "Passwords do not match.";
+
+    // Info messages
+    public final static String INFO_PASSWORD_EXPIRED = "Your password is expired. Please use the <i>Reset password</i> link to reset your password.";
+
+    // Title strings
+    public final static String TITLE_ACCOUNT_LOCKED    = "Account locked";
+    public final static String TITLE_INVALID_TOKEN     = "Invalid token";
+    public final static String TITLE_PASSWORD_EXPIRED  = "Password expired";
+    public final static String TITLE_INVALID_CRED      = "Invalid credentials";
+    public final static String TITLE_PASSWORD_MISMATCH = "Password mismatch";
 
     private final org.slf4j.Logger logger        = LoggerFactory.getLogger(this.getClass());
     private       DateUtils        dateUtils     = new DateUtils();
@@ -86,6 +101,8 @@ public class SummaryController {
     private String              smtpHost;
     private int                 smtpPort;
     private String              smtpReplyto;
+
+    private String failedUsername;              // Used when authentication fails to get the login box username value.
 
 
     @Inject
@@ -115,26 +132,137 @@ public class SummaryController {
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String loginUrl(
             HttpServletRequest request,
-            ModelMap model,
-            @RequestParam(value = "username", defaultValue = "anonymousUser") String username) {
+            ModelMap model) {
+
         String error = request.getQueryString();
 
+//        if (failedUsername != null) {
+//
+//            // Check for account exists and is either locked or password-expired.
+//            Contact contact = sqlUtils.getContact(failedUsername);
+//
+//
+//
+//
+//
+//            if (contact.isAccountLocked()) {
+//                model.addAttribute("title", TITLE_ACCOUNT_LOCKED);
+//                model.addAttribute("error", ERR_ACCOUNT_LOCKED);
+//
+//                logger.info("Attempted login by {} to locked account", failedUsername);
+//
+//                sleep(SHORT_SLEEP_SECONDS);
+//
+//                return "errorPage";
+//            }
+//
+//            if (contact.isPasswordExpired()) {
+//                model.addAttribute("emailAddress", failedUsername);
+//                model.addAttribute("status", "Your password is expired. Please send an e-mail to the address below to reset the password.");
+//                logger.info("Attempted login by {} to password-expired account", failedUsername);
+//
+//                String status = "Your password is expired. Please send an e-mail to the address below to reset the password.";
+//                return "resetPasswordRequestPage";
+//            }
+
+//        if (UrlUtils.getReferer(request).equals("loginPage")) {
+//            logger.info("/summary: User {} logged in.", emailAddress);
+//        }
+
+
+
+
+
+//            if (contact != null) {
+//                if (contact.isAccountLocked()) {
+//                    model.addAttribute("title", TITLE_ACCOUNT_LOCKED);
+//                    model.addAttribute("error", ERR_ACCOUNT_LOCKED);
+//                    return "errorPage";
+//                }
+//
+//
+//
+//
+//
+//
+//
+//
+//                if (contact.isPasswordExpired()) {
+//                    model.addAttribute("title", TITLE_PASSWORD_EXPIRED);
+//                    model.addAttribute("status", INFO_PASSWORD_EXPIRED);
+//                    return "statusPage";
+//                }
+//            }
+//        }
+
+
+        // Sleep only if an error occurred.
         if (error != null) {
-
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-            // Access is denied. Return to errorPage page.
+            model.addAttribute("title", TITLE_INVALID_CRED);
             model.addAttribute("error", ERR_NO_PERMISSION);
-
-            List<String> roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
-            logger.info("/login: No permission to access page for user {} with role {}", securityUtils.getPrincipal(), StringUtils.join(roles, ", "));
             sleep(INVALID_PASSWORD_SLEEP_SECONDS);
-
-            model.addAttribute("username", username);
         }
 
         return "loginPage";
     }
+
+
+
+
+
+
+    @RequestMapping(value = "/handleLogin", method = RequestMethod.GET)
+    public String loginFailUrl(
+            HttpServletRequest request,
+            ModelMap model) {
+
+        String error = request.getQueryString();
+
+        if (failedUsername != null) {
+
+            // Check for account exists and is either locked or password-expired.
+            Contact contact = sqlUtils.getContact(failedUsername);
+
+
+
+
+
+            if (contact.isAccountLocked()) {
+                model.addAttribute("title", TITLE_ACCOUNT_LOCKED);
+                model.addAttribute("error", ERR_ACCOUNT_LOCKED);
+
+                logger.info("Attempted login by {} to locked account", failedUsername);
+
+                sleep(SHORT_SLEEP_SECONDS);
+
+                return "errorPage";
+            }
+
+            if (contact.isPasswordExpired()) {
+                model.addAttribute("emailAddress", failedUsername);
+                model.addAttribute("status", "Your password is expired. Please send an e-mail to the address below to reset the password.");
+                logger.info("Attempted login by {} to password-expired account", failedUsername);
+
+                String status = "Your password is expired. Please send an e-mail to the address below to reset the password.";
+                return "resetPasswordRequestPage";
+            }
+        }
+
+
+        // Sleep only if an error occurred.
+        if (error != null) {
+            model.addAttribute("title", TITLE_INVALID_CRED);
+            model.addAttribute("error", ERR_NO_PERMISSION);
+            sleep(INVALID_PASSWORD_SLEEP_SECONDS);
+        }
+
+        return "loginPage";
+    }
+
+
+
+
+
 
     @RequestMapping(value = "/Access_Denied", method = RequestMethod.GET)
     public String accessDeniedPage(ModelMap model) {
@@ -142,6 +270,7 @@ public class SummaryController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         // Access is denied. Return to errorPage page.
+        model.addAttribute("title", TITLE_INVALID_CRED);
         model.addAttribute("error", ERR_NO_PERMISSION);
 
         List<String> roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
@@ -156,6 +285,7 @@ public class SummaryController {
     public String logoutUrl(HttpServletRequest request, HttpServletResponse response) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
+            logger.info("/logout: User {} logged out.", securityUtils.getPrincipal());
             new SecurityContextLogoutHandler().logout(request, response, auth);
         }
 
@@ -168,32 +298,30 @@ public class SummaryController {
 
         String emailAddress = securityUtils.getPrincipal();
 
-        ContactExtended contactEx = sqlUtils.getContactExtended(emailAddress);
-        if (contactEx.isAccountLocked()) {
-            model.addAttribute("error", ERR_ACCOUNT_LOCKED);
+//        Contact contact = sqlUtils.getContact(emailAddress);
+//        if (contact.isAccountLocked()) {
+//            model.addAttribute("title", TITLE_ACCOUNT_LOCKED);
+//            model.addAttribute("error", ERR_ACCOUNT_LOCKED);
+//
+//            logger.info("Attempted login by {} to locked account", emailAddress);
+//
+//            sleep(SHORT_SLEEP_SECONDS);
+//
+//            return "errorPage";
+//        }
 
-            logger.info("User {} tried to log in to locked account", emailAddress);
+//        if (contact.isPasswordExpired()) {
+////            model.addAttribute("emailAddress", emailAddress);
+////            model.addAttribute("status", "Your password is expired. Send an e-mail to the address below to reset the password.");
+//            String status = "Your password is expired. Send an e-mail to the address below to reset the password";
+//            logger.info("Attempted login by {} to password-expired account", emailAddress);
+//
+//            return "redirect:/resetPasswordRequestPage&emailAddress=" + emailAddress + "&status=" + status;
+//        }
 
-            sleep(SHORT_SLEEP_SECONDS);
-
-            return "errorPage";
-        }
-
-        if (contactEx.isPasswordExpired()) {
-            model.addAttribute("emailAddress", emailAddress);
-            model.addAttribute("status", "Your password is expired. Please choose a new password.");
-
-            logger.info("User {} tried to log in to password-expired account", emailAddress);
-
-            sleep(SHORT_SLEEP_SECONDS);
-
-            return "resetPasswordRequestPage";
-        }
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        logger.info("emailAddress = " + emailAddress);
-        logger.info("url = " + request.getRequestURL());
-        logger.info("roles = " + StringUtils.join(auth.getAuthorities(), ", "));
+//        if (UrlUtils.getReferer(request).equals("loginPage")) {
+//            logger.info("/summary: User {} logged in.", emailAddress);
+//        }
 
         // Use the web service to get the data for the page.
         String cookie = getMySessionCookie(request);
@@ -229,10 +357,10 @@ public class SummaryController {
         model.addAttribute("PASSWORD_RESET_TTL_MINUTES", PASSWORD_RESET_TTL_MINUTES);
         model.addAttribute("emailAddress", emailAddress);
 
-        ContactExtended contactEx = sqlUtils.getContactExtended(emailAddress);
+        Contact contact = sqlUtils.getContact(emailAddress);
 
         // Ignore the request if the account already exists.
-        if (contactEx == null) {
+        if (contact == null) {
             // Generate and assemble email with password reset
             String token     = buildToken(emailAddress);
             String tokenLink = paHostname + paContextRoot + "/newAccount?token=" + token;
@@ -267,6 +395,7 @@ public class SummaryController {
 
         // If not found, return to errorPage page.
         if (resetCredentials == null) {
+            model.addAttribute("title", TITLE_INVALID_TOKEN);
             model.addAttribute("error", ERR_INVALID_TOKEN);
 
             logger.info("Token {} not found.", token);
@@ -278,6 +407,7 @@ public class SummaryController {
 
         // If token has expired, return to errorPage page.
         if (dateUtils.isExpired(resetCredentials.getCreatedAt(), PASSWORD_RESET_TTL_MINUTES)) {
+            model.addAttribute("title", TITLE_INVALID_TOKEN);
             model.addAttribute("error", ERR_INVALID_TOKEN);
 
             logger.info("Token {} has expired.", token);
@@ -304,6 +434,7 @@ public class SummaryController {
         // Validate the new password. Return to resetPassword page if validation fails.
         String error = validateNewPassword(newPassword, repeatPassword);
         if (!error.isEmpty()) {
+            model.addAttribute("error", TITLE_PASSWORD_MISMATCH);
             model.addAttribute("error", ERR_PASSWORD_MISMATCH);
 
             sleep(SHORT_SLEEP_SECONDS);
@@ -316,6 +447,7 @@ public class SummaryController {
 
         // If not found, return to errorPage page.
         if (resetCredentials == null) {
+            model.addAttribute("title", TITLE_INVALID_TOKEN);
             model.addAttribute("error", ERR_INVALID_TOKEN);
 
             logger.info("No credentials found for {}", token);
@@ -331,6 +463,7 @@ public class SummaryController {
             sqlUtils.insertContact(emailAddress, newPassword);
         } catch (InterestException e) {
 
+            model.addAttribute("title", TITLE_INVALID_TOKEN);
             model.addAttribute("error", ERR_INVALID_TOKEN);
 
             logger.info("Error adding new user {} to database: {}", emailAddress, e.getLocalizedMessage());
@@ -341,8 +474,8 @@ public class SummaryController {
         }
 
         // Get the user's roles and mark the user as authenticated.
-        ContactExtended contactExtended = sqlUtils.getContactExtended(emailAddress);
-        Authentication  authentication  = new UsernamePasswordAuthenticationToken(emailAddress, null, contactExtended.getRoles());
+        Contact contact = sqlUtils.getContact(emailAddress);
+        Authentication  authentication  = new UsernamePasswordAuthenticationToken(emailAddress, null, contact.getRoles());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         model.addAttribute("statusTitle", "Welcome");
@@ -356,14 +489,24 @@ public class SummaryController {
 
 
     @RequestMapping(value = "resetPasswordRequest", method = RequestMethod.GET)
-    public String resetPasswordRequestUrl(ModelMap model) {
+    public String resetPasswordRequestUrl(
+            ModelMap model,
+            @RequestParam(value = "emailAddress", required = false) String emailAddress,
+            @RequestParam(value = "status", required = false) String status)
+    {
 
-        String emailAddress = securityUtils.getPrincipal();
+        if (emailAddress == null) {
+            emailAddress = securityUtils.getPrincipal();
+        }
 
-        if (!emailAddress.equalsIgnoreCase("anonymousUser")) {
-            logger.info("Invalid email address '{}' created by anonymous user was rejected.", emailAddress);
+        if ( ! emailAddress.equalsIgnoreCase("anonymousUser")) {
+//            logger.info("Invalid email address '{}' created by anonymous user was rejected.", emailAddress);
+
+
             model.addAttribute("emailAddress", emailAddress);
         }
+
+        model.addAttribute("status", "Send an e-mail to the address below to reset the password.");
 
         return "resetPasswordRequestPage";
     }
@@ -372,15 +515,19 @@ public class SummaryController {
     @RequestMapping(value = "resetPasswordEmail", method = RequestMethod.POST)
     public String resetPasswordEmailUrl(
             ModelMap model,
-            @RequestParam(value = "emailAddress", required = false) String emailAddress) throws InterestException {
+            @RequestParam(value = "emailAddress", required = false) String emailAddress,
+            @RequestParam(value = "emailAddressHidden", required = false) String emailAddressHidden) throws InterestException {
 
         String originalEmailAddress = emailAddress;
 
         if (emailAddress == null) {
+            emailAddress = emailAddressHidden;
+        }
+        if (emailAddress == null) {
             emailAddress = securityUtils.getPrincipal();
         }
 
-        if (!sqlUtils.isValidEmailAddress(emailAddress)) {
+        if ( ! sqlUtils.isValidEmailAddress(emailAddress)) {
 
             logger.info("Invalid email address '{}' created by " + (originalEmailAddress == null ? "anonymous user" : originalEmailAddress) + " was rejected.", emailAddress);
 
@@ -424,6 +571,7 @@ public class SummaryController {
 
         // If not found, return to errorPage page.
         if (resetCredentials == null) {
+            model.addAttribute("title", TITLE_INVALID_TOKEN);
             model.addAttribute("error", ERR_INVALID_TOKEN);
 
             logger.info("Token {} not found", token);
@@ -435,6 +583,7 @@ public class SummaryController {
 
         // If token has expired, return to errorPage page.
         if (dateUtils.isExpired(resetCredentials.getCreatedAt(), PASSWORD_RESET_TTL_MINUTES)) {
+            model.addAttribute("title", TITLE_INVALID_TOKEN);
             model.addAttribute("error", ERR_INVALID_TOKEN);
 
             logger.info("Token {} has expired", token);
@@ -474,6 +623,7 @@ public class SummaryController {
 
         // If not found, return to errorPage page.
         if (resetCredentials == null) {
+            model.addAttribute("title", TITLE_INVALID_TOKEN);
             model.addAttribute("error", ERR_INVALID_TOKEN);
 
             logger.info("Token {} not found", token);
@@ -491,8 +641,8 @@ public class SummaryController {
         logger.info("Password successfully reset for {}", emailAddress);
 
         // Get the user's roles and mark the user as authenticated.
-        ContactExtended contactExtended = sqlUtils.getContactExtended(emailAddress);
-        Authentication  authentication  = new UsernamePasswordAuthenticationToken(emailAddress, null, contactExtended.getRoles());
+        Contact contact = sqlUtils.getContact(emailAddress);
+        Authentication  authentication  = new UsernamePasswordAuthenticationToken(emailAddress, null, contact.getRoles());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         model.addAttribute("statusTitle", "Password is reset");
@@ -659,5 +809,37 @@ public class SummaryController {
         }
 
         return "";
+    }
+
+    @Component
+    public class RIAuthenticationFailureBadCredentialsEvent implements ApplicationListener<AuthenticationFailureBadCredentialsEvent> {
+
+        private String badEmailAddress;
+
+        @Override
+        public void onApplicationEvent(AuthenticationFailureBadCredentialsEvent event) {
+
+            Authentication auth = event.getAuthentication();
+
+            failedUsername = auth.getPrincipal().toString();
+            List<String> roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+
+            logger.info("Login failed for user {} with roles {}", badEmailAddress, StringUtils.join(roles, ", "));
+        }
+    }
+
+    @Component
+    public class RIAuthenticationSuccessEvent implements ApplicationListener<AuthenticationSuccessEvent> {
+        @Override
+        public void onApplicationEvent(AuthenticationSuccessEvent event) {
+
+            failedUsername = null;
+            Authentication auth = event.getAuthentication();
+
+            String authenticatedUser = auth.getPrincipal().toString();
+            List<String> roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+
+            logger.info("User {} with roles {} logged in.", authenticatedUser, StringUtils.join(StringUtils.join(auth.getAuthorities(), ", ")));
+        }
     }
 }

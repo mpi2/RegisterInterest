@@ -16,17 +16,25 @@
 
 package org.mousephenotype.ri.core.entities;
 
+import org.springframework.security.core.GrantedAuthority;
+
+import java.util.Collection;
 import java.util.Date;
 
 /**
  * Created by mrelac on 12/05/2017.
  */
 public class Contact {
-    protected int     pk;
-    protected String  address;
-    protected boolean isActive;
-    protected Date    createdAt;
-    protected Date    updatedAt;
+    private int pk;
+
+    private String                       emailAddress;
+    private boolean                      isAccountLocked;
+    private boolean                      isPasswordExpired;
+    private String                       password;
+    private Collection<GrantedAuthority> roles;
+
+    private Date createdAt;
+    private Date updatedAt;
 
     public int getPk() {
         return pk;
@@ -36,20 +44,44 @@ public class Contact {
         this.pk = pk;
     }
 
-    public String getAddress() {
-        return address;
+    public String getEmailAddress() {
+        return emailAddress;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
     }
 
-    public boolean isActive() {
-        return isActive;
+    public boolean isAccountLocked() {
+        return isAccountLocked;
     }
 
-    public void setActive(boolean active) {
-        isActive = active;
+    public void setAccountLocked(boolean accountLocked) {
+        isAccountLocked = accountLocked;
+    }
+
+    public boolean isPasswordExpired() {
+        return isPasswordExpired;
+    }
+
+    public void setPasswordExpired(boolean passwordExpired) {
+        isPasswordExpired = passwordExpired;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Collection<GrantedAuthority> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Collection<GrantedAuthority> roles) {
+        this.roles = roles;
     }
 
     public Date getCreatedAt() {
@@ -66,5 +98,19 @@ public class Contact {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    @Override
+    public String toString() {
+        return "Contact{" +
+                "pk=" + pk +
+                ", emailAddress='" + emailAddress + '\'' +
+                ", isAccountLocked=" + isAccountLocked +
+                ", isPasswordExpired=" + isPasswordExpired +
+                ", password='" + password + '\'' +
+                ", roles=" + roles +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
     }
 }

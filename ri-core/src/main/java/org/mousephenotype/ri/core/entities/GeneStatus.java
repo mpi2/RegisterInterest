@@ -25,7 +25,6 @@ public class GeneStatus {
     private int pk;
     private int genePk;
     private String status;
-    private boolean active;
     private Date createdAt;
     private Date updatedAt;
 
@@ -61,14 +60,6 @@ public class GeneStatus {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
     }
 
     public Date getCreatedAt() {

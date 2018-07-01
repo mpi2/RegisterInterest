@@ -177,7 +177,7 @@ public class UrlUtils {
      * @param request
      * @return the name of the referring page, if available; an empty string otherwise
      */
-    public String getReferer(HttpServletRequest request) {
+    public static String getReferer(HttpServletRequest request) {
 
         String referer = request.getHeader("referer");
         URL    url;

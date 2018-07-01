@@ -46,8 +46,6 @@ public class GeneStatusRowMapper implements RowMapper<GeneStatus> {
         geneStatus.setPk(rs.getInt("pk"));
 
         geneStatus.setStatus(rs.getString("status"));
-        int active = rs.getInt("active");
-        geneStatus.setActive(active > 0 ? true : false);
 
         geneStatus.setCreatedAt(new Date(rs.getTimestamp("created_at").getTime()));
         geneStatus.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));

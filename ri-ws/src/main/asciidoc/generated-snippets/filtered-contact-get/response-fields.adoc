@@ -5,9 +5,17 @@
 |`Number`
 |The primary key of the contact instance
 
-|`[*].contact.address`
+|`[*].contact.emailAddress`
 |`String`
 |The contact's email address
+
+|`[*].contact.password`
+|`Null`
+|The contact's password
+
+|`[*].contact.roles`
+|`Null`
+|A list of the contact's roles
 
 |`[*].contact.createdAt`
 |`String`
@@ -17,9 +25,13 @@
 |`String`
 |The time and date the contact was last updated
 
-|`[*].contact.active`
+|`[*].contact.accountLocked`
 |`Boolean`
-|A flag indicating whether or not the contact is active (true) or inactive (false)
+|A flag indicating whether or not the account is locked
+
+|`[*].contact.passwordExpired`
+|`Boolean`
+|A flag indicating whether or not the password has expired
 
 |`[*].genes[*].pk`
 |`Number`

@@ -606,9 +606,19 @@ use of HTTP status codes.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The primary key of the contact instance</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[*].contact.address</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[*].contact.emailAddress</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The contact&#8217;s email address</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[*].contact.password</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Null</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The contact&#8217;s password</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[*].contact.roles</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Null</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A list of the contact&#8217;s roles</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>[*].contact.createdAt</code></p></td>
@@ -621,9 +631,14 @@ use of HTTP status codes.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The time and date the contact was last updated</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[*].contact.active</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[*].contact.accountLocked</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>Boolean</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">A flag indicating whether or not the contact is active (true) or inactive (false)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A flag indicating whether or not the account is locked</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[*].contact.passwordExpired</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Boolean</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A flag indicating whether or not the password has expired</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>[<strong>].genes[</strong>].pk</code></p></td>

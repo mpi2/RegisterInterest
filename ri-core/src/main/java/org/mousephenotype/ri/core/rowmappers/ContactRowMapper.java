@@ -16,9 +16,9 @@
 
 package org.mousephenotype.ri.core.rowmappers;
 
+import org.mousephenotype.ri.core.entities.Contact;
 import org.springframework.jdbc.core.RowMapper;
 
-import org.mousephenotype.ri.core.entities.Contact;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
@@ -45,9 +45,12 @@ public class ContactRowMapper implements RowMapper<Contact> {
 
         contact.setPk(rs.getInt("pk"));
 
-        contact.setAddress((rs.getString("address")));
-        int active = rs.getInt("active");
-        contact.setActive(active > 0 ? true : false);
+        contact.setEmailAddress((rs.getString("address")));
+        contact.setPassword((rs.getString("password")));
+        Integer intValue = rs.getInt("password_expired");
+        contact.setPasswordExpired((intValue != null) && (intValue > 0) ? true : false);
+        intValue = rs.getInt("account_locked");
+        contact.setAccountLocked((intValue != null) && (intValue > 0) ? true : false);
 
         contact.setCreatedAt(new Date(rs.getTimestamp("created_at").getTime()));
         contact.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));

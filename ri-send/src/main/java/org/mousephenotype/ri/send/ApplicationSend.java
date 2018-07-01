@@ -169,7 +169,7 @@ public class ApplicationSend implements CommandLineRunner {
                 continue;
             }
 
-            String email = contactMap.get(contactPk).getAddress();
+            String email = contactMap.get(contactPk).getEmailAddress();
             boolean isHtml = true;
             message = emailUtils.assembleEmail(smtpHost, smtpPort, smtpFrom, smtpReplyto, summary.getSubject(), summary.getBody(), email, isHtml);
             built++;

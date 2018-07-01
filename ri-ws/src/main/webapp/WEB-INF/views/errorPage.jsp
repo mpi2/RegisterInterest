@@ -14,7 +14,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-    <title>Password not changed</title>
+    <title>${title}</title>
     <link href="<c:url value='/resources/css/bootstrap.css' />"  rel="stylesheet"></link>
     <link href="<c:url value='/resources/css/login.css' />" rel="stylesheet"></link>
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.css" />

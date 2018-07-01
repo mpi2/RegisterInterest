@@ -22,7 +22,6 @@ import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.entities.GeneContact;
 import org.mousephenotype.ri.core.entities.GeneSent;
 import org.mousephenotype.ri.core.entities.GeneStatus;
-import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
@@ -107,11 +106,6 @@ public class ApplicationGenerate implements CommandLineRunner {
             gene = Validator.validate(gene, errorMessages);
             if (gene == null) {
                 continue;
-            }
-
-            // If the Web Service indicates that a user/gene pair is to be unregistered, process that request here.
-            if (geneContact.getActive() == -1) {
-                count += generateUnregisterGeneEmail(gene, geneContact);        // Side effect: this method sets the geneContact active flag to 0.
             }
 
             boolean shouldWelcome = false;
@@ -355,38 +349,6 @@ public class ApplicationGenerate implements CommandLineRunner {
 
     // PRIVATE METHODS
 
-
-    private int generateUnregisterGeneEmail(Gene gene, GeneContact geneContact) throws InterestException {
-        GeneSent geneSent = new GeneSent();
-        StringBuilder body = new StringBuilder();
-
-        body
-                .append("Dear colleague,\n")
-                .append("\n")
-                .append("You have been unregistered for interest in gene ")
-                .append(gene.getSymbol())
-                .append(".\n")
-                .append("\n")
-                .append("You will no longer be notified about any future changes in this gene's status.\n")
-                .append("\n")
-                .append(getEpilogue());
-
-        String subject = "IMPC Gene unregistration for " + gene.getSymbol();
-
-        geneSent.setSentAt(null);
-        geneSent.setSubject(subject);
-        geneSent.setBody(body.toString());
-        geneSent.setGeneContactPk(geneContact.getPk());
-
-        geneContact.setActive(0);               // Reset active flag to 0 (unregistered) and update the geneContact record in the database
-        sqlUtils.insertOrUpdateGeneContact(geneContact.getGenePk(), geneContact.getContactPk(), 0, geneContact.getCreatedAt());
-        geneSent = sqlUtils.insertGeneSent(geneSent);
-
-        String message = "ri-generate: send unregister message";
-        sqlUtils.logGeneStatusChangeAction(geneSent, geneContact.getContactPk(), geneContact.getGenePk(), message);
-
-        return 1;
-    }
 
     private String getEpilogue() {
         StringBuilder body = new StringBuilder();

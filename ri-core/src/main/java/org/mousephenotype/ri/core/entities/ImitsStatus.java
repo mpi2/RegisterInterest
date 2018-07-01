@@ -25,7 +25,6 @@ public class ImitsStatus {
     private int pk;
     private Integer geneStatusPk;          // This field is not part of the imits_status table, but it is useful to have a place to put the equivalent register interest status pk.
     private String status;
-    private boolean active;
     private Date createdAt;
     private Date updatedAt;
 
@@ -53,14 +52,6 @@ public class ImitsStatus {
         this.status = status;
     }
 
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
     public Date getCreatedAt() {
         return createdAt;
     }
@@ -83,7 +74,6 @@ public class ImitsStatus {
                 "pk=" + pk +
                 ", geneStatusPk=" + geneStatusPk +
                 ", status='" + status + '\'' +
-                ", active=" + active +
                 ", updatedAt=" + updatedAt +
                 '}';
     }

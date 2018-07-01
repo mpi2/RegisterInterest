@@ -16,9 +16,9 @@
 
 package org.mousephenotype.ri.core.rowmappers;
 
+import org.mousephenotype.ri.core.entities.ImitsStatus;
 import org.springframework.jdbc.core.RowMapper;
 
-import org.mousephenotype.ri.core.entities.ImitsStatus;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
@@ -47,8 +47,6 @@ public class ImitsStatusRowMapper implements RowMapper<ImitsStatus> {
         Integer i = rs.getInt("gene_status_pk");
         imitsStatus.setGeneStatusPk((i == null) || (i == 0) ? null : i);
         imitsStatus.setStatus(rs.getString("status"));
-        int active = rs.getInt("active");
-        imitsStatus.setActive(active > 0 ? true : false);
 
         imitsStatus.setCreatedAt(new Date(rs.getTimestamp("created_at").getTime()));
         imitsStatus.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));

@@ -135,9 +135,8 @@ public class InterestController implements ErrorController {
             try {
 
                 GeneContact geneContact = sqlUtils.getGeneContact(geneAccessionId, email);
-                if ((geneContact == null) || (geneContact.getActive() == 0)) {
-                    int geneContactActive = 1;
-                    sqlUtils.insertOrUpdateInterestGene(invoker, geneAccessionId, email, now, geneContactActive, now);
+                if (geneContact == null) {
+                    sqlUtils.insertOrUpdateInterestGene(invoker, geneAccessionId, email, now,now);
                 } else {
                     message = "Register contact " + email + " for gene " + geneAccessionId + ": contact is already registered for that gene.";
                     sqlUtils.logSendAction(invoker, null, null, message);
@@ -161,7 +160,7 @@ public class InterestController implements ErrorController {
     }
 
 
-
+// FIXME FIXME FIXME
     @RequestMapping(method = DELETE, value = "/contacts")
     public ResponseEntity<String> unregister(
 
@@ -171,41 +170,41 @@ public class InterestController implements ErrorController {
     ) {
 
         HttpHeaders responseHeaders = new HttpHeaders();
-        GeneContact geneContact;
+//        GeneContact geneContact;
         String message = "";
-
-        if (( ! type.equals(INTEREST_GENE)) && (! type.equals("disease")) && ( ! type.equals("phenotype"))) {
-            return new ResponseEntity<>("Invalid type. Expected one of: gene, disease, or phenotype", responseHeaders, HttpStatus.BAD_REQUEST);
-        }
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String invoker = (auth == null ? "Unknown" : auth.getName());
-
-        if (type.equals(INTEREST_GENE)) {
-            try {
-
-                geneContact = sqlUtils.getGeneContact(geneAccessionId, email);
-                if ((geneContact == null) || (geneContact.getActive() == 0)) {
-                    message = "Unregister contact " + email + " for gene " + geneAccessionId + " failed: no such active registration exists";
-                    throw new InterestException(message, HttpStatus.NOT_FOUND);
-                }
-
-                int genePk = geneContact.getGenePk();
-                int contactPk = geneContact.getContactPk();
-
-                sqlUtils.insertOrUpdateGeneContact(genePk, contactPk, -1, null);
-
-                message = "Unregister contact scheduled for " + email + " for gene " + geneAccessionId + ": OK";
-                sqlUtils.logSendAction(invoker, genePk, contactPk, message);
-
-            } catch (InterestException e) {
-
-                sqlUtils.logSendAction(invoker, null, null, message);
-
-                return new ResponseEntity<>(e.getLocalizedMessage(), responseHeaders, e.getHttpStatus());
-            }
-        }
-
+//
+//        if (( ! type.equals(INTEREST_GENE)) && (! type.equals("disease")) && ( ! type.equals("phenotype"))) {
+//            return new ResponseEntity<>("Invalid type. Expected one of: gene, disease, or phenotype", responseHeaders, HttpStatus.BAD_REQUEST);
+//        }
+//
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        String invoker = (auth == null ? "Unknown" : auth.getName());
+//
+//        if (type.equals(INTEREST_GENE)) {
+//            try {
+//
+//                geneContact = sqlUtils.getGeneContact(geneAccessionId, email);
+//                if (geneContact == null) {
+//                    message = "Unregister contact " + email + " for gene " + geneAccessionId + " failed: no such active registration exists";
+//                    throw new InterestException(message, HttpStatus.NOT_FOUND);
+//                }
+//
+//                int genePk = geneContact.getGenePk();
+//                int contactPk = geneContact.getContactPk();
+//
+//                sqlUtils.deleteGeneContact(genePk, contactPk, null);
+//
+//                message = "Unregister contact scheduled for " + email + " for gene " + geneAccessionId + ": OK";
+//                sqlUtils.logSendAction(invoker, genePk, contactPk, message);
+//
+//            } catch (InterestException e) {
+//
+//                sqlUtils.logSendAction(invoker, null, null, message);
+//
+//                return new ResponseEntity<>(e.getLocalizedMessage(), responseHeaders, e.getHttpStatus());
+//            }
+//        }
+//
         return new ResponseEntity<>(message, responseHeaders, HttpStatus.OK);
     }
 

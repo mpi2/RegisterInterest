@@ -16,9 +16,9 @@
 
 package org.mousephenotype.ri.core.rowmappers;
 
+import org.mousephenotype.ri.core.entities.GeneContact;
 import org.springframework.jdbc.core.RowMapper;
 
-import org.mousephenotype.ri.core.entities.GeneContact;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
@@ -47,7 +47,6 @@ public class GeneContactRowMapper implements RowMapper<GeneContact> {
 
         geneContact.setContactPk(rs.getInt("contact_pk"));
         geneContact.setGenePk(rs.getInt("gene_pk"));
-        geneContact.setActive(rs.getInt("active"));
 
         geneContact.setCreatedAt(new Date(rs.getTimestamp("created_at").getTime()));
         geneContact.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));

@@ -96,6 +96,9 @@ public class ApiDocumentationTest {
             fieldWithPath("updatedAt").description("The time and date the gene was last updated")
     };
 
+    // FIXME FIXME FIXME
+    // Replace this test (and the /interest/contacts endpoint) with a test for the Summary object.
+    // FIXME FIXME FIXME
     @Test
     public void filteredContactGet() throws Exception {
         this.mockMvc.perform(get("https://www.ebi.ac.uk/mi/impc/interest/contacts?type=gene&email=user1@ebi.ac.uk&gene=MGI:0000010")
@@ -110,10 +113,13 @@ public class ApiDocumentationTest {
 
                         responseFields(
                                 fieldWithPath("[*].contact.pk").description("The primary key of the contact instance"),
-                                fieldWithPath("[*].contact.address").description("The contact's email address"),
+                                fieldWithPath("[*].contact.emailAddress").description("The contact's email address"),
+                                fieldWithPath("[*].contact.password").description("The contact's password"),
+                                fieldWithPath("[*].contact.roles").description("A list of the contact's roles"),
                                 fieldWithPath("[*].contact.createdAt").description("The time and date the contact was created"),
                                 fieldWithPath("[*].contact.updatedAt").description("The time and date the contact was last updated"),
-                                fieldWithPath("[*].contact.active").description("A flag indicating whether or not the contact is active (true) or inactive (false)"),
+                                fieldWithPath("[*].contact.accountLocked").description("A flag indicating whether or not the account is locked"),
+                                fieldWithPath("[*].contact.passwordExpired").description("A flag indicating whether or not the password has expired"),
 
                                 fieldWithPath("[*].genes[*].pk").description("The primary key of the gene instance"),
                                 fieldWithPath("[*].genes[*].mgiAccessionId").description("The gene's MGI gene accession id"),

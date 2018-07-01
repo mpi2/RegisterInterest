@@ -2,7 +2,5 @@
 ----
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=UTF-8
-Content-Length: 74
 
-Unregister contact scheduled for user10@ebi.ac.uk for gene MGI:0000010: OK
 ----

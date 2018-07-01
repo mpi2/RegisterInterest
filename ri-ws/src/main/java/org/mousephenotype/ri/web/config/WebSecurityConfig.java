@@ -53,7 +53,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         http
                 .authorizeRequests()
-
+// FIXME - Disable contact paths or put under admin path
                 .antMatchers(HttpMethod.GET, "/admin/**").hasRole(ADMIN)
                 .antMatchers(HttpMethod.GET, "/api/summary/**").access("hasRole('USER') or hasRole('ADMIN')")
 //                .antMatchers(HttpMethod.GET, "/contacts/**").access("hasRole('USER') or hasRole('ADMIN')")
@@ -70,6 +70,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                     .formLogin()
                         .loginPage("/login")
+                        .failureUrl("/handleLogin")
                         .defaultSuccessUrl("/summary")
                         .usernameParameter("ssoId")
                         .passwordParameter("password")

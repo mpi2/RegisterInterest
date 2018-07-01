@@ -27,8 +27,7 @@
     <div class="login-container">
         <div class="login-card">
             <div class="login-form">
-                <c:url var="resetPasswordEmail" value="resetPasswordEmail" />
-                <form action="${resetPasswordEmail}" method="post" class="form-horizontal">
+                <form action="resetPasswordEmail" method="post" class="form-horizontal">
 
                     <c:choose>
                         <c:when test="${param.error != null}">
@@ -45,20 +44,17 @@
 
                     <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
 
-                    Send an e-mail to the address below to reset the password.
-
-                    <br />
-
                     <c:choose>
                         <c:when test="${not empty emailAddress}">
                             <div class="input-group input-sm">
                                 <label class="input-group-addon"><i class="fa">${emailAddress}</i></label>
+                                <input type="hidden" id="usernameHidden" name="emailAddressHidden" value="${emailAddress}" />
                             </div>
                         </c:when>
                         <c:otherwise>
                             <div class="input-group input-sm">
                                 <label class="input-group-addon" for="username"><i class="fa fa-user"></i></label>
-                                <input type="text" class="form-control" id="username" name="emailAddress" placeholder="Enter e-mail address" required />
+                                <input type="text" class="form-control" id="username" name="emailAddress" placeholder="Enter e-mail address" value="emailAddressHidden" required />
                             </div>
                         </c:otherwise>
                     </c:choose>

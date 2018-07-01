@@ -1,62 +1,90 @@
 DROP TABLE IF EXISTS gene;
 CREATE TABLE gene (
-  pk                                                INT          NOT NULL  AUTO_INCREMENT PRIMARY KEY,
+  pk                                                          INT          NOT NULL  AUTO_INCREMENT PRIMARY KEY,
 
-  mgi_accession_id                                  VARCHAR(32)  NOT NULL       UNIQUE,
-  symbol                                            VARCHAR(128) NOT NULL,
-  assigned_to                                       VARCHAR(128) DEFAULT NULL,
-  assignment_status                                 VARCHAR(128) DEFAULT NULL,
-  assignment_status_date                            DATETIME     DEFAULT NULL,
-  assignment_status_pk                              INT          DEFAULT NULL,
-  ri_assignment_status                              VARCHAR(64)  DEFAULT NULL,
+  mgi_accession_id                                            VARCHAR(32)  NOT NULL           UNIQUE,
+  symbol                                                      VARCHAR(128) NOT NULL,
+  assigned_to                                                 VARCHAR(128) DEFAULT NULL,
+  assignment_status                                           VARCHAR(128) DEFAULT NULL,
+  assignment_status_date                                      DATETIME     DEFAULT NULL,
+  assignment_status_pk                                        INT          DEFAULT NULL,
+  ri_assignment_status                                        VARCHAR(64)  DEFAULT NULL,
 
-  conditional_allele_production_centre              VARCHAR(128) DEFAULT NULL,
-  conditional_allele_production_status              VARCHAR(128) DEFAULT NULL,
-  conditional_allele_production_status_pk           INT          DEFAULT NULL,
-  ri_conditional_allele_production_status           VARCHAR(64)  DEFAULT NULL,
-  conditional_allele_production_status_date         DATETIME     DEFAULT NULL,
-  conditional_allele_production_start_date          DATETIME     DEFAULT NULL,
+  conditional_allele_production_centre                        VARCHAR(128) DEFAULT NULL,
+  conditional_allele_production_status                        VARCHAR(128) DEFAULT NULL,
+  conditional_allele_production_status_pk                     INT          DEFAULT NULL,
+  ri_conditional_allele_production_status                     VARCHAR(64)  DEFAULT NULL,
+  conditional_allele_production_status_date                   DATETIME     DEFAULT NULL,
+  conditional_allele_production_start_date                    DATETIME     DEFAULT NULL,
 
-  null_allele_production_centre                     VARCHAR(128) DEFAULT NULL,
-  null_allele_production_status                     VARCHAR(128) DEFAULT NULL,
-  null_allele_production_status_pk                  INT          DEFAULT NULL,
-  ri_null_allele_production_status                  VARCHAR(64)  DEFAULT NULL,
-  null_allele_production_status_date                DATETIME     DEFAULT NULL,
-  null_allele_production_start_date                 DATETIME     DEFAULT NULL,
+  null_allele_production_centre                               VARCHAR(128) DEFAULT NULL,
+  null_allele_production_status                               VARCHAR(128) DEFAULT NULL,
+  null_allele_production_status_pk                            INT          DEFAULT NULL,
+  ri_null_allele_production_status                            VARCHAR(64)  DEFAULT NULL,
+  null_allele_production_status_date                          DATETIME     DEFAULT NULL,
+  null_allele_production_start_date                           DATETIME     DEFAULT NULL,
 
-  phenotyping_centre                                VARCHAR(128) DEFAULT NULL,
-  phenotyping_status                                VARCHAR(128) DEFAULT NULL,
-  phenotyping_status_date                           DATETIME     DEFAULT NULL,
-  phenotyping_status_pk                             INT          DEFAULT NULL,
-  ri_phenotyping_status                             VARCHAR(64)  DEFAULT NULL,
+  phenotyping_centre                                          VARCHAR(128) DEFAULT NULL,
+  phenotyping_status                                          VARCHAR(128) DEFAULT NULL,
+  phenotyping_status_date                                     DATETIME     DEFAULT NULL,
+  phenotyping_status_pk                                       INT          DEFAULT NULL,
+  ri_phenotyping_status                                       VARCHAR(64)  DEFAULT NULL,
 
-  number_of_significant_phenotypes                  INT          DEFAULT 0,
+  number_of_significant_phenotypes                            INT          DEFAULT 0,
 
-  created_at                                        DATETIME     NOT NULL,
-  updated_at                                        TIMESTAMP    NOT NULL   DEFAULT CURRENT_TIMESTAMP
-
+  created_at                                                  DATETIME     NOT NULL,
+  updated_at                                                  TIMESTAMP    NOT NULL   DEFAULT CURRENT_TIMESTAMP
 );
 
 
 DROP TABLE IF EXISTS contact;
 CREATE TABLE contact (
-  pk              INT          NOT NULL      AUTO_INCREMENT PRIMARY KEY,
-  address         VARCHAR(256) NOT NULL,
-  active          INT          NOT NULL      DEFAULT 1,                      -- 1 = active; 0 = inactive
-  created_at      DATETIME     NOT NULL,
-  updated_at      TIMESTAMP    NOT NULL      DEFAULT CURRENT_TIMESTAMP
+
+  pk                INT          NOT NULL         AUTO_INCREMENT PRIMARY KEY,
+  address           VARCHAR(255) NOT NULL UNIQUE,
+  password          VARCHAR(256) NOT NULL         DEFAULT '',
+  password_expired  INT          NOT NULL         DEFAULT 1,                          -- 1 = expired; 0 = not expired
+  account_locked    INT          NOT NULL         DEFAULT 0,                          -- 1 = locked; 0 = not locked
+
+  created_at        DATETIME     NOT NULL,
+  updated_at        TIMESTAMP    NOT NULL         DEFAULT CURRENT_TIMESTAMP
+
+);
+
+
+DROP TABLE IF EXISTS contact_role;
+CREATE TABLE contact_role (
+  pk             INT          NOT NULL      AUTO_INCREMENT PRIMARY KEY,
+
+  contact_pk     INT          NOT NULL,
+  role           VARCHAR(64)  NOT NULL      DEFAULT 'USER',
+
+  created_at     DATETIME     NOT NULL,
+  updated_at     TIMESTAMP    NOT NULL      DEFAULT CURRENT_TIMESTAMP,
+
+  UNIQUE (contact_pk, role)
+
+);
+
+
+DROP TABLE IF EXISTS reset_credentials;
+CREATE TABLE reset_credentials (
+  email_address  VARCHAR(255) NOT NULL PRIMARY KEY,
+  token          TEXT         NOT NULL,
+  created_at     DATETIME     NOT NULL
 
 );
 
 
 DROP TABLE IF EXISTS gene_contact;
 CREATE TABLE gene_contact (
-  pk          INT       NOT NULL      AUTO_INCREMENT PRIMARY KEY,
-  contact_pk  INT       NOT NULL,
-  gene_pk     INT       NOT NULL,
-  active      INT       NOT NULL      DEFAULT 1,                             -- 1 = active; 0 = inactive
-  created_at  DATETIME  NOT NULL,
-  updated_at  TIMESTAMP NOT NULL      DEFAULT CURRENT_TIMESTAMP,
+  pk             INT          NOT NULL      AUTO_INCREMENT PRIMARY KEY,
+
+  contact_pk     INT          NOT NULL,
+  gene_pk        INT          NOT NULL,
+
+  created_at     DATETIME     NOT NULL,
+  updated_at     TIMESTAMP    NOT NULL        DEFAULT CURRENT_TIMESTAMP,
 
   UNIQUE (contact_pk, gene_pk)
 
@@ -65,23 +93,25 @@ CREATE TABLE gene_contact (
 
 DROP TABLE IF EXISTS imits_status;
 CREATE TABLE imits_status (
-  pk                  INT          NOT NULL      AUTO_INCREMENT PRIMARY KEY,
-  gene_status_pk      INT                        DEFAULT NULL,
-  status              VARCHAR(64)  NOT NULL,     UNIQUE(status),
-  active              INT          NOT NULL      DEFAULT 1,                  -- 1 = active; 0 = inactive
-  created_at          DATETIME     NOT NULL,
-  updated_at          TIMESTAMP    NOT NULL      DEFAULT CURRENT_TIMESTAMP
+  pk              INT          NOT NULL           AUTO_INCREMENT PRIMARY KEY,
+
+  gene_status_pk  INT                             DEFAULT NULL,
+  status          VARCHAR(64)  NOT NULL UNIQUE,
+
+  created_at      DATETIME     NOT NULL,
+  updated_at      TIMESTAMP    NOT NULL           DEFAULT CURRENT_TIMESTAMP
 
 );
 
 
 DROP TABLE IF EXISTS gene_status;
 CREATE TABLE gene_status (
-  pk             INT          NOT NULL      AUTO_INCREMENT PRIMARY KEY,
-  status         VARCHAR(64)  NOT NULL,     UNIQUE(status),
-  active         INT          NOT NULL      DEFAULT 1,                       -- 1 = active; 0 = inactive
-  created_at     DATETIME     NOT NULL,
-  updated_at     TIMESTAMP    NOT NULL      DEFAULT CURRENT_TIMESTAMP
+  pk          INT          NOT NULL           AUTO_INCREMENT PRIMARY KEY,
+
+  status      VARCHAR(64)  NOT NULL UNIQUE,
+
+  created_at  DATETIME     NOT NULL,
+  updated_at  TIMESTAMP    NOT NULL           DEFAULT CURRENT_TIMESTAMP
 
 );
 

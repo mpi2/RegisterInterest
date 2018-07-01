@@ -45,7 +45,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * Created by mrelac on 12/05/2017.
@@ -200,7 +199,6 @@ public class SqlUtils {
 
         final String query = "SELECT\n" +
                 "  c.address          AS contact_email,\n" +
-                "  c.active           AS contact_active_state,\n" +
                 "  c.created_at       AS contact_created_at,\n" +
                 "  g.symbol           AS marker_symbol,\n" +
                 "  g.mgi_accession_id AS mgi_accession_id,\n" +
@@ -208,7 +206,6 @@ public class SqlUtils {
                 "FROM contact c\n" +
                 "JOIN gene_contact gc ON gc.contact_pk = c.pk\n" +
                 "JOIN gene         g  ON g.pk = gc.gene_pk\n" +
-                "WHERE gc.active = 1\n" +
                 "ORDER BY c.address, g.symbol;";
 
         Map<String, Object> parameterMap = new HashMap<>();
@@ -347,7 +344,7 @@ public class SqlUtils {
                 String queryGenes =
                         "SELECT * FROM gene g\n" +
                         "JOIN gene_contact gc ON gc.gene_pk = g.pk\n" +
-                        "WHERE gc.contact_pk = :contact_pk AND gc.active = 1";
+                        "WHERE gc.contact_pk = :contact_pk";
                 parameterMap.put("contact_pk", contact.getPk());
 
                 if (gene != null) {
@@ -384,50 +381,34 @@ public class SqlUtils {
         final String query = "SELECT * FROM contact WHERE address = :emailAddress";
 
         Map<String, Object> parameterMap = new HashMap<>();
-
         parameterMap.put("emailAddress", emailAddress);
 
         List<Contact> contacts = jdbcInterest.query(query, parameterMap, new ContactRowMapper());
-
-        return (contacts.isEmpty() ? null : contacts.get(0));
-    }
-
-    /**
-     * Get {@link ContactExtended} instance
-     * @param emailAddress contact email address
-     * @return the {@link ContactExtended} instance matching {@code emailAddress} if found; null otherwise
-     */
-    public ContactExtended getContactExtended(String emailAddress) {
-
-        ContactExtended contactEx;
-
-        final String contactQuery = "SELECT * FROM contact WHERE address = :address";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("address", emailAddress);
-
-        List<Contact> contacts = jdbcInterest.query(contactQuery, parameterMap, new ContactRowMapper());
-
-        // If the contact doesn't exist, return a null contactExtended.
-        if (contacts.isEmpty()) {
-            return null;
+        Contact contact = (contacts.isEmpty() ? null : contacts.get(0));
+        if (contact != null) {
+            contact.setRoles(getContactRoles(emailAddress));
         }
 
-        Contact contact = contacts.get(0);
-        contactEx = new ContactExtended();
-        contactEx.setContact(contacts.get(0));
+        return contact;
+    }
 
-        final String contactRoleQuery = "SELECT * FROM contact_role WHERE contact_pk = :contactPk";
-        parameterMap.put("contactPk", contact.getPk());
+    public Collection<GrantedAuthority> getContactRoles(String emailAddress) {
 
-        List<ContactRole> contactRoles = jdbcInterest.query(contactRoleQuery, parameterMap, new ContactRoleRowMapper());
-        List<GrantedAuthority> roles = contactRoles.stream().map(ContactRole::getAuthority).collect(Collectors.toList());
-        contactEx.setRoles(roles);
+        ArrayList<GrantedAuthority> roles = new ArrayList<>();
 
-        contactEx.setCreatedAt(contact.getCreatedAt());
-        contactEx.setUpdatedAt(contact.getUpdatedAt());
+        final String query = "SELECT cr.* FROM contact_role cr " +
+                             "JOIN contact c ON c.pk = cr.contact_pk " +
+                             "WHERE c.address = :emailAddress";
 
-        return contactEx;
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("emailAddress", emailAddress);
+
+        List<ContactRole> results = jdbcInterest.query(query, parameterMap, new ContactRoleRowMapper());
+        for (ContactRole result : results) {
+            roles.add(result.getAuthority());
+        }
+
+        return roles;
     }
 
     /*
@@ -710,13 +691,12 @@ public class SqlUtils {
                "  g.*\n" +
                "FROM gene_contact gc\n" +
                "JOIN gene         g  ON g.pk = gc.gene_pk\n" +
-               "WHERE gc.active = 1\n" +
-               "  AND gc.contact_pk = :contactPk\n" +
+               "WHERE gc.contact_pk = :contactPk\n" +
                "ORDER BY g.symbol";
 
         Map<String, Object> parameterMap = new HashMap<>();
 
-        List<Integer> contactPks = getActiveContactsWithRegistrations();
+        List<Integer> contactPks = getContactsWithRegistrations();
         for (Integer contactPk : contactPks) {
 
             parameterMap.put("contactPk", contactPk);
@@ -729,17 +709,15 @@ public class SqlUtils {
 
     /**
      *
-     * @return a list of the contact primary keys for every active user who has registered interest in one or more genes
+     * @return a list of the contact primary keys for every contact who is registered for interest in one or more genes
      */
-    public List<Integer> getActiveContactsWithRegistrations() {
+    public List<Integer> getContactsWithRegistrations() {
 
-        // Get the list of active contacts with interest in one or more genes
         String contactPkQuery =
                 "SELECT DISTINCT\n" +
                 "  c.pk\n" +
                 "FROM gene_contact gc\n" +
                 "JOIN contact      c  ON c.pk = gc.contact_pk\n" +
-                "WHERE gc.active = 1 AND c.active = 1\n" +
                 "ORDER BY c.pk";
 
         List<Integer> contactPks = jdbcInterest.queryForList(contactPkQuery, new HashMap<String, Object>(), Integer.class);
@@ -858,20 +836,18 @@ public class SqlUtils {
     }
 
     /**
-     *Insert or update {@link Gene} and {@link Contact} into the gene_contact table. Return the count of inserted rows.
+     *Insert {@link Gene} and {@link Contact} into the gene_contact table. Return the count of inserted rows.
      *
      * @param genePk The primary key gene to be inserted/updated
-     * @param contactPk The primary key of the contact to be inserted/updated
-     * @param active the {@link GeneContact} active flag (0 = inactive; 1 = active; 2 = pending unregister
+     * @param contactPk The primary key of the contact to be inserted
      * @param createdAt The @link GeneContact} creation date. If NULL, the current time and date is used.
      *
-     * @return the count of inserted/activated geneContacts.
+     * @return the count of inserted geneContacts.
      */
-    public int insertOrUpdateGeneContact(int genePk, int contactPk, int active, Date createdAt) throws InterestException {
+    public int insertGeneContact(int genePk, int contactPk, Date createdAt) throws InterestException {
         int count = 0;
-        String insert = "INSERT INTO gene_contact(contact_pk, gene_pk, created_at, active) " +
-                        "VALUES (:contact_pk, :gene_pk, :created_at, 1)";
-        String update = "UPDATE gene_contact SET active = :active WHERE contact_pk = :contact_pk AND gene_pk = :gene_pk";
+        String insert = "INSERT INTO gene_contact(contact_pk, gene_pk, created_at) " +
+                        "VALUES (:contact_pk, :gene_pk, :created_at)";
 
         if (createdAt == null) {
             createdAt = new Date();
@@ -883,13 +859,10 @@ public class SqlUtils {
             parameterMap.put("contact_pk", contactPk);
             parameterMap.put("gene_pk", genePk);
             parameterMap.put("created_at", createdAt);
-            parameterMap.put("active", active);
 
             count += jdbcInterest.update(insert, parameterMap);
 
         } catch (DuplicateKeyException e) {
-
-            count += jdbcInterest.update(update, parameterMap);
 
         } catch (Exception e) {
 
@@ -909,7 +882,6 @@ public class SqlUtils {
      * @param gene The mgi accession id of the gene being registgered
      * @param email The email address being registered
      * @param contactCreatedAt The date the contact was created
-     * @param geneContactActive The geneContact active flag
      * @param geneContactCreatedAt The date the geneContact was created
      *
      * @return The newly-inserted {@link GeneContact} instance.
@@ -919,7 +891,7 @@ public class SqlUtils {
      *
      *         @throws InterestException if the gene does not exist
      */
-    public GeneContact insertOrUpdateInterestGene(String invoker, String gene, String email, Date contactCreatedAt, int geneContactActive, Date geneContactCreatedAt) throws InterestException {
+    public GeneContact insertOrUpdateInterestGene(String invoker, String gene, String email, Date contactCreatedAt, Date geneContactCreatedAt) throws InterestException {
 
         String message;
 
@@ -931,10 +903,10 @@ public class SqlUtils {
             throw new InterestException(message, HttpStatus.NOT_FOUND);
         }
 
-        Contact contact = updateOrInsertContact(invoker, email, 1, contactCreatedAt);
+        Contact contact = updateOrInsertContact(invoker, email, contactCreatedAt);
 
         // Insert into the gene_contact table.
-        insertOrUpdateGeneContact(geneInstance.getPk(), contact.getPk(), geneContactActive, geneContactCreatedAt);
+        insertGeneContact(geneInstance.getPk(), contact.getPk(), geneContactCreatedAt);
 
         return getGeneContact(gene, email);
     }
@@ -1014,15 +986,14 @@ public class SqlUtils {
      *
      * @return the {@link Contact}
      */
-    public Contact updateOrInsertContact(String invoker, String emailAddress, int active, Date createdAt) throws InterestException {
+    public Contact updateOrInsertContact(String invoker, String emailAddress, Date createdAt) throws InterestException {
 
-        final String update = "UPDATE contact SET address = :address, active = :active, created_at = :createdAt WHERE address = :address";
-        final String insert = "INSERT INTO contact(address, active, created_at) " +
-                              "VALUES (:address, :active, :createdAt)";
+        final String update = "UPDATE contact SET address = :address, created_at = :createdAt WHERE address = :address";
+        final String insert = "INSERT INTO contact(address, created_at) " +
+                              "VALUES (:address, :createdAt)";
 
         Map<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("address", emailAddress);
-        parameterMap.put("active", active <= 0 ? 0 : 1);
         parameterMap.put("createdAt", createdAt);
 
         try {
@@ -1112,7 +1083,7 @@ public class SqlUtils {
         try {
 
             // Add the new contact to the database.
-            Contact contact = updateOrInsertContact("SummaryController", emailAddress, 1, new Date());
+            Contact contact = updateOrInsertContact("SummaryController", emailAddress, new Date());
             if (contact == null) {
                 logger.warn("updateOrInsertContact failed for " + emailAddress);
                 throw new InterestException(ERROR_MESSAGE);
@@ -1194,22 +1165,6 @@ public class SqlUtils {
         }
 
         throw new InterestException("Unable to get primary key after INSERT.");
-    }
-
-    /**
-     * Updates all gene_contact.active rows with the given value.
-     *
-     * @param active the new value
-     *
-     * @throws InterestException
-     */
-    public void updateAllGeneContactActive(int active) throws InterestException {
-
-        String update = "UPDATE gene_contact SET active = :active";
-        Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("active", active);
-
-        jdbcInterest.update(update, parameterMap);
     }
 
     /**

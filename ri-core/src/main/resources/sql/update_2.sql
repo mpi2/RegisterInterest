@@ -29,10 +29,24 @@ CREATE TABLE reset_credentials (
 
 -- Add password and password_expired columns to contact.
 ALTER TABLE `ri`.`contact`
-  ADD COLUMN `password` TEXT AFTER `address`,
+  ADD COLUMN `password` VARCHAR(256) NOT NULL DEFAULT '' AFTER `address`,
   ADD COLUMN `password_expired` INT NOT NULL DEFAULT 1 AFTER `password`,
   ADD COLUMN `account_locked` INT NOT NULL DEFAULT 0 AFTER `password_expired`;
 
 -- Populate the contact_role table with a 'USER' role for every contact.
 INSERT INTO contact_role(contact_pk, role, created_at)
   SELECT c.pk, 'USER', NOW() FROM contact c;
+
+
+-- DROP active flags.
+ALTER TABLE contact
+DROP COLUMN `active`;
+
+ALTER TABLE gene_contact
+  DROP COLUMN active;
+
+ALTER TABLE gene_status
+  DROP COLUMN active;
+
+ALTER TABLE imits_status
+  DROP COLUMN active;

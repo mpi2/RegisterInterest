@@ -1,8 +1,8 @@
 SET @now = NOW();
-INSERT INTO contact (address, active, created_at) VALUES
-  ('user1@ebi.ac.uk', 1, @now),
-  ('user2@ebi.ac.uk', 1, @now),
-  ('user3@ebi.ac.uk', 1, @now);
+INSERT INTO contact (address, created_at) VALUES
+  ('user1@ebi.ac.uk', @now),
+  ('user2@ebi.ac.uk', @now),
+  ('user3@ebi.ac.uk', @now);
 
 INSERT INTO gene (mgi_accession_id, symbol, ri_assignment_status, ri_conditional_allele_production_status, ri_null_allele_production_status, ri_phenotyping_status, created_at) VALUES
   ('MGI:0000010', 'gene-10', 'riAssignmentStatus-1', 'riConditionalAlleleProductionStatus-1', 'riNullAlleleProductionStatus-1', 'riPhenotypingStatus-1', @now),
