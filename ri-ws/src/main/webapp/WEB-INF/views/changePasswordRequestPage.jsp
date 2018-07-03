@@ -34,6 +34,9 @@
                     <c:choose>
                         <c:when test="${not empty error}">
                             <div class="alert alert-danger">
+                                <c:if test="${showWhen}">
+                                    ${current.toLocaleString()}:&nbsp;
+                                </c:if>
                                 <p>${error}</p>
                             </div>
                         </c:when>
@@ -49,12 +52,12 @@
 
                     <div class="input-group input-sm">
                         <label class="input-group-addon" for="username"><i class="fa fa-user"></i></label>
-                        <input type="text" class="form-control" id="username" name="emailAddress" value="${emailAddress}" required />
+                        <input type="text" class="form-control" id="username" name="emailAddress" value="${emailAddress}" placeholder="Enter email address" required />
                     </div>
 
                     <div class="input-group input-sm">
                         <label class="input-group-addon" for="repeatUsername"><i class="fa fa-user"></i></label>
-                        <input type="text" class="form-control" id="repeatUsername" name="repeatEmailAddress" equired />
+                        <input type="text" class="form-control" id="repeatUsername" name="repeatEmailAddress" placeholder="Enter email address again" required />
                     </div>
 
                     <div class="form-actions">

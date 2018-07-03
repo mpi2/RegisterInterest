@@ -68,6 +68,7 @@ public class SummaryController {
     // Error messages
     public final static String ERR_ACCOUNT_LOCKED         = "Your account is locked.";
     public final static String ERR_EMAIL_ADDRESS_MISMATCH = "The e-mail addresses do not match.";
+    public final static String ERR_INVALID_EMAIL_ADDRESS  = "The value provided is not a valid e-mail address. Please enter a valid e-mail address.";
     public final static String ERR_INVALID_TOKEN          = "Invalid token.";
     public final static String ERR_PASSWORD_MISMATCH      = "The passwords do not match.";
     public final static String ERR_SEND_MAIL_FAILED       = "The e-mail send failed.";
@@ -81,6 +82,7 @@ public class SummaryController {
     // Title strings
     public final static String TITLE_ACCOUNT_LOCKED             = "Account locked";
     public final static String TITLE_INVALID_TOKEN              = "Invalid token";
+    public final static String TITLE_INVALID_EMAIL_ADDRESS      = "Invalid e-mail address";
     public final static String TITLE_PASSWORD_EXPIRED           = "Password expired";
     public final static String TITLE_INVALID_CREDENTIALS        = "Invalid credentials";
     public final static String TITLE_PASSWORD_MISMATCH          = "Password mismatch";
@@ -138,8 +140,6 @@ public class SummaryController {
         String error = request.getQueryString();
 
         if (error != null) {
-            model.addAttribute("title", TITLE_INVALID_CREDENTIALS);
-            model.addAttribute("error", ERR_INVALID_CREDENTIALS);
             sleep(INVALID_PASSWORD_SLEEP_SECONDS);
         }
 
@@ -149,8 +149,7 @@ public class SummaryController {
 
     @RequestMapping(value = "failedLogin", method = RequestMethod.GET)
     public String failedLoginUrl(
-            HttpServletRequest request,
-            ModelMap model
+            HttpServletRequest request
     ) {
 
         String error = request.getQueryString();
@@ -163,7 +162,9 @@ public class SummaryController {
 
 
     @RequestMapping(value = "Access_Denied", method = RequestMethod.GET)
-    public String accessDeniedPage(ModelMap model) {
+    public String accessDeniedUrl(
+            ModelMap model
+    ) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -195,11 +196,44 @@ public class SummaryController {
     @RequestMapping(value = "summary", method = RequestMethod.GET)
     public String summaryUrl(ModelMap model, HttpServletRequest request) throws InterestException {
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Contact contact = sqlUtils.getContact(securityUtils.getPrincipal());
+
+        if (contact == null) {
+            model.addAttribute("title", TITLE_INVALID_CREDENTIALS);
+            model.addAttribute("error", ERR_INVALID_CREDENTIALS);
+
+            List<String> roles = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+            logger.info("summaryUrl: Unable to get principal for user {} with role {}", securityUtils.getPrincipal(), StringUtils.join(roles, ", "));
+
+            sleep(SHORT_SLEEP_SECONDS);
+
+            return "errorPage";
+        }
+
+        // Redirect to error page if account is locked.
+        if (contact.isAccountLocked()) {
+            model.addAttribute("title", TITLE_ACCOUNT_LOCKED);
+            model.addAttribute("error", ERR_ACCOUNT_LOCKED);
+
+            return "errorPage";
+        }
+
+        // Redirect to chanbgePasswordRequestPage if password is expired.
+        if (contact.isPasswordExpired()) {
+            model.addAttribute("title", TITLE_PASSWORD_EXPIRED);
+            model.addAttribute("status", INFO_PASSWORD_EXPIRED);
+            model.addAttribute("showWhen", true);
+
+            return "changePasswordRequestPage";
+        }
+
         // Use the web service to get the data for the page.
         String cookie = getMySessionCookie(request);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cookie", cookie);
-        ResponseEntity<Summary> response = new RestTemplate().exchange("http://localhost:8081/data/interest/api/summary", HttpMethod.GET, new HttpEntity<String>(headers), Summary.class);
+        String wsUrl = paHostname + paContextRoot + "/api/summary";
+        ResponseEntity<Summary> response = new RestTemplate().exchange(wsUrl, HttpMethod.GET, new HttpEntity<String>(headers), Summary.class);
 
         model.addAttribute("summary", response.getBody());
 
@@ -227,6 +261,14 @@ public class SummaryController {
             model.addAttribute("emailAddress", emailAddress);
             model.addAttribute("title", TITLE_EMAIL_ADDRESS_MISMATCH);
             model.addAttribute("error", ERR_EMAIL_ADDRESS_MISMATCH);
+
+            return "changePasswordRequestPage";
+        }
+
+        // Validate that it looks like an e-mail address.
+        if ( !  emailUtils.isValidEmailAddress(emailAddress)) {
+            model.addAttribute("title", TITLE_INVALID_EMAIL_ADDRESS);
+            model.addAttribute("error", ERR_INVALID_EMAIL_ADDRESS);
 
             return "changePasswordRequestPage";
         }
