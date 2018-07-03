@@ -16,14 +16,21 @@
 
 package org.mousephenotype.ri.core;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 public class SecurityUtils {
 
     public String getPrincipal() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        return getPrincipal(authentication);
+    }
+
+    public String getPrincipal(Authentication authentication) {
         String userName;
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Object principal = authentication.getPrincipal();
 
         if (principal instanceof UserDetails) {
             userName = ((UserDetails) principal).getUsername();

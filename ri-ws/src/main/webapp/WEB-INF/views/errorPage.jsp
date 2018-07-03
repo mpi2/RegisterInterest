@@ -20,23 +20,32 @@
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.css" />
 </head>
 
-<body>
-
-
 <jsp:useBean id="current" class="java.util.Date" />
 
-<div class="alert alert-danger">
-    <c:if test="${not empty error}">
-        <div class="alert alert-danger">
-            <p>${current.toLocaleString()}: ${error}</p>
+<body>
+<div id="mainWrapper">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-form">
+                <form action="changePasswordEmail" method="post" class="form-horizontal">
+
+                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+
+                    <div class="alert alert-danger">
+                        <c:if test="${showWhen}">
+                            ${current.toLocaleString()}:&nbsp;
+                        </c:if>
+                        <p>${error}</p>
+                    </div>
+
+                    <br />
+
+                    <a href="login">Login</a>
+
+                </form>
+            </div>
         </div>
-    </c:if>
-
-    <br />
-
-    <a href="<c:url value="/login" />">Login</a>
-    &nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
 </div>
-
 </body>
 </html>

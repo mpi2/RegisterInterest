@@ -14,7 +14,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-    <title>Login page</title>
+    <title>Login</title>
     <link href="<c:url value='/resources/css/bootstrap.css' />"  rel="stylesheet"></link>
     <link href="<c:url value='/resources/css/login.css' />" rel="stylesheet"></link>
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.css" />
@@ -26,6 +26,8 @@
         <div class="login-card">
             <div class="login-form">
                 <form action="login" method="post" class="form-horizontal">
+                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+
                     <c:if test="${param.error != null}">
                         <div class="alert alert-danger">
                             <p>Invalid username and password.</p>
@@ -36,9 +38,6 @@
                             <p>You have been logged out successfully.</p>
                         </div>
                     </c:if>
-
-                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
-
                     <div class="input-group input-sm">
                         <label class="input-group-addon" for="username"><i class="fa fa-user"></i></label>
                         <input type="text" class="form-control" id="username" name="ssoId" placeholder="Enter Username" required />
@@ -54,15 +53,14 @@
 
                     <br/>
 
-                    <a href="resetPasswordRequest">Reset password</a>
+                    <a href="changePasswordRequest">New account</a>
                     &nbsp;&nbsp;&nbsp;&nbsp;
-                    <a href="newAccountRequest">Register</a>
+                    <a href="changePasswordRequest">Forgot password?</a>
 
                 </form>
             </div>
         </div>
     </div>
 </div>
-
 </body>
 </html>

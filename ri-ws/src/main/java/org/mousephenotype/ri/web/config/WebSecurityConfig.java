@@ -70,7 +70,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                     .formLogin()
                         .loginPage("/login")
-                        .failureUrl("/handleLogin")
+                        .failureUrl("/failedLogin")
                         .defaultSuccessUrl("/summary")
                         .usernameParameter("ssoId")
                         .passwordParameter("password")
@@ -86,15 +86,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public void configureGlobalSecurityJdbc(AuthenticationManagerBuilder auth) throws Exception {
 
         auth
-                .userDetailsService(userDetailsService()).passwordEncoder(bcryptPasswordEncoder())
+                .userDetailsService(userDetailsService())
+                    .passwordEncoder(bcryptPasswordEncoder())
 
                 .and()
 
                 .jdbcAuthentication()
-                .dataSource(riDataSource)
-                .rolePrefix("ROLE_")
-                .usersByUsernameQuery("SELECT address AS username, password, 'true' AS enabled FROM contact WHERE address = ?")
-                .authoritiesByUsernameQuery("SELECT c.address AS username, cr.role FROM contact c JOIN contact_role cr ON cr.contact_pk = c.pk WHERE c.address = ?")
+                    .dataSource(riDataSource)
+                    .rolePrefix("ROLE_")
+                    .usersByUsernameQuery("SELECT address AS username, password, 'true' AS enabled FROM contact WHERE address = ?")
+                    .authoritiesByUsernameQuery("SELECT c.address AS username, cr.role FROM contact c JOIN contact_role cr ON cr.contact_pk = c.pk WHERE c.address = ?")
         ;
     }
 

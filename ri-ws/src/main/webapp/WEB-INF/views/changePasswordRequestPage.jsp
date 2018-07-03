@@ -15,52 +15,50 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-    <title>Reset password</title>
+    <title>Change password</title>
     <link href="<c:url value='/resources/css/bootstrap.css' />"  rel="stylesheet"></link>
     <link href="<c:url value='/resources/css/login.css' />" rel="stylesheet"></link>
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.css" />
 </head>
 
-<body>
+<jsp:useBean id="current" class="java.util.Date" />
 
+<body>
 <div id="mainWrapper">
     <div class="login-container">
         <div class="login-card">
             <div class="login-form">
-                <form action="resetPasswordEmail" method="post" class="form-horizontal">
+                <form action="changePasswordEmail" method="post" class="form-horizontal">
+                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
 
                     <c:choose>
-                        <c:when test="${param.error != null}">
+                        <c:when test="${not empty error}">
                             <div class="alert alert-danger">
-                                <p>Invalid email address.</p>
+                                <p>${error}</p>
                             </div>
                         </c:when>
                         <c:when test="${not empty status}">
                             <div class="alert alert-success">
+                                <c:if test="${showWhen}">
+                                    ${current.toLocaleString()}:&nbsp;
+                                </c:if>
                                 <p>${status}</p>
                             </div>
                         </c:when>
                     </c:choose>
 
-                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+                    <div class="input-group input-sm">
+                        <label class="input-group-addon" for="username"><i class="fa fa-user"></i></label>
+                        <input type="text" class="form-control" id="username" name="emailAddress" value="${emailAddress}" required />
+                    </div>
 
-                    <c:choose>
-                        <c:when test="${not empty emailAddress}">
-                            <div class="input-group input-sm">
-                                <label class="input-group-addon"><i class="fa">${emailAddress}</i></label>
-                                <input type="hidden" id="usernameHidden" name="emailAddressHidden" value="${emailAddress}" />
-                            </div>
-                        </c:when>
-                        <c:otherwise>
-                            <div class="input-group input-sm">
-                                <label class="input-group-addon" for="username"><i class="fa fa-user"></i></label>
-                                <input type="text" class="form-control" id="username" name="emailAddress" placeholder="Enter e-mail address" value="emailAddressHidden" required />
-                            </div>
-                        </c:otherwise>
-                    </c:choose>
+                    <div class="input-group input-sm">
+                        <label class="input-group-addon" for="repeatUsername"><i class="fa fa-user"></i></label>
+                        <input type="text" class="form-control" id="repeatUsername" name="repeatEmailAddress" equired />
+                    </div>
 
                     <div class="form-actions">
-                        <input type="submit" class="btn btn-block btn-primary btn-default" value="Send e-mail to reset password" />
+                        <input type="submit" class="btn btn-block btn-primary btn-default" value="Send e-mail to change password" />
                     </div>
 
                     <br />
@@ -70,6 +68,5 @@
         </div>
     </div>
 </div>
-
 </body>
 </html>

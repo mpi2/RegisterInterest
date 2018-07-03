@@ -537,6 +537,15 @@ public class SqlUtils {
         return count;
     }
 
+    public List<Contact> getContacts() {
+        final String query = "SELECT * FROM contact";
+
+        Map<Integer, Contact> contactMap = new HashMap<>();
+        List<Contact> contactList = jdbcInterest.query(query, new HashMap<String, Object>(), new ContactRowMapper());
+
+        return contactList;
+    }
+
     public Map<Integer, Contact> getContactsIndexedByContactPk() {
         final String query = "SELECT * FROM contact";
 
@@ -750,6 +759,32 @@ public class SqlUtils {
         List<ResetCredentials> list = jdbcInterest.query(query, parameterMap, new ResetCredentialsRowMapper());
 
         return (list.isEmpty() ? null : list.get(0));
+    }
+
+    /**
+     * Delete the row in reset_credentials identified by {@code emailAddress}. If no such email address exists, no
+     * rows are deleted.
+     *
+     * @param emailAddress key to use for delete
+     *
+     * @return the number of rows deleted
+     */
+    public int deleteResetCredentialsByEmailAddress(String emailAddress) {
+
+        int rowsDeleted = 0;
+
+        String delete = "DELETE FROM reset_credentials WHERE email_address = :emailAddress";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("emailAddress", emailAddress);
+
+        try {
+            rowsDeleted = jdbcInterest.update(delete, parameterMap);
+        } catch (Exception e) {
+            // Ignore any errors
+        }
+
+        return rowsDeleted;
     }
 
     /**

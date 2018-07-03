@@ -22,15 +22,14 @@
 </head>
 
 <body>
-
 <div id="mainWrapper">
     <div class="login-container">
         <div class="login-card">
             <div class="login-form">
 
-                <c:url var="resetPasswordUrl" value="resetPassword" />
-
-                <form action="${resetPasswordUrl}" method="post" class="form-horizontal">
+                <form action="changePasswordResponse" method="post" class="form-horizontal">
+                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+                    <input type="hidden" name="token" value="${token}" />
 
                     <c:if test="${not empty error}">
                         <div class="alert alert-danger">
@@ -38,17 +37,14 @@
                         </div>
                     </c:if>
 
-                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
-                    <input type="hidden" name="token" value="${token}" />
-
                     <div class="input-group input-sm">
                         <label class="input-group-addon" for="newPassword"><i class="fa fa-lock"></i></label>
-                        <input type="password" class="form-control" id="newPassword" name="newPassword" placeholder="New Password" required />
+                        <input type="password" class="form-control" id="newPassword" name="newPassword" placeholder="New password" required />
                     </div>
 
                     <div class="input-group input-sm">
                         <label class="input-group-addon" for="repeatPassword"><i class="fa fa-lock"></i></label>
-                        <input type="password" class="form-control" id="repeatPassword" name="repeatPassword" placeholder="Repeat Password" required />
+                        <input type="password" class="form-control" id="repeatPassword" name="repeatPassword" placeholder="Repeat password" required />
                     </div>
 
                     <br />
@@ -66,6 +62,5 @@
         </div>
     </div>
 </div>
-
 </body>
 </html>
