@@ -19,7 +19,7 @@ package org.mousephenotype.ri.send;
 import org.mousephenotype.ri.core.EmailUtils;
 import org.mousephenotype.ri.core.SqlUtils;
 import org.mousephenotype.ri.core.entities.Contact;
-import org.mousephenotype.ri.core.entities.GeneContact;
+import org.mousephenotype.ri.core.entities.ContactGene;
 import org.mousephenotype.ri.core.entities.GeneSent;
 import org.mousephenotype.ri.core.entities.GeneSentSummary;
 import org.mousephenotype.ri.core.exceptions.InterestException;
@@ -116,29 +116,29 @@ public class ApplicationSend implements CommandLineRunner {
 
     private void doGeneSent() throws InterestException {
 
-        Map<Integer, String> emailAddressesByGeneContactPk;
+        Map<Integer, String> emailAddressesByContactGenePk;
         List<GeneSent> genesScheduledForSending;
-        Map<Integer, GeneContact> geneContacts = new HashMap<>();
+        Map<Integer, ContactGene> contactGenes = new HashMap<>();
 
 
-        emailAddressesByGeneContactPk = sqlUtils.getEmailAddressesByGeneContactPk();
+        emailAddressesByContactGenePk = sqlUtils.getEmailAddressesByContactGenePk();
         genesScheduledForSending = sqlUtils.getGenesScheduledForSending();
-        List<GeneContact> geneContactList = sqlUtils.getGeneContacts();
-        for (GeneContact gc : geneContactList) {
-            geneContacts.put(gc.getPk(), gc);
+        List<ContactGene> contactGeneList = sqlUtils.getContactGenes();
+        for (ContactGene gc : contactGeneList) {
+            contactGenes.put(gc.getPk(), gc);
         }
         int built = 0;
         int sent = 0;
         Message message;
 
         for (GeneSent geneSent : genesScheduledForSending) {
-            String email = emailAddressesByGeneContactPk.get(geneSent.getGeneContactPk());
-            GeneContact geneContact = geneContacts.get(geneSent.getGeneContactPk());
+            String email = emailAddressesByContactGenePk.get(geneSent.getContactGenePk());
+            ContactGene contactGene = contactGenes.get(geneSent.getContactGenePk());
             boolean isHtml = false;
             message = emailUtils.assembleEmail(smtpHost, smtpPort, smtpFrom, smtpReplyto, geneSent.getSubject(), geneSent.getBody(), email, isHtml);
             built++;
 
-            sendEmail(geneContact, geneSent, message);
+            sendEmail(contactGene, geneSent, message);
             sent++;
 
             // Pause for 36 seconds so we don't exceed 100 e-mails per hour.
@@ -207,7 +207,8 @@ public class ApplicationSend implements CommandLineRunner {
         System.out.println("Sent " + sent + " emails.");
     }
 
-    private void sendEmail(GeneContact geneContact, GeneSent geneSent, Message message) throws InterestException {
+    // FIXME contactGene is never used
+    private void sendEmail(ContactGene contactGene, GeneSent geneSent, Message message) throws InterestException {
 
         String recipient = null;
 
@@ -220,8 +221,6 @@ public class ApplicationSend implements CommandLineRunner {
             Transport.send(message);
             geneSent.setSentAt(new Date());
             sqlUtils.insertGeneSent(geneSent);
-            String logMessage = "email scheduled for transport " + geneSent.getSentAt() + " for genePk " + geneContact.getGenePk() + ", contactPk " + geneContact.getContactPk() + ": OK";
-            sqlUtils.logSendAction(invoker, geneContact.getGenePk(), geneContact.getContactPk(), logMessage);
 
         } catch (MessagingException e) {
 
@@ -241,8 +240,6 @@ public class ApplicationSend implements CommandLineRunner {
 
             Transport.send(message);
             sqlUtils.updateGeneSentSummary(summary);
-            String logMessage = "summary email scheduled for transport " + summary.getSentAt() + " for contactPk " + summary.getContactPk() + ": OK";
-            sqlUtils.logSendAction(invoker, null, summary.getContactPk(), logMessage);
 
         } catch (MessagingException e) {
 

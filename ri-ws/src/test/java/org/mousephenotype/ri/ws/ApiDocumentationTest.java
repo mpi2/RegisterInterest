@@ -17,6 +17,7 @@
 package org.mousephenotype.ri.ws;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,7 +40,8 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.restdocs.request.RequestDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -99,6 +101,7 @@ public class ApiDocumentationTest {
     // FIXME FIXME FIXME
     // Replace this test (and the /interest/contacts endpoint) with a test for the Summary object.
     // FIXME FIXME FIXME
+@Ignore
     @Test
     public void filteredContactGet() throws Exception {
         this.mockMvc.perform(get("https://www.ebi.ac.uk/mi/impc/interest/contacts?type=gene&email=user1@ebi.ac.uk&gene=MGI:0000010")
@@ -133,7 +136,7 @@ public class ApiDocumentationTest {
                         )))
                 ;
     }
-
+@Ignore
     @Test
     public void register() throws Exception {
         this.mockMvc.perform(post("https://www.ebi.ac.uk/mi/impc/interest/contacts?type=gene&email=user10@ebi.ac.uk&gene=MGI:0000010")
@@ -147,7 +150,7 @@ public class ApiDocumentationTest {
                                 parameterWithName("email").description("The email address to register (required)"))))
         ;
     }
-
+@Ignore
     @Test
     public void unregister() throws Exception {
         this.mockMvc.perform(delete("https://www.ebi.ac.uk/mi/impc/interest/contacts?type=gene&email=user10@ebi.ac.uk&gene=MGI:0000010")

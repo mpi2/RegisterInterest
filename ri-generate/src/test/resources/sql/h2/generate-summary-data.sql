@@ -35,7 +35,7 @@ INSERT INTO gene
   ('MGI:3576659',     'Ano5',      'c-120',      @PAPP,             @now,                   @PK_PAPP,             @PAPP,                'caps-120',                            @MPS,                                 @PK_MPS,                                  @MPS,                                    @nowplus1,                                  @nowplus2,                                'naps-120',                     @MPS,                          @PK_MPS,                           @MPS,                             @nowplus3,                          @nowplus4,                         'ps-120',           @PK_xx,             @nowplus5,               NULL,                  NULL,                  0,                                @now)
 ;
 
-insert into gene_contact(contact_pk, gene_pk, created_at) VALUES
+insert into contact_gene(contact_pk, gene_pk, created_at) VALUES
   (1,  1, @now),
   (1,  2, @now),
   (1,  3, @now),

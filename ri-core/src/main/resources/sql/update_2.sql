@@ -29,9 +29,9 @@ CREATE TABLE reset_credentials (
 
 -- Add password and password_expired columns to contact.
 ALTER TABLE `ri`.`contact`
-  ADD COLUMN `password` VARCHAR(256) NOT NULL DEFAULT '' AFTER `address`,
-  ADD COLUMN `password_expired` INT NOT NULL DEFAULT 1 AFTER `password`,
-  ADD COLUMN `account_locked` INT NOT NULL DEFAULT 0 AFTER `password_expired`;
+  ADD COLUMN `password`         VARCHAR(256) NOT NULL DEFAULT '' AFTER `address`,
+  ADD COLUMN `password_expired` INT          NOT NULL DEFAULT 1  AFTER `password`,
+  ADD COLUMN `account_locked`   INT          NOT NULL DEFAULT 0  AFTER `password_expired`;
 
 -- Populate the contact_role table with a 'USER' role for every contact.
 INSERT INTO contact_role(contact_pk, role, created_at)
@@ -42,7 +42,7 @@ INSERT INTO contact_role(contact_pk, role, created_at)
 ALTER TABLE contact
 DROP COLUMN `active`;
 
-ALTER TABLE gene_contact
+ALTER TABLE contact_gene
   DROP COLUMN active;
 
 ALTER TABLE gene_status
@@ -50,3 +50,14 @@ ALTER TABLE gene_status
 
 ALTER TABLE imits_status
   DROP COLUMN active;
+
+-- Rename contact_gene table to contact_gene and gene_sent.contact_gene_pk to contact_gene_pk.
+RENAME TABLE contact_gene TO contact_gene;
+ALTER TABLE `ri`.`gene_sent`
+  DROP FOREIGN KEY `gene_sent_ibfk_1`;
+ALTER TABLE `ri`.`gene_sent`
+  CHANGE COLUMN `contact_gene_pk` `contact_gene_pk` INT(11) NOT NULL ;
+ALTER TABLE `ri`.`gene_sent`
+  ADD CONSTRAINT `gene_sent_ibfk_1`
+FOREIGN KEY (`contact_gene_pk`)
+REFERENCES `ri`.`contact_gene` (`pk`);

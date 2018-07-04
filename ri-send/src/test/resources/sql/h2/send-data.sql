@@ -31,11 +31,11 @@ INSERT INTO gene
 ;
 
 SET @gcUserPk = 1;
-insert into gene_contact(contact_pk, gene_pk, created_at) VALUES
+insert into contact_gene(contact_pk, gene_pk, created_at) VALUES
   (@gcUserPk,  1, @now)
 ;
 
 INSERT INTO gene_sent
-  (subject,       body,      gene_contact_pk, assignment_status_pk, conditional_allele_production_status_pk, null_allele_production_status_pk, phenotyping_status_pk, created_at, sent_at) VALUES
+  (subject,       body,      contact_gene_pk, assignment_status_pk, conditional_allele_production_status_pk, null_allele_production_status_pk, phenotyping_status_pk, created_at, sent_at) VALUES
   ('my subject', 'my body',  1,               @PK_NP,               NULL,                                    NULL,                             NULL,                  @now,       NULL)
 ;

@@ -44,7 +44,7 @@ INSERT INTO gene
   ('MGI:0000120',     'gene-120',  'c-120',      @PAPP,             @now,                   @PK_PAPP,             @PAPP,                'caps-120',                            @MPS,                                 @PK_MPS,                                  @MPS,                                    @nowplus1,                                  @nowplus2,                                'naps-120',                     @MP,                           @PK_MP,                            @MP,                              @nowplus3,                          @nowplus4,                         'ps-120',           @PDA,               @nowplus5,               @PK_PDA,               @PDA,                  11,                                @now)
 ;
 
-insert into gene_contact(contact_pk, gene_pk, created_at) VALUES
+insert into contact_gene(contact_pk, gene_pk, created_at) VALUES
   (1,  1, @now),
   (1,  2, @now),
   (1,  3, @now),
@@ -60,7 +60,7 @@ insert into gene_contact(contact_pk, gene_pk, created_at) VALUES
 ;
 
 INSERT INTO gene_sent
-  (subject,       body,      gene_contact_pk, assignment_status_pk, conditional_allele_production_status_pk, null_allele_production_status_pk, phenotyping_status_pk, created_at, sent_at) VALUES
+  (subject,       body,      contact_gene_pk, assignment_status_pk, conditional_allele_production_status_pk, null_allele_production_status_pk, phenotyping_status_pk, created_at, sent_at) VALUES
   ('my subject', 'my body',   4,               @PK_NP,               NULL,                                    NULL,                             NULL,                  @now,       @now),
   ('my subject', 'my body',   5,               @PK_PAPP,             @PK_MPS,                                 NULL,                             NULL,                  @now,       @now),
   ('my subject', 'my body',   6,               @PK_PAPP,             NULL,                                    @PK_MP,                           @PK_PDA,               @now,       @now),

@@ -71,6 +71,7 @@ public class SummaryController {
     public final static String ERR_INVALID_EMAIL_ADDRESS  = "The value provided is not a valid e-mail address. Please enter a valid e-mail address.";
     public final static String ERR_INVALID_TOKEN          = "Invalid token.";
     public final static String ERR_PASSWORD_MISMATCH      = "The passwords do not match.";
+    public final static String ERR_CHANGE_PASSWORD_FAILED = "The password could not be changed.";
     public final static String ERR_SEND_MAIL_FAILED       = "The e-mail send failed.";
     public final static String ERR_INVALID_CREDENTIALS    = "Invalid username and password.";
 
@@ -87,6 +88,7 @@ public class SummaryController {
     public final static String TITLE_INVALID_CREDENTIALS        = "Invalid credentials";
     public final static String TITLE_PASSWORD_MISMATCH          = "Password mismatch";
     public final static String TITLE_EMAIL_ADDRESS_MISMATCH     = "e-mail address mismatch";
+    public final static String TITLE_CHANGE_PASSWORD_FAILED     = "Change password failed";
     public final static String TITLE_CHANGE_PASSWORD_REQUEST    = "Change password";
     public final static String TITLE_CHANGE_PASSWORD_EMAIL_SENT = "Change password e-mail sent";
     public final static String TITLE_SEND_MAIL_FAILED           = "Mail server is down";
@@ -388,9 +390,19 @@ public class SummaryController {
 
         String emailAddress = resetCredentials.getAddress();
 
-        // Update the password and consume (remove) reset_credential record.
-        updatePassword(emailAddress, newPassword);
-        sqlUtils.deleteResetCredentialsByEmailAddress(emailAddress);
+        // Encrypt the password, update it in the contact table, and consume (remove) reset_credential record.
+        try {
+
+            updatePassword(emailAddress, passwordEncoder.encode(newPassword));
+            sqlUtils.deleteResetCredentialsByEmailAddress(emailAddress);
+
+        } catch (InterestException e) {
+
+            model.addAttribute("title", TITLE_CHANGE_PASSWORD_FAILED);
+            model.addAttribute("error", ERR_CHANGE_PASSWORD_FAILED);
+            logger.error("Error trying to change password for {}: {}", emailAddress, e.getLocalizedMessage());
+            return "errorPage";
+        }
 
         logger.info("Password successfully changed for {}", emailAddress);
 
@@ -517,10 +529,9 @@ public class SummaryController {
         }
     }
 
-    private int updatePassword(String emailAddress, String rawPassword) {
+    private void updatePassword(String emailAddress, String encryptedPassword) throws InterestException {
 
-        String password = passwordEncoder.encode(rawPassword);
-        return sqlUtils.updatePassword(emailAddress, password);
+        sqlUtils.updatePassword(emailAddress, encryptedPassword);
     }
 
     private String validateNewPassword(String newPassword, String repeatPassword) {

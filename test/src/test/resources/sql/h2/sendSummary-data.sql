@@ -39,7 +39,7 @@ INSERT INTO gene
 ;
 
 INSERT INTO gene_sent
-(pk, subject, body, gene_contact_pk, created_at, sent_at) VALUES
+(pk, subject, body, contact_gene_pk, created_at, sent_at) VALUES
   (1, 'Test Subject1', 'Test Body1', 1, NOW(), NOW()),
   (2, 'Test Subject2', 'Test Body2', 2, NOW(), NOW()),
   (3, 'Test Subject3', 'Test Body3', 3, NOW(), NOW()),

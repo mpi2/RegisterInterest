@@ -17,6 +17,7 @@
 package org.mousephenotype.ri.integrationtest;
 
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mousephenotype.ri.generate.ApplicationGenerate;
@@ -96,7 +97,7 @@ public class RegisterUnregisterTest {
      *
      * @throws Exception
      */
-//@Ignore
+@Ignore
     @Test
     public void testRegisterUnregister() throws Exception {
 
@@ -124,14 +125,14 @@ public class RegisterUnregisterTest {
 
     private void register(String email, String geneAccessionId) {
 
-        ResponseEntity<String> response = interestController.register(email, "gene", geneAccessionId);
+        ResponseEntity<String> response = interestController.doGeneRegistration(geneAccessionId);
         System.out.println(response.getStatusCode().toString());
         System.out.println(response.getBody());
     }
 
     private void unregister(String email, String geneAccessionId) {
 
-        ResponseEntity<String> response = interestController.unregister(email, "gene", geneAccessionId);
+        ResponseEntity<String> response = interestController.doGeneUnregistration(geneAccessionId);
         System.out.println(response.getStatusCode().toString());
         System.out.println(response.getBody());
     }

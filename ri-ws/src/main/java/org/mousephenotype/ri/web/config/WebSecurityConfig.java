@@ -53,16 +53,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         http
                 .authorizeRequests()
-// FIXME - Disable contact paths or put under admin path
                 .antMatchers(HttpMethod.GET, "/admin/**").hasRole(ADMIN)
                 .antMatchers(HttpMethod.GET, "/api/summary/**").access("hasRole('USER') or hasRole('ADMIN')")
-//                .antMatchers(HttpMethod.GET, "/contacts/**").access("hasRole('USER') or hasRole('ADMIN')")
-//                .antMatchers(HttpMethod.POST, "/contacts/**").access("hasRole('USER') or hasRole('ADMIN')")
-//                .antMatchers(HttpMethod.DELETE, "/contacts/**").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers(HttpMethod.POST, "/api/geneRegistration/**").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers(HttpMethod.DELETE, "/api/geneUnregistration/**").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers(HttpMethod.DELETE, "/api/contactDeletion/**").access("hasRole('USER') or hasRole('ADMIN')")
 
                 .antMatchers(HttpMethod.GET, "/summary").access("hasRole('USER') or hasRole('ADMIN')")
-//                .antMatchers(HttpMethod.POST, "/register").access("hasRole('USER') or hasRole('ADMIN')")
-//                .antMatchers(HttpMethod.DELETE, "/unregister").access("hasRole('USER') or hasRole('ADMIN')")
 
                 .and().csrf()
                 .and().exceptionHandling().accessDeniedPage("/Access_Denied")

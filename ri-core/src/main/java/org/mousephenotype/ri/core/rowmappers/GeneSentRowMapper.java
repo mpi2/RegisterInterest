@@ -49,7 +49,7 @@ public class GeneSentRowMapper implements RowMapper<GeneSent> {
         geneSent.setSubject((rs.getString("subject")));
         geneSent.setBody((rs.getString("body")));
 
-        geneSent.setGeneContactPk(rs.getInt("gene_contact_pk"));
+        geneSent.setContactGenePk(rs.getInt("contact_gene_pk"));
 
         Integer i = rs.getInt("assignment_status_pk");
         geneSent.setAssignmentStatusPk((i == null) || (i == 0) ? null : i);

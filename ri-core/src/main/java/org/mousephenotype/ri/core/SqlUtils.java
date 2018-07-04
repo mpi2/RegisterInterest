@@ -35,8 +35,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
 import java.sql.Connection;
@@ -50,7 +48,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by mrelac on 12/05/2017.
  */
 public class SqlUtils {
-
     private static final Logger logger = LoggerFactory.getLogger(SqlUtils.class);
 
     private static final Integer INITIAL_POOL_CONNECTIONS = 1;
@@ -64,6 +61,51 @@ public class SqlUtils {
         this.jdbcInterest = jdbcInterest;
     }
 
+
+    /**
+     * Add {@code role} to {@code emailAddress}
+     *
+     * @param emailAddress The email addresss to be inserted
+     * @param role The role to be added
+     * @throws InterestException (HttpStatus.INTERNAL_SERVER_ERROR if either the email address doesn't exist or this
+     *                           emailAddress/role pair already exists
+     */
+    public void addRole(String emailAddress, RIRole role) throws InterestException {
+
+        String message;
+
+        Contact contact = getContact(emailAddress);
+        if (contact == null) {
+            message = "addRole(): Invalid contact " + emailAddress + ".";
+            logger.error(message);
+            throw new InterestException(message, HttpStatus.NOT_FOUND);
+        }
+
+        final String insert = "INSERT INTO contact_role (contact_pk, role, created_at)" +
+                              "VALUES (:contactPk, :role, :createdAt)";
+
+        Date createdAt = new Date();
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        try {
+            parameterMap.put("contactPk", contact.getPk());
+            parameterMap.put("role", role.toString());
+            parameterMap.put("createdAt", createdAt);
+
+            int rowCount = jdbcInterest.update(insert, parameterMap);
+            if (rowCount < 1) {
+                message = "Unable to add role " + role.toString() + " for contact " + emailAddress + ".";
+                logger.error(message);
+                throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+        } catch (Exception e) {
+
+            message = "Error inserting contact_role for " + emailAddress + ": " + e.getLocalizedMessage();
+            logger.error(message);
+            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
     /**
      * Determine if a column exists in a table specific for a MySQL database
@@ -91,12 +133,156 @@ public class SqlUtils {
         return found;
     }
 
+    /**
+     * Within the scope of a single transaction, insert the contact, then the default USER role
+     *
+     * @param emailAddress The email addresss to be inserted
+     * @param encryptedPassword The encrypted password to be inserted
+     * @throws InterestException (HttpStatus.INTERNAL_SERVER_ERROR if either the email address or the role already exists
+     */
+    @Transactional
+    public void createAccount(String emailAddress, String encryptedPassword) throws InterestException {
+
+        final String ERROR_MESSAGE = "We were unable to register you with the specified e-mail address. Please contact the EBI mouse informatics helpdesk for assistance.";
+        final String insert = "INSERT INTO contact(address, password, password_expired, account_locked, created_at) " +
+                              "VALUES (:address, :password, :passwordExpired, :accountLocked, :createdAt)";
+        int pk;
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("address", emailAddress);
+        parameterMap.put("password", encryptedPassword);
+        parameterMap.put("passwordExpired", 0);
+        parameterMap.put("accountLocked", 0);
+        parameterMap.put("createdAt", new Date());
+
+        try {
+
+            // Insert the contact.
+            KeyHolder          keyholder       = new GeneratedKeyHolder();
+            SqlParameterSource parameterSource = new MapSqlParameterSource(parameterMap);
+            pk = jdbcInterest.update(insert, parameterSource, keyholder);
+            if (pk < 1) {
+                logger.error("Contact {} already exists.", emailAddress);
+                throw new InterestException(ERROR_MESSAGE, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+        } catch (Exception e) {
+
+            logger.error("Exception adding contact {}. Reason: {}", emailAddress, e.getLocalizedMessage());
+            throw new InterestException(ERROR_MESSAGE, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        // Add the USER role to the database.
+        addRole(emailAddress, RIRole.USER);
+    }
+
     public void createSpringBatchTables(DataSource datasource) {
 
         logger.info("Creating SPRING BATCH tables");
         org.springframework.core.io.Resource r = new ClassPathResource("org/springframework/batch/core/schema-mysql.sql");
         ResourceDatabasePopulator p = new ResourceDatabasePopulator(r);
         p.execute(datasource);
+    }
+
+    @Transactional
+    public void deleteContact(String emailAddress) throws InterestException {
+
+        String message;
+
+        Contact contact = getContact(emailAddress);
+        if (contact == null) {
+            message = "deleteContact(): Invalid contact " + emailAddress + ".";
+            logger.error(message);
+            throw new InterestException(message, HttpStatus.NOT_FOUND);
+        }
+
+        String delete;
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        // Delete all matching emailAddress from contact_gene.
+        delete = "DELETE FROM contact_gene WHERE contact_pk = :contactPk";
+        parameterMap.put("contactPk", contact.getPk());
+        jdbcInterest.update(delete, parameterMap);
+
+        // Delete all matching emailAddress from reset_credentials
+        deleteResetCredentialsByEmailAddress(emailAddress);
+
+        // Delete all matching emailAddress from contact_role.
+        delete = "DELETE FROM contact_role WHERE contact_pk = :contactPk";
+        jdbcInterest.update(delete, parameterMap);
+
+        // Delete all matching emailAddress from contact
+        delete = "DELETE FROM contact WHERE contact_pk = :contactPk";
+        jdbcInterest.update(delete, parameterMap);
+    }
+
+    /**
+     * Delete the row in reset_credentials identified by {@code emailAddress}. If no such email address exists, no
+     * rows are deleted.
+     *
+     * @param emailAddress key to use for delete
+     *
+     * @return the number of rows deleted
+     */
+    public int deleteResetCredentialsByEmailAddress(String emailAddress) {
+
+        int rowsDeleted = 0;
+
+        String delete = "DELETE FROM reset_credentials WHERE email_address = :emailAddress";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("emailAddress", emailAddress);
+
+        try {
+            rowsDeleted = jdbcInterest.update(delete, parameterMap);
+        } catch (Exception e) {
+            // Ignore any errors
+        }
+
+        return rowsDeleted;
+    }
+
+    /**
+     * Delete {@code role} from contact identified by {@code emailAddress}
+     *
+     * @param emailAddress The email address
+     * @param role the role
+     *
+     * @throws InterestException (HttpStatus.INTERNAL_SERVER_ERROR if either the email address doesn't exist or this
+     *                           emailAddress/role pair doesn't exist
+     */
+    public void deleteRole(String emailAddress, RIRole role) throws InterestException {
+
+        String message;
+
+        Contact contact = getContact(emailAddress);
+        if (contact == null) {
+            message = "deleteRole(): Invalid contact " + emailAddress + ".";
+            logger.error(message);
+            throw new InterestException(message, HttpStatus.NOT_FOUND);
+        }
+
+        final String delete = "DELETE FROM contact_role WHERE contact_pk = :contactPk AND role = :role";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        try {
+            parameterMap.put("contactPk", contact.getPk());
+            parameterMap.put("role", role.toString());
+
+            int rowCount = jdbcInterest.update(delete, parameterMap);
+            if (rowCount < 1) {
+                message = "Unable to delete role " + role.toString() + " for contact " + emailAddress + ".";
+                logger.error(message);
+                throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+        } catch (Exception e) {
+
+            message = "Error deleting contact_role for " + emailAddress + ": " + e.getLocalizedMessage();
+            logger.error(message);
+            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     public static DataSource getConfiguredDatasource(String url, String username, String password) {
@@ -133,13 +319,166 @@ public class SqlUtils {
         return ds;
     }
 
-    public Map<Integer, String> getEmailAddressesByGeneContactPk() {
+    /**
+     * Return the  {@link Contact}
+     *
+     * @param emailAddress the email address of the desired contact
+     *
+     * @return the {@link Contact} matching the emailAddress if found; null otherwise
+     */
+    public Contact getContact(String emailAddress) {
+
+        final String query = "SELECT * FROM contact WHERE address = :emailAddress";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("emailAddress", emailAddress);
+
+        List<Contact> contacts = jdbcInterest.query(query, parameterMap, new ContactRowMapper());
+        Contact contact = (contacts.isEmpty() ? null : contacts.get(0));
+        if (contact != null) {
+            contact.setRoles(getContactRoles(emailAddress));
+        }
+
+        return contact;
+    }
+
+    /**
+     *
+     * @param gene The mgi accession id of the gene of interest
+     * @param email the email address of interest
+     * @return the {@link ContactGene} instance, if found; null otherwise
+     */
+    @Deprecated
+    // FIXME IS THIS USED ANYWHERE? IF NOT, GET RID OF IT.
+    public ContactGene getContactGene(String gene, String email) {
+        String query =
+                "SELECT * FROM contact_gene cg\n" +
+                        "JOIN gene g ON g.pk = cg.gene_pk\n" +
+                        "JOIN contact c ON c.pk = cg.contact_pk\n" +
+                        "WHERE g.mgi_accession_id = :gene AND c.address = :email";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("gene", gene);
+        parameterMap.put("email", email);
+
+        List<ContactGene> list = jdbcInterest.query(query, parameterMap, new ContactGeneRowMapper());
+
+        return (list.isEmpty() ? null : list.get(0));
+    }
+
+    /**
+     *
+     * @return a list of {@link ContactGeneReportRow}. Needed by iMits.
+     */
+    public List<ContactGeneReportRow> getContactGeneReportRow() {
+        List<ContactGeneReportRow> report;
+
+        final String query = "SELECT\n" +
+                "  c.address          AS contact_email,\n" +
+                "  c.created_at       AS contact_created_at,\n" +
+                "  g.symbol           AS marker_symbol,\n" +
+                "  g.mgi_accession_id AS mgi_accession_id,\n" +
+                "  cg.created_at      AS gene_interest_created_at\n" +
+                "FROM contact c\n" +
+                "JOIN contact_gene cg ON cg.contact_pk = c.pk\n" +
+                "JOIN gene         g  ON g.pk = cg.gene_pk\n" +
+                "ORDER BY c.address, g.symbol;";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        report = jdbcInterest.query(query, parameterMap, new ContactGeneReportRowRowMapper());
+
+        return report;
+    }
+
+    /**
+     *
+     * @return a {@link List} of all {@link ContactGene} entries
+     */
+    public List<ContactGene> getContactGenes() {
+        final String query = "SELECT * FROM contact_gene";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        return jdbcInterest.query(query, parameterMap, new ContactGeneRowMapper());
+    }
+
+    /**
+     * @param emailAddress The contact for which the gene list is desired
+     * @return a {@link List} of all {@link ContactGene} entries
+     */
+    public List<ContactGene> getContactGenes(String emailAddress) {
+        final String query = "SELECT * FROM contact_gene";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        return jdbcInterest.query(query, parameterMap, new ContactGeneRowMapper());
+    }
+
+    public Collection<GrantedAuthority> getContactRoles(String emailAddress) {
+
+        ArrayList<GrantedAuthority> roles = new ArrayList<>();
+
+        final String query = "SELECT cr.* FROM contact_role cr " +
+                "JOIN contact c ON c.pk = cr.contact_pk " +
+                "WHERE c.address = :emailAddress";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("emailAddress", emailAddress);
+
+        List<ContactRole> results = jdbcInterest.query(query, parameterMap, new ContactRoleRowMapper());
+        for (ContactRole result : results) {
+            roles.add(result.getAuthority());
+        }
+
+        return roles;
+    }
+
+    public List<Contact> getContacts() {
+        final String query = "SELECT * FROM contact";
+
+        Map<Integer, Contact> contactMap = new HashMap<>();
+        List<Contact> contactList = jdbcInterest.query(query, new HashMap<String, Object>(), new ContactRowMapper());
+
+        return contactList;
+    }
+
+    public Map<Integer, Contact> getContactsIndexedByContactPk() {
+        final String query = "SELECT * FROM contact";
+
+        Map<Integer, Contact> contactMap = new HashMap<>();
+        List<Contact> contactList = jdbcInterest.query(query, new HashMap<String, Object>(), new ContactRowMapper());
+        for (Contact contact : contactList) {
+            contactMap.put(contact.getPk(), contact);
+        }
+
+        return contactMap;
+    }
+
+    /**
+     *
+     * @return a list of the contact primary keys for every contact who is registered for interest in one or more genes
+     */
+    public List<Integer> getContactsWithRegistrations() {
+
+        String contactPkQuery =
+                "SELECT DISTINCT\n" +
+                        "  c.pk\n" +
+                        "FROM contact_gene cg\n" +
+                        "JOIN contact      c  ON c.pk = cg.contact_pk\n" +
+                        "ORDER BY c.pk";
+
+        List<Integer> contactPks = jdbcInterest.queryForList(contactPkQuery, new HashMap<String, Object>(), Integer.class);
+
+        return contactPks;
+    }
+
+    public Map<Integer, String> getEmailAddressesByContactGenePk() {
         Map<Integer, String> results = new HashMap<>();
         final String query =
-                "SELECT gc.pk, c.address\n" +
-                "FROM contact c\n" +
-                "JOIN gene_contact gc ON gc.contact_pk      = c. pk\n" +
-                "JOIN gene_sent    gs ON gs.gene_contact_pk = gc.pk";
+                "SELECT cg.pk, c.address\n" +
+                        "FROM contact c\n" +
+                        "JOIN contact_gene cg ON cg.contact_pk      = c. pk\n" +
+                        "JOIN gene_sent    gs ON gs.contact_gene_pk = cg.pk";
 
         List<Map<String, Object>> listMap = jdbcInterest.queryForList(query, new HashMap<>());
         for (Map<String, Object> map : listMap) {
@@ -172,49 +511,6 @@ public class SqlUtils {
     }
 
     /**
-     * Return the {@link GeneSent}
-     *
-     * @param pk the gene_sent primary key
-     *
-     * @return the {@link GeneSent} matching the geneContactPk if found; null otherwise
-     */
-    public GeneSent getGeneSent(int pk) {
-
-        final String query = "SELECT * FROM gene_sent WHERE pk = :pk";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("pk", pk);
-
-        List<GeneSent> genesSent = jdbcInterest.query(query, parameterMap, new GeneSentRowMapper());
-
-        return (genesSent.isEmpty() ? null : genesSent.get(0));
-    }
-
-    /**
-     *
-     * @return a list of {@link GeneContactReportRow}. Needed by iMits.
-     */
-    public List<GeneContactReportRow> getGeneContactReportRow() {
-        List<GeneContactReportRow> report = new ArrayList<>();
-
-        final String query = "SELECT\n" +
-                "  c.address          AS contact_email,\n" +
-                "  c.created_at       AS contact_created_at,\n" +
-                "  g.symbol           AS marker_symbol,\n" +
-                "  g.mgi_accession_id AS mgi_accession_id,\n" +
-                "  gc.created_at      AS gene_interest_created_at\n" +
-                "FROM contact c\n" +
-                "JOIN gene_contact gc ON gc.contact_pk = c.pk\n" +
-                "JOIN gene         g  ON g.pk = gc.gene_pk\n" +
-                "ORDER BY c.address, g.symbol;";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-        report = jdbcInterest.query(query, parameterMap, new GeneContactReportRowRowMapper());
-
-        return report;
-    }
-
-    /**
      * @return A map of all genes, indexed by mgi accession id.
      */
     public Map<String, Gene> getGenes() {
@@ -233,22 +529,33 @@ public class SqlUtils {
         return genes;
     }
 
-    public Summary getSummary(String emailAddress) {
-        final String query =
-                     "SELECT g.* FROM gene g\n" +
-                     "LEFT OUTER JOIN gene_contact gc ON gc.gene_pk = g.pk\n" +
-                     "JOIN contact      c  ON c. pk      = gc.contact_pk\n" +
-                     "WHERE c.address = :emailAddress\n";
+    /**
+     *
+     * @return A map, indexed by contact primary key, of all genes assigned to each contact
+     */
+    public Map<Integer, List<Gene>> getGenesByContactPk() {
+
+        Map<Integer, List<Gene>> genesByContactMap = new ConcurrentHashMap<>();
+
+        String query =
+                "SELECT DISTINCT\n" +
+                        "  g.*\n" +
+                        "FROM contact_gene cg\n" +
+                        "JOIN gene         g  ON g.pk = cg.gene_pk\n" +
+                        "WHERE cg.contact_pk = :contactPk\n" +
+                        "ORDER BY g.symbol";
 
         Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("emailAddress", emailAddress);
 
-        Summary summary = new Summary();
-        summary.setEmailAddress(emailAddress);
-        List<Gene> genes = jdbcInterest.query(query, parameterMap, new GeneRowMapper());
-        summary.setGenes(genes);
+        List<Integer> contactPks = getContactsWithRegistrations();
+        for (Integer contactPk : contactPks) {
 
-        return summary;
+            parameterMap.put("contactPk", contactPk);
+            List<Gene> genes = jdbcInterest.query(query, parameterMap, new GeneRowMapper());
+            genesByContactMap.put(contactPk, genes);
+        }
+
+        return genesByContactMap;
     }
 
     /**
@@ -271,331 +578,8 @@ public class SqlUtils {
     }
 
     /**
-     * @return A {@link List} of
-     */
-    public List<GenesOfInterestByPopularity> getGenesOfInterestByPopularity() {
-
-        final String query =
-                "SELECT\n" +
-                "  g.mgi_accession_id,\n" +
-                "  g.symbol,\n" +
-                "  g.assigned_to,\n" +
-                "  g.assignment_status,\n" +
-                "  g.assignment_status_date,\n" +
-                "  count(g.symbol) AS subscriber_count,\n" +
-                "  GROUP_CONCAT(c.address, \"::\", gc.created_at ORDER BY gc.created_at SEPARATOR ' | ') AS subscribers\n" +
-                "FROM gene g\n" +
-                "JOIN gene_contact gc ON gc.gene_pk = g. pk\n" +
-                "JOIN contact      c  ON c. pk      = gc.contact_pk\n" +
-                "GROUP BY g.symbol\n" +
-                "ORDER BY count(address) DESC, g.symbol";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-
-        List<GenesOfInterestByPopularity> genes = jdbcInterest.query(query, parameterMap, new GenesOfInterestByPopularityRowMapper());
-
-        return genes;
-    }
-
-    /**
-     * @return a {@link Map} of all imits status, indexed by status (i.e. name)
-     */
-    public Map<String, ImitsStatus> getImitsStatusMap() {
-
-        Map<String, ImitsStatus> imitsStatusMap = new HashMap<>();
-        String query = "SELECT * FROM imits_status";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-
-        List<ImitsStatus> imitsStatusList = jdbcInterest.query(query, parameterMap, new ImitsStatusRowMapper());
-        for (ImitsStatus imitsStatus : imitsStatusList) {
-            imitsStatusMap.put(imitsStatus.getStatus(), imitsStatus);
-        }
-
-        return imitsStatusMap;
-    }
-
-    /**
-     * Return a list of {@link Interest} instances matching {@code email}, {@code type}, and {@code gene}
      *
-     * @param email The desired contact's email address (may be null)
-     * @param type The desired resource type (e.g. gene, phenotype, disease) (may be null)
-     * @param gene The mgi accession id of the desired gene (may be null)
-     *
-     * @return a list of matching {@link Interest} instances
-     */
-    public List<Interest> getInterests(String email, String type, String gene) {
-
-        List<Interest> interests = new ArrayList<>();
-
-        StringBuilder queryContacts = new StringBuilder("SELECT * FROM contact");
-        Map<String, Object> parameterMap = new HashMap<>();
-
-        if (email != null) {
-            queryContacts.append(" WHERE address = :email");
-            parameterMap.put("email", email);
-        }
-
-        List<Contact> contacts = jdbcInterest.query(queryContacts.toString(), parameterMap, new ContactRowMapper());
-
-        for (Contact contact : contacts) {
-            List<Gene> genes;
-            if ((type == null) || (type.equals("gene"))) {
-                String queryGenes =
-                        "SELECT * FROM gene g\n" +
-                        "JOIN gene_contact gc ON gc.gene_pk = g.pk\n" +
-                        "WHERE gc.contact_pk = :contact_pk";
-                parameterMap.put("contact_pk", contact.getPk());
-
-                if (gene != null) {
-                    queryGenes += "\n  AND g.mgi_accession_id = :mgi_accession_id";
-                    parameterMap.put("mgi_accession_id", gene);
-                }
-                genes = jdbcInterest.query(queryGenes, parameterMap, new GeneRowMapper());
-                if (genes.isEmpty()) {
-                    continue;
-                }
-            } else {
-                continue;
-            }
-
-            Interest interest = new Interest();
-            interest.setContact(contact);
-            interest.setGenes(genes);
-
-            interests.add(interest);
-        }
-
-        return interests;
-    }
-
-    /**
-     * Return the  {@link Contact}
-     *
-     * @param emailAddress the email address of the desired contact
-     *
-     * @return the {@link Contact} matching the emailAddress if found; null otherwise
-     */
-    public Contact getContact(String emailAddress) {
-
-        final String query = "SELECT * FROM contact WHERE address = :emailAddress";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("emailAddress", emailAddress);
-
-        List<Contact> contacts = jdbcInterest.query(query, parameterMap, new ContactRowMapper());
-        Contact contact = (contacts.isEmpty() ? null : contacts.get(0));
-        if (contact != null) {
-            contact.setRoles(getContactRoles(emailAddress));
-        }
-
-        return contact;
-    }
-
-    public Collection<GrantedAuthority> getContactRoles(String emailAddress) {
-
-        ArrayList<GrantedAuthority> roles = new ArrayList<>();
-
-        final String query = "SELECT cr.* FROM contact_role cr " +
-                             "JOIN contact c ON c.pk = cr.contact_pk " +
-                             "WHERE c.address = :emailAddress";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("emailAddress", emailAddress);
-
-        List<ContactRole> results = jdbcInterest.query(query, parameterMap, new ContactRoleRowMapper());
-        for (ContactRole result : results) {
-            roles.add(result.getAuthority());
-        }
-
-        return roles;
-    }
-
-    /*
-     * Update the raw password for {@code emailAddress}, encrypting it before writing it to the database. If
-     * {@code emailAddress} does not exist, ignore the request.
-     * @param emailAddress contact email address
-     * @param encryptedPassword new, encrypted password
-     * @return 1 if password was successfully updated; 0 otherwise
-     */
-    public int updatePassword(String emailAddress, String encryptedPassword) {
-
-        String update = "UPDATE contact SET password = :password, password_expired = 0 WHERE address = :address";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-
-        parameterMap.put("password", encryptedPassword);
-        parameterMap.put("address", emailAddress);
-
-        return jdbcInterest.update(update, parameterMap);
-    }
-
-    /*
-     * Update the account_locked flag to the supplied value
-     * @param emailAddress contact email address
-     * @param accountLocked new value
-     * @return 1 if account_locked was successfully updated; 0 otherwise
-     */
-    public int updateAccountLocked(String emailAddress, boolean accountLocked) {
-
-        String update = "UPDATE contact SET account_locked = :accountLocked WHERE address = :address";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-
-        parameterMap.put("accountLocked", accountLocked ? 1 : 0);
-        parameterMap.put("address", emailAddress);
-
-        return jdbcInterest.update(update, parameterMap);
-    }
-
-    /*
-     * Update the password_expired flag to the supplied value
-     * @param emailAddress contact email address
-     * @param passwordExpired new value
-     * @return 1 if password_expired was successfully updated; 0 otherwise
-     */
-    public int updatePasswordExpired(String emailAddress, boolean passwordExpired) {
-
-        String update = "UPDATE contact SET password_expired = :passwordExpired WHERE address = :address";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-
-        parameterMap.put("passwordExpired", passwordExpired ? 1 : 0);
-        parameterMap.put("address", emailAddress);
-
-        return jdbcInterest.update(update, parameterMap);
-    }
-
-    /*
-     * If {@code emailAddress} does not have {@code role}, INSERT it; otherwise, ignore the request.
-     * @param emailAddress contact email address
-     * @param role
-     * @return number of records inserted
-     * @throws InterestException
-     */
-    public int updateContactRole(int contactPk, ContactRole role) throws InterestException {
-
-        int count = 0;
-
-        // Ignore if contact already has the role.
-
-        String insert = "INSERT INTO contact_role (contact_pk, role, created_at)" +
-                        "VALUES (:contactPk, :role, :createdAt)";
-
-        Date createdAt = new Date();
-
-        Map<String, Object> parameterMap = new HashMap<>();
-        try {
-            parameterMap.put("contactPk", contactPk);
-            parameterMap.put("role", role.getRole().toString());
-            parameterMap.put("createdAt", createdAt);
-
-            count = jdbcInterest.update(insert, parameterMap);
-
-        } catch (DuplicateKeyException e) {
-
-            // Ignored
-
-        } catch (Exception e) {
-
-            String message = "Error inserting contact_role for contactPk" + contactPk + ": " + e.getLocalizedMessage();
-            logger.error(message);
-            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return count;
-    }
-
-    /*
-     * If {@code emailAddress} has {@code role}, remove it from {@code emailAddress}; otherwise, ignore the request.
-     * @param emailAddress contact email address
-     * @param role role to be removed
-     * @return number of records removed
-     * @throws InterestException
-     */
-    public int removeRole(String emailAddress, String role) throws InterestException {
-
-        int count;
-
-        // Ignore if contact doesn't have the role.
-        String delete = "DELETE FROM contact_role WHERE contact_pk = (SELECT pk FROM contact WHERE address = :address) AND role = :role;";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-        try {
-            parameterMap.put("address", emailAddress);
-            parameterMap.put("role", role);
-
-            count = jdbcInterest.update(delete, parameterMap);
-
-        } catch (Exception e) {
-
-            String message = "Error inserting contact_role for contact" + emailAddress + ": " + e.getLocalizedMessage();
-            logger.error(message);
-            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return count;
-    }
-
-    public List<Contact> getContacts() {
-        final String query = "SELECT * FROM contact";
-
-        Map<Integer, Contact> contactMap = new HashMap<>();
-        List<Contact> contactList = jdbcInterest.query(query, new HashMap<String, Object>(), new ContactRowMapper());
-
-        return contactList;
-    }
-
-    public Map<Integer, Contact> getContactsIndexedByContactPk() {
-        final String query = "SELECT * FROM contact";
-
-        Map<Integer, Contact> contactMap = new HashMap<>();
-        List<Contact> contactList = jdbcInterest.query(query, new HashMap<String, Object>(), new ContactRowMapper());
-        for (Contact contact : contactList) {
-            contactMap.put(contact.getPk(), contact);
-        }
-
-        return contactMap;
-    }
-
-    /**
-     *
-     * @return a {@link List} of all {@link GeneContact} entries
-     */
-    public List<GeneContact> getGeneContacts() {
-        final String query = "SELECT * FROM gene_contact";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-
-        return jdbcInterest.query(query, parameterMap, new GeneContactRowMapper());
-    }
-
-
-    /**
-     *
-     * @param gene The mgi accession id of the gene of interest
-     * @param email the email address of interest
-     * @return the {@link GeneContact} instance, if found; null otherwise
-     */
-    public GeneContact getGeneContact(String gene, String email) {
-        String query =
-                "SELECT * FROM gene_contact gc\n" +
-                "JOIN gene g ON g.pk = gc.gene_pk\n" +
-                "JOIN contact c ON c.pk = gc.contact_pk\n" +
-                "WHERE g.mgi_accession_id = :gene AND c.address = :email";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("gene", gene);
-        parameterMap.put("email", email);
-
-        List<GeneContact> list = jdbcInterest.query(query, parameterMap, new GeneContactRowMapper());
-
-        return (list.isEmpty() ? null : list.get(0));
-    }
-
-    /**
-     *
-     * @return A {@link Map} of all {@link GeneSent} instances, indexed by gene_contact_pk
+     * @return A {@link Map} of all {@link GeneSent} instances, indexed by contact_gene_pk
      */
     public Map<Integer, GeneSent> getGeneSent() {
 
@@ -606,10 +590,51 @@ public class SqlUtils {
 
         List<GeneSent> geneSentList = jdbcInterest.query(query, parameterMap, new GeneSentRowMapper());
         for (GeneSent geneSent : geneSentList) {
-            sentMap.put(geneSent.getGeneContactPk(), geneSent);
+            sentMap.put(geneSent.getContactGenePk(), geneSent);
         }
 
         return sentMap;
+    }
+
+    /**
+     * Return the {@link GeneSent}
+     *
+     * @param pk the gene_sent primary key
+     *
+     * @return the {@link GeneSent} matching the contactGenePk if found; null otherwise
+     */
+    public GeneSent getGeneSent(int pk) {
+
+        final String query = "SELECT * FROM gene_sent WHERE pk = :pk";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("pk", pk);
+
+        List<GeneSent> genesSent = jdbcInterest.query(query, parameterMap, new GeneSentRowMapper());
+
+        return (genesSent.isEmpty() ? null : genesSent.get(0));
+    }
+
+    /**
+     * Return a list of {@link GeneSent} matching the given {@code address}
+     * @param address the contact e-mail address
+     * @return the list of {@link GeneSent}
+     */
+    public List<GeneSent> getGeneSentForContact(String address) {
+
+        final String query =
+                "SELECT * FROM gene_sent gs\n" +
+                        "JOIN contact_gene cg ON cg.pk = gs.contact_gene_pk\n" +
+                        "JOIN contact c ON c.pk = cg.contact_pk\n" +
+                        "WHERE c.address = :address";
+
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("address", address);
+
+        List<GeneSent> summaryList = jdbcInterest.query(query, parameterMap, new GeneSentRowMapper());
+
+        return summaryList;
     }
 
     /**
@@ -631,6 +656,7 @@ public class SqlUtils {
         return sentMap;
     }
 
+
     /**
      * Return the {@link GeneSentSummary} for the given {@code address}
      * @param address the contact e-mail address
@@ -638,12 +664,12 @@ public class SqlUtils {
      */
     public GeneSentSummary getGeneSentSummaryForContact(String address) {
 
-       GeneSentSummary result = null;
+        GeneSentSummary result = null;
 
         final String query =
-                     "SELECT * FROM gene_sent_summary gss\n" +
-                     "JOIN contact c ON c.pk = gss.contact_pk\n" +
-                     "WHERE c.address = :address";
+                "SELECT * FROM gene_sent_summary gss\n" +
+                        "JOIN contact c ON c.pk = gss.contact_pk\n" +
+                        "WHERE c.address = :address";
 
 
         Map<String, Object> parameterMap = new HashMap<>();
@@ -657,28 +683,6 @@ public class SqlUtils {
         return result;
     }
 
-    /**
-     * Return a list of {@link GeneSent} matching the given {@code address}
-     * @param address the contact e-mail address
-     * @return the list of {@link GeneSent}
-     */
-    public List<GeneSent> getGeneSentForContact(String address) {
-
-        final String query =
-            "SELECT * FROM gene_sent gs\n" +
-            "JOIN gene_contact gc ON gc.pk = gs.gene_contact_pk\n" +
-            "JOIN contact c ON c.pk = gc.contact_pk\n" +
-            "WHERE c.address = :address";
-
-
-        Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("address", address);
-
-        List<GeneSent> summaryList = jdbcInterest.query(query, parameterMap, new GeneSentRowMapper());
-
-        return summaryList;
-    }
-
     public int getGeneSentSummaryPendingEmailCount() {
 
         final String query = "SELECT COUNT(*) FROM gene_sent_summary WHERE sent_at IS NULL";
@@ -688,50 +692,30 @@ public class SqlUtils {
     }
 
     /**
-     *
-     * @return A map, indexed by contact primary key, of all genes assigned to each contact
+     * @return A {@link List} of
      */
-    public Map<Integer, List<Gene>> getGenesByContactPk() {
+    public List<GenesOfInterestByPopularity> getGenesOfInterestByPopularity() {
 
-        Map<Integer, List<Gene>> genesByContactMap = new ConcurrentHashMap<>();
-
-        String query =
-               "SELECT DISTINCT\n" +
-               "  g.*\n" +
-               "FROM gene_contact gc\n" +
-               "JOIN gene         g  ON g.pk = gc.gene_pk\n" +
-               "WHERE gc.contact_pk = :contactPk\n" +
-               "ORDER BY g.symbol";
+        final String query =
+                "SELECT\n" +
+                        "  g.mgi_accession_id,\n" +
+                        "  g.symbol,\n" +
+                        "  g.assigned_to,\n" +
+                        "  g.assignment_status,\n" +
+                        "  g.assignment_status_date,\n" +
+                        "  count(g.symbol) AS subscriber_count,\n" +
+                        "  GROUP_CONCAT(c.address, \"::\", cg.created_at ORDER BY cg.created_at SEPARATOR ' | ') AS subscribers\n" +
+                        "FROM gene g\n" +
+                        "JOIN contact_gene cg ON cg.gene_pk = g. pk\n" +
+                        "JOIN contact      c  ON c. pk      = cg.contact_pk\n" +
+                        "GROUP BY g.symbol\n" +
+                        "ORDER BY count(address) DESC, g.symbol";
 
         Map<String, Object> parameterMap = new HashMap<>();
 
-        List<Integer> contactPks = getContactsWithRegistrations();
-        for (Integer contactPk : contactPks) {
+        List<GenesOfInterestByPopularity> genes = jdbcInterest.query(query, parameterMap, new GenesOfInterestByPopularityRowMapper());
 
-            parameterMap.put("contactPk", contactPk);
-            List<Gene> genes = jdbcInterest.query(query, parameterMap, new GeneRowMapper());
-            genesByContactMap.put(contactPk, genes);
-        }
-
-        return genesByContactMap;
-    }
-
-    /**
-     *
-     * @return a list of the contact primary keys for every contact who is registered for interest in one or more genes
-     */
-    public List<Integer> getContactsWithRegistrations() {
-
-        String contactPkQuery =
-                "SELECT DISTINCT\n" +
-                "  c.pk\n" +
-                "FROM gene_contact gc\n" +
-                "JOIN contact      c  ON c.pk = gc.contact_pk\n" +
-                "ORDER BY c.pk";
-
-        List<Integer> contactPks = jdbcInterest.queryForList(contactPkQuery, new HashMap<String, Object>(), Integer.class);
-
-        return contactPks;
+        return genes;
     }
 
     public List<GeneSent> getGenesScheduledForSending() {
@@ -743,6 +727,32 @@ public class SqlUtils {
 
         return genesSentList;
     }
+
+    /**
+     * @return a {@link Map} of all imits status, indexed by status (i.e. name)
+     */
+    public Map<String, ImitsStatus> getImitsStatusMap() {
+
+        Map<String, ImitsStatus> imitsStatusMap = new HashMap<>();
+        String query = "SELECT * FROM imits_status";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        List<ImitsStatus> imitsStatusList = jdbcInterest.query(query, parameterMap, new ImitsStatusRowMapper());
+        for (ImitsStatus imitsStatus : imitsStatusList) {
+            imitsStatusMap.put(imitsStatus.getStatus(), imitsStatus);
+        }
+
+        return imitsStatusMap;
+    }
+
+    /*
+     * If {@code emailAddress} has {@code role}, remove it from {@code emailAddress}; otherwise, ignore the request.
+     * @param emailAddress contact email address
+     * @param role role to be removed
+     * @return number of records removed
+     * @throws InterestException
+     */
 
     /**
      * @param token the token to match
@@ -759,59 +769,6 @@ public class SqlUtils {
         List<ResetCredentials> list = jdbcInterest.query(query, parameterMap, new ResetCredentialsRowMapper());
 
         return (list.isEmpty() ? null : list.get(0));
-    }
-
-    /**
-     * Delete the row in reset_credentials identified by {@code emailAddress}. If no such email address exists, no
-     * rows are deleted.
-     *
-     * @param emailAddress key to use for delete
-     *
-     * @return the number of rows deleted
-     */
-    public int deleteResetCredentialsByEmailAddress(String emailAddress) {
-
-        int rowsDeleted = 0;
-
-        String delete = "DELETE FROM reset_credentials WHERE email_address = :emailAddress";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("emailAddress", emailAddress);
-
-        try {
-            rowsDeleted = jdbcInterest.update(delete, parameterMap);
-        } catch (Exception e) {
-            // Ignore any errors
-        }
-
-        return rowsDeleted;
-    }
-
-    /**
-     * Try to INSERT the {@link ResetCredentials} instance. If the emailAddress already exists, update the instance.
-     * @param resetCredentials the instance to INSERT or UPDATE.
-     */
-    public void updateResetCredentials(ResetCredentials resetCredentials) {
-
-        String insert = "INSERT INTO reset_credentials (email_address, token, created_at) VALUES " +
-                        "(:emailAddress, :token, :createdAt)";
-
-        String update = "UPDATE reset_credentials SET token = :token, created_at = :createdAt " +
-                        "WHERE email_address = :emailAddress";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("emailAddress", resetCredentials.getAddress());
-        parameterMap.put("token", resetCredentials.getToken());
-        parameterMap.put("createdAt", resetCredentials.getCreatedAt());
-
-        try {
-
-            jdbcInterest.update(insert, parameterMap);
-
-        } catch (DuplicateKeyException e) {
-
-            jdbcInterest.update(update, parameterMap);
-        }
     }
 
     /**
@@ -852,203 +809,203 @@ public class SqlUtils {
         return statusMap;
     }
 
-    public boolean isValidEmailAddress(String emailAddress) {
+    public Summary getSummary(String emailAddress) {
+        final String query =
+                "SELECT g.* FROM gene g\n" +
+                        "LEFT OUTER JOIN contact_gene cg ON cg.gene_pk = g.pk\n" +
+                        "JOIN contact      c  ON c. pk      = cg.contact_pk\n" +
+                        "WHERE c.address = :emailAddress\n";
 
-        boolean         retVal = false;
-        InternetAddress ia     = new InternetAddress();
-
-        try {
-
-            ia.setAddress(emailAddress);
-            ia.validate();
-            retVal = true;
-
-    } catch (AddressException e) {
-
-        }
-
-        return retVal;
-    }
-
-    /**
-     *Insert {@link Gene} and {@link Contact} into the gene_contact table. Return the count of inserted rows.
-     *
-     * @param genePk The primary key gene to be inserted/updated
-     * @param contactPk The primary key of the contact to be inserted
-     * @param createdAt The @link GeneContact} creation date. If NULL, the current time and date is used.
-     *
-     * @return the count of inserted geneContacts.
-     */
-    public int insertGeneContact(int genePk, int contactPk, Date createdAt) throws InterestException {
-        int count = 0;
-        String insert = "INSERT INTO gene_contact(contact_pk, gene_pk, created_at) " +
-                        "VALUES (:contact_pk, :gene_pk, :created_at)";
-
-        if (createdAt == null) {
-            createdAt = new Date();
-        }
-
-        // Insert/activate gene_contact.
         Map<String, Object> parameterMap = new HashMap<>();
-        try {
-            parameterMap.put("contact_pk", contactPk);
-            parameterMap.put("gene_pk", genePk);
-            parameterMap.put("created_at", createdAt);
+        parameterMap.put("emailAddress", emailAddress);
 
-            count += jdbcInterest.update(insert, parameterMap);
+        Summary summary = new Summary();
+        summary.setEmailAddress(emailAddress);
+        List<Gene> genes = jdbcInterest.query(query, parameterMap, new GeneRowMapper());
+        summary.setGenes(genes);
 
-        } catch (DuplicateKeyException e) {
-
-        } catch (Exception e) {
-
-            String message = "Error inserting gene_contact for genePk" + genePk + ", contactPk " + contactPk + ": " + e.getLocalizedMessage();
-            logger.error(message);
-            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return count;
-
+        return summary;
     }
 
     /**
-     * Activate interest described by {@code gene} and {@code email}.
+     * Insert the given {@link GeneSent} instance.
      *
-     * @param invoker The authorised invoker of this request
-     * @param gene The mgi accession id of the gene being registgered
-     * @param email The email address being registered
-     * @param contactCreatedAt The date the contact was created
-     * @param geneContactCreatedAt The date the geneContact was created
+     * @param geneSent the {@link GeneSent } instance to be used to update the database
      *
-     * @return The newly-inserted {@link GeneContact} instance.
+     * @return The {@link GeneSent} instance containing the primary key
      *
-     *         <i>NOTE:</i>If the contact and gene has already been registered, geneContactInsertedCount is 0. If
-     *         the contact has already been registered, contactsInsertedCount is 0.
-     *
-     *         @throws InterestException if the gene does not exist
+     * @throws InterestException
      */
-    public GeneContact insertOrUpdateInterestGene(String invoker, String gene, String email, Date contactCreatedAt, Date geneContactCreatedAt) throws InterestException {
+    public GeneSent insertGeneSent(GeneSent geneSent) throws InterestException {
+
+        Map<String, Object> parameterMap = loadSentParameterMap(geneSent);
+
+        KeyHolder          keyholder       = new GeneratedKeyHolder();
+        SqlParameterSource parameterSource = new MapSqlParameterSource(parameterMap);
+
+        int pk = insertGeneSent(parameterSource, keyholder);
+
+        return getGeneSent(pk);
+    }
+
+    /**
+     * Insert the given {@link GeneSentSummary} instance.
+     *
+     * @param geneSentSummary the {@link GeneSentSummary } instance to be used to update the database
+     *                        @return the inserted {@link GeneSentSummary} primary key}
+     *
+     * @throws InterestException
+     */
+    public int insertGeneSentSummary(GeneSentSummary geneSentSummary) throws InterestException {
+
+        String insert = "INSERT INTO gene_sent_summary (subject, body, contact_pk, created_at, sent_at)" +
+                " VALUES (:subject, :body, :contactPk, :createdAt, :sentAt)";
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("subject", geneSentSummary.getSubject());
+        parameterMap.put("body", geneSentSummary.getBody());
+        parameterMap.put("contactPk", geneSentSummary.getContactPk());
+        parameterMap.put("createdAt", geneSentSummary.getCreatedAt());
+        parameterMap.put("sentAt", geneSentSummary.getSentAt());
+
+        KeyHolder          keyholder       = new GeneratedKeyHolder();
+        SqlParameterSource parameterSource = new MapSqlParameterSource(parameterMap);
+
+        int count = jdbcInterest.update(insert, parameterSource, keyholder);
+        if (count > 0) {
+            return keyholder.getKey().intValue();
+        }
+
+        throw new InterestException("Unable to get primary key after INSERT.");
+    }
+
+    /**
+     * Register {@code geneAccessionId} to {@code emailAddress}
+     *
+     * @param emailAddress contact email address
+     * @param geneAccessionId gene accession id
+     *
+     * @throws InterestException (HttpRequest.INTERNAL_SERVER_ERROR) if either {@code emailAddress} or
+     *                           {@code geneAccessionId} doesn't exist
+     */
+    public void registerGene(String emailAddress, String geneAccessionId) throws InterestException {
 
         String message;
 
-        // Check that the gene exists.
-        Gene geneInstance = getGene(gene);
-        if (geneInstance == null) {
-            message = "Register contact " + email + " for gene " + gene + " failed: Nonexisting gene";
-            logSendAction(invoker, null, null, message);
+        Gene gene = getGene(geneAccessionId);
+        if (gene == null) {
+            message = "Invalid gene " + geneAccessionId + ".";
+            logger.error(message);
             throw new InterestException(message, HttpStatus.NOT_FOUND);
         }
 
-        Contact contact = updateOrInsertContact(invoker, email, contactCreatedAt);
+        Contact contact = getContact(emailAddress);
+        if (contact == null) {
+            message = "Invalid contact " + emailAddress + ".";
+            logger.error(message);
+            throw new InterestException(message, HttpStatus.NOT_FOUND);
+        }
 
-        // Insert into the gene_contact table.
-        insertGeneContact(geneInstance.getPk(), contact.getPk(), geneContactCreatedAt);
-
-        return getGeneContact(gene, email);
-    }
-
-    public void logGeneStatusChangeAction(GeneSent geneSent, int contactPk, Integer genePk, String message) {
-        final String insert =
-                "INSERT INTO log (" +
-                    " contact_pk," +
-                    " assignment_status_pk," +
-                    " conditional_allele_production_status_pk," +
-                    " null_allele_production_status_pk," +
-                    " phenotyping_status_pk," +
-                    " gene_pk," +
-                    " gene_sent_pk," +
-                    " message)" +
-                " VALUES (" +
-                    " :contact_pk," +
-                    " :assignment_status_pk," +
-                    " :conditional_allele_production_status_pk," +
-                    " :null_allele_production_status_pk," +
-                    " :phenotyping_status_pk," +
-                    " :gene_pk," +
-                    " :gene_sent_pk," +
-                    " :message)";
+        Date now = new Date();
+        String insert = "INSERT INTO contact_gene (contact_pk, gene_pk, created_at) VALUES " +
+                "(:contactPk, :genePk, :createdAt)";
 
         Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("contactPk", contact.getPk());
+        parameterMap.put("genePk", gene.getPk());
+        parameterMap.put("createdAt", now);
 
-        parameterMap.put("contact_pk", contactPk);
-        parameterMap.put("assignment_status_pk", geneSent.getAssignmentStatusPk());
-        parameterMap.put("conditional_allele_production_status_pk", geneSent.getConditionalAlleleProductionStatusPk());
-        parameterMap.put("null_allele_production_status_pk", geneSent.getNullAlleleProductionStatusPk());
-        parameterMap.put("phenotyping_status_pk", geneSent.getPhenotypingStatusPk());
-        parameterMap.put("gene_pk", genePk);
-        parameterMap.put("gene_sent_pk", geneSent.getPk());
-        parameterMap.put("message", message);
-
-        jdbcInterest.update(insert, parameterMap);
-    }
-
-    public void logGeneSentSummary(int contactPk, String message) {
-        final String insert =
-                "INSERT INTO log (" +
-                        " contact_pk," +
-                        " message)" +
-                        " VALUES (" +
-                        " :contact_pk," +
-                        " :message)";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-
-        parameterMap.put("contact_pk", contactPk);
-        parameterMap.put("message", message);
-
-        jdbcInterest.update(insert, parameterMap);
-    }
-
-    public void logSendAction(String invoker, Integer genePk, Integer contactPk, String message) {
-        final String query = "INSERT INTO log (invoker, contact_pk, gene_pk, message)" +
-                            " VALUES (:invoker, :contact_pk, :gene_pk, :message)";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-
-        parameterMap.put("invoker", invoker);
-        parameterMap.put("contact_pk", contactPk);
-        parameterMap.put("gene_pk", genePk);
-        parameterMap.put("message", message);
-
-        jdbcInterest.update(query, parameterMap);
-    }
-
-    /**
-     * Try to update the contact. If the update fails because it doesn't exist, insert it.
-     *
-     * Return the contact (pk is guaranteed to be set)
-     *
-     * @param emailAddress The e-mail address of the contact to be inserted
-     *
-     * @return the {@link Contact}
-     */
-    public Contact updateOrInsertContact(String invoker, String emailAddress, Date createdAt) throws InterestException {
-
-        final String update = "UPDATE contact SET address = :address, created_at = :createdAt WHERE address = :address";
-        final String insert = "INSERT INTO contact(address, created_at) " +
-                              "VALUES (:address, :createdAt)";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("address", emailAddress);
-        parameterMap.put("createdAt", createdAt);
-
+        int rowCount;
         try {
 
-            // Try to update. If that fails, insert.
-            int updateCount = jdbcInterest.update(update, parameterMap);
-            if (updateCount == 0) {
-
-                jdbcInterest.update(insert, parameterMap);
+            rowCount = jdbcInterest.update(insert, parameterMap);
+            if (rowCount < 1) {
+                message = "Unable to register gene " + geneAccessionId + " for contact " + emailAddress + ".";
+                logger.error(message);
+                throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
             }
 
         } catch (Exception e) {
 
-            String message = "Error inserting contact '" + emailAddress + "': " + e.getLocalizedMessage() + ".";
-            logSendAction(invoker, null, null, message);
+            message = "Exception while trying to register gene " + geneAccessionId + " for contact " + emailAddress + ": " + e.getLocalizedMessage();
             logger.error(message);
             throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
 
-        return getContact(emailAddress);
+    public void truncateGeneSentSummary() {
+
+        final String query = "DELETE FROM gene_sent_summary";
+        jdbcInterest.getJdbcOperations().execute(query);
+    }
+
+    /*
+     * Update the account_locked flag to the supplied value
+     * @param emailAddress contact email address
+     * @param accountLocked new value
+     * @throws InterestException (HttpRequest.INTERNAL_SERVER_ERROR) if {@code emailAddress} doesn't exist
+     */
+    public void updateAccountLocked(String emailAddress, boolean accountLocked) throws InterestException {
+
+        String message;
+        String update = "UPDATE contact SET account_locked = :accountLocked WHERE address = :address";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        parameterMap.put("accountLocked", accountLocked ? 1 : 0);
+        parameterMap.put("address", emailAddress);
+
+        int rowCount = jdbcInterest.update(update, parameterMap);
+        if (rowCount < 1) {
+            message = "Unable to update password for contact " + emailAddress + ".";
+            logger.error(message);
+            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Updates all of the gene_sent.sent_to columns for the given contact e-mail {@code address} with the given {@link Date}.
+     *
+     * @param address the contact e-mail filter
+     * @param date the {@link Date } to set gene_sent.sent_at to
+     *
+     * @throws InterestException
+     */
+    public void updateGeneSentDates(String address, Date date) throws InterestException {
+
+        String update = "UPDATE gene_sent SET sent_at = :date WHERE pk = :pk";
+
+        // NOTE: We cannot use the UPDATE ... JOIN ... SET mysql syntax because H2 (used for testing) doesn't support it.
+        List<GeneSent> genesSent = getGeneSentForContact(address);
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("date", date);
+
+        for (GeneSent geneSent : genesSent) {
+            parameterMap.put("pk", geneSent.getPk());
+            jdbcInterest.update(update, parameterMap);
+        }
+    }
+
+    /**
+     * Update the given {@link GeneSentSummary} instance.
+     *
+     * @param geneSentSummary the {@link GeneSentSummary } instance to be used to update the database
+     *                        @return the inserted {@link GeneSentSummary} primary key}
+     *
+     * @throws InterestException
+     */
+    public void updateGeneSentSummary(GeneSentSummary geneSentSummary) throws InterestException {
+
+        String update = "UPDATE gene_sent_summary SET subject = :subject, body = :body, contact_pk = :contactPk, created_at = :createdAt, sent_at = :sentAt WHERE pk = :pk";
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("pk", geneSentSummary.getPk());
+        parameterMap.put("subject", geneSentSummary.getSubject());
+        parameterMap.put("body", geneSentSummary.getBody());
+        parameterMap.put("contactPk", geneSentSummary.getContactPk());
+        parameterMap.put("createdAt", geneSentSummary.getCreatedAt());
+        parameterMap.put("sentAt", geneSentSummary.getSentAt());
+
+        jdbcInterest.update(update, parameterMap);
     }
 
     /**
@@ -1102,150 +1059,80 @@ public class SqlUtils {
     }
 
     /**
-     * Adds a new contact to the database wrapped in a transaction.
+     * Update the encrypted password for {@code emailAddress}
      *
-     * @param emailAddress contact email address to be added
-     * @param newPassword new raw password chosen by contact
-     *
-     * @throws InterestException if an error occurs. The supplied string is suitable for end-user display.
+     * @param emailAddress contact email address
+     * @param encryptedPassword new, encrypted password
+     * @throws InterestException (HttpRequest.INTERNAL_SERVER_ERROR) if {@code emailAddress} doesn't exist
      */
-    @Transactional(rollbackFor = Exception.class)
-    public void insertContact(String emailAddress, String newPassword) throws InterestException {
+    public void updatePassword(String emailAddress, String encryptedPassword) throws InterestException {
 
-        int          rowsUpdated;
-        final String ERROR_MESSAGE = "We were unable to register you with the specified e-mail address. Please contact the EBI mouse helpdesk for assistance.";
+        String message;
+        String update = "UPDATE contact SET password = :password, password_expired = 0 WHERE address = :address";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        parameterMap.put("password", encryptedPassword);
+        parameterMap.put("address", emailAddress);
+
+        int rowCount = jdbcInterest.update(update, parameterMap);
+        if (rowCount < 1) {
+            message = "Unable to update password for contact " + emailAddress + ".";
+            logger.error(message);
+            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Update the password_expired flag to the supplied value
+     *
+     * @param emailAddress contact email address
+     * @param passwordExpired new value
+     * @throws InterestException (HttpRequest.INTERNAL_SERVER_ERROR)
+     */
+    public void updatePasswordExpired(String emailAddress, boolean passwordExpired) throws InterestException {
+
+        String message;
+        String update = "UPDATE contact SET password_expired = :passwordExpired WHERE address = :address";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        parameterMap.put("passwordExpired", passwordExpired ? 1 : 0);
+        parameterMap.put("address", emailAddress);
+
+        int rowCount = jdbcInterest.update(update, parameterMap);
+        if (rowCount < 1) {
+            message = "Unable to update passwordExpired for contact " + emailAddress + ".";
+            logger.error(message);
+            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Try to INSERT the {@link ResetCredentials} instance. If the emailAddress already exists, update the instance.
+     * @param resetCredentials the instance to INSERT or UPDATE.
+     */
+    public void updateResetCredentials(ResetCredentials resetCredentials) {
+
+        String insert = "INSERT INTO reset_credentials (email_address, token, created_at) VALUES " +
+                        "(:emailAddress, :token, :createdAt)";
+
+        String update = "UPDATE reset_credentials SET token = :token, created_at = :createdAt " +
+                        "WHERE email_address = :emailAddress";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("emailAddress", resetCredentials.getAddress());
+        parameterMap.put("token", resetCredentials.getToken());
+        parameterMap.put("createdAt", resetCredentials.getCreatedAt());
 
         try {
 
-            // Add the new contact to the database.
-            Contact contact = updateOrInsertContact("SummaryController", emailAddress, new Date());
-            if (contact == null) {
-                logger.warn("updateOrInsertContact failed for " + emailAddress);
-                throw new InterestException(ERROR_MESSAGE);
-            }
+            jdbcInterest.update(insert, parameterMap);
 
-            // Add the USER role to the database.
-            rowsUpdated = updateContactRole(contact.getPk(), new ContactRole(RIRole.USER));
-            if (rowsUpdated < 1) {
-                logger.warn("updateContactRole failed for " + emailAddress);
-                throw new InterestException(ERROR_MESSAGE);
-            }
+        } catch (DuplicateKeyException e) {
 
-            // Update the password
-            rowsUpdated = updatePassword(emailAddress, newPassword);
-            if (rowsUpdated < 1) {
-                logger.warn("updatePassword failed for " + emailAddress);
-                throw new InterestException(ERROR_MESSAGE);
-            }
-
-        } catch (InterestException e) {
-
-            logger.warn("addUser failed: " + e.getLocalizedMessage());
-            throw new InterestException(ERROR_MESSAGE);
-        }
-    }
-
-    /**
-     * Insert the given {@link GeneSent} instance.
-     *
-     * @param geneSent the {@link GeneSent } instance to be used to update the database
-     *
-     * @return The {@link GeneSent} instance containing the primary key
-     *
-     * @throws InterestException
-     */
-    public GeneSent insertGeneSent(GeneSent geneSent) throws InterestException {
-
-        Map<String, Object> parameterMap = loadSentParameterMap(geneSent);
-
-        KeyHolder          keyholder       = new GeneratedKeyHolder();
-        SqlParameterSource parameterSource = new MapSqlParameterSource(parameterMap);
-
-        int pk = insertGeneSent(parameterSource, keyholder);
-
-        return getGeneSent(pk);
-    }
-
-    public void truncateGeneSentSummary() {
-
-        final String query = "DELETE FROM gene_sent_summary";
-        jdbcInterest.getJdbcOperations().execute(query);
-    }
-
-    /**
-     * Insert the given {@link GeneSentSummary} instance.
-     *
-     * @param geneSentSummary the {@link GeneSentSummary } instance to be used to update the database
-     *                        @return the inserted {@link GeneSentSummary} primary key}
-     *
-     * @throws InterestException
-     */
-    public int insertGeneSentSummary(GeneSentSummary geneSentSummary) throws InterestException {
-
-        String insert = "INSERT INTO gene_sent_summary (subject, body, contact_pk, created_at, sent_at)" +
-                " VALUES (:subject, :body, :contactPk, :createdAt, :sentAt)";
-        Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("subject", geneSentSummary.getSubject());
-        parameterMap.put("body", geneSentSummary.getBody());
-        parameterMap.put("contactPk", geneSentSummary.getContactPk());
-        parameterMap.put("createdAt", geneSentSummary.getCreatedAt());
-        parameterMap.put("sentAt", geneSentSummary.getSentAt());
-
-        KeyHolder          keyholder       = new GeneratedKeyHolder();
-        SqlParameterSource parameterSource = new MapSqlParameterSource(parameterMap);
-
-        int count = jdbcInterest.update(insert, parameterSource, keyholder);
-        if (count > 0) {
-            return keyholder.getKey().intValue();
-        }
-
-        throw new InterestException("Unable to get primary key after INSERT.");
-    }
-
-    /**
-     * Updates all of the gene_sent.sent_to columns for the given contact e-mail {@code address} with the given {@link Date}.
-     *
-     * @param address the contact e-mail filter
-     * @param date the {@link Date } to set gene_sent.sent_at to
-     *
-     * @throws InterestException
-     */
-    public void updateGeneSentDates(String address, Date date) throws InterestException {
-
-        String update = "UPDATE gene_sent SET sent_at = :date WHERE pk = :pk";
-
-        // NOTE: We cannot use the UPDATE ... JOIN ... SET mysql syntax because H2 (used for testing) doesn't support it.
-        List<GeneSent> genesSent = getGeneSentForContact(address);
-
-        Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("date", date);
-
-        for (GeneSent geneSent : genesSent) {
-            parameterMap.put("pk", geneSent.getPk());
             jdbcInterest.update(update, parameterMap);
         }
-    }
-
-    /**
-     * Update the given {@link GeneSentSummary} instance.
-     *
-     * @param geneSentSummary the {@link GeneSentSummary } instance to be used to update the database
-     *                        @return the inserted {@link GeneSentSummary} primary key}
-     *
-     * @throws InterestException
-     */
-    public void updateGeneSentSummary(GeneSentSummary geneSentSummary) throws InterestException {
-
-        String update = "UPDATE gene_sent_summary SET subject = :subject, body = :body, contact_pk = :contactPk, created_at = :createdAt, sent_at = :sentAt WHERE pk = :pk";
-        Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("pk", geneSentSummary.getPk());
-        parameterMap.put("subject", geneSentSummary.getSubject());
-        parameterMap.put("body", geneSentSummary.getBody());
-        parameterMap.put("contactPk", geneSentSummary.getContactPk());
-        parameterMap.put("createdAt", geneSentSummary.getCreatedAt());
-        parameterMap.put("sentAt", geneSentSummary.getSentAt());
-
-        jdbcInterest.update(update, parameterMap);
     }
 
 
@@ -1253,7 +1140,6 @@ public class SqlUtils {
 
 
     private int insertGene(Map<String, Object> parameterMap) throws InterestException {
-
         final String columnNames =
                 "mgi_accession_id, symbol, assigned_to, assignment_status, assignment_status_date, assignment_status_pk, " +
                 "conditional_allele_production_centre, conditional_allele_production_status, conditional_allele_production_status_pk, " +
@@ -1277,6 +1163,83 @@ public class SqlUtils {
         int count = jdbcInterest.update(query, parameterMap);
 
         return count;
+    }
+
+    private int insertGeneSent(SqlParameterSource parameterSource, KeyHolder keyholder) throws InterestException {
+
+        // Try to insert the row into gene_sent. If the contact_gene_pk already exists, the INSERT operation is ignored.
+        final String columnNames =
+                "subject, body, contact_gene_pk, " +
+                        "assignment_status_pk, conditional_allele_production_status_pk, null_allele_production_status_pk, phenotyping_status_pk, " +
+                        "created_at, sent_at";
+
+        final String columnValues =
+                ":subject, :body, :contact_gene_pk, " +
+                        ":assignment_status_pk, :conditional_allele_production_status_pk, :null_allele_production_status_pk, :phenotyping_status_pk, " +
+                        ":created_at, :sent_at";
+
+        final String query = "INSERT INTO gene_sent(" + columnNames + ") VALUES (" + columnValues + ")";
+
+        int count = jdbcInterest.update(query, parameterSource, keyholder);
+        if (count > 0) {
+            return keyholder.getKey().intValue();
+        }
+
+        throw new InterestException("Unable to get primary key after INSERT.");
+    }
+
+    private Map<String, Object> loadGeneParameterMap(Gene gene) {
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        parameterMap.put("mgi_accession_id", gene.getMgiAccessionId());
+        parameterMap.put("symbol", gene.getSymbol());
+        parameterMap.put("assigned_to", gene.getAssignedTo());
+        parameterMap.put("assignment_status", gene.getAssignmentStatus());
+        parameterMap.put("assignment_status_date", gene.getAssignmentStatusDate());
+        parameterMap.put("assignment_status_pk", gene.getAssignmentStatusPk());
+
+        parameterMap.put("conditional_allele_production_centre", gene.getConditionalAlleleProductionCentre());
+        parameterMap.put("conditional_allele_production_status", gene.getConditionalAlleleProductionStatus());
+        parameterMap.put("conditional_allele_production_status_pk", gene.getConditionalAlleleProductionStatusPk());
+        parameterMap.put("conditional_allele_production_status_date", gene.getConditionalAlleleProductionStatusDate());
+        parameterMap.put("conditional_allele_production_start_date", gene.getConditionalAlleleProductionStartDate());
+
+        parameterMap.put("null_allele_production_centre", gene.getNullAlleleProductionCentre());
+        parameterMap.put("null_allele_production_status", gene.getNullAlleleProductionStatus());
+        parameterMap.put("null_allele_production_status_pk", gene.getNullAlleleProductionStatusPk());
+        parameterMap.put("null_allele_production_status_date", gene.getNullAlleleProductionStatusDate());
+        parameterMap.put("null_allele_production_start_date", gene.getNullAlleleProductionStartDate());
+
+        parameterMap.put("phenotyping_centre", gene.getPhenotypingCentre());
+        parameterMap.put("phenotyping_status", gene.getPhenotypingStatus());
+        parameterMap.put("phenotyping_status_date", gene.getPhenotypingStatusDate());
+        parameterMap.put("phenotyping_status_pk", gene.getPhenotypingStatusPk());
+
+        parameterMap.put("number_of_significant_phenotypes", gene.getNumberOfSignificantPhenotypes());
+
+        parameterMap.put("created_at", gene.getCreatedAt());
+
+        return parameterMap;
+    }
+
+    private Map<String, Object> loadSentParameterMap(GeneSent geneSent) {
+
+        Map<String, Object> parameterMap = new HashMap<>();
+
+        parameterMap.put("subject", geneSent.getSubject());
+        parameterMap.put("body", geneSent.getBody());
+        parameterMap.put("contact_gene_pk", geneSent.getContactGenePk());
+
+        parameterMap.put("assignment_status_pk", geneSent.getAssignmentStatusPk());
+        parameterMap.put("conditional_allele_production_status_pk", geneSent.getConditionalAlleleProductionStatusPk());
+        parameterMap.put("null_allele_production_status_pk", geneSent.getNullAlleleProductionStatusPk());
+        parameterMap.put("phenotyping_status_pk", geneSent.getPhenotypingStatusPk());
+
+        parameterMap.put("created_at", (geneSent.getCreatedAt() == null ? new Date() : geneSent.getCreatedAt()));
+        parameterMap.put("sent_at", geneSent.getSentAt());
+
+        return parameterMap;
     }
 
     private int updateGene(Map<String, Object> parameterMap) {
@@ -1316,72 +1279,14 @@ public class SqlUtils {
         return count;
     }
 
-    private Map<String, Object> loadGeneParameterMap(Gene gene) {
-
-        Map<String, Object> parameterMap = new HashMap<>();
-
-        parameterMap.put("mgi_accession_id", gene.getMgiAccessionId());
-        parameterMap.put("symbol", gene.getSymbol());
-        parameterMap.put("assigned_to", gene.getAssignedTo());
-        parameterMap.put("assignment_status", gene.getAssignmentStatus());
-        parameterMap.put("assignment_status_date", gene.getAssignmentStatusDate());
-        parameterMap.put("assignment_status_pk", gene.getAssignmentStatusPk());
-
-        parameterMap.put("conditional_allele_production_centre", gene.getConditionalAlleleProductionCentre());
-        parameterMap.put("conditional_allele_production_status", gene.getConditionalAlleleProductionStatus());
-        parameterMap.put("conditional_allele_production_status_pk", gene.getConditionalAlleleProductionStatusPk());
-        parameterMap.put("conditional_allele_production_status_date", gene.getConditionalAlleleProductionStatusDate());
-        parameterMap.put("conditional_allele_production_start_date", gene.getConditionalAlleleProductionStartDate());
-
-        parameterMap.put("null_allele_production_centre", gene.getNullAlleleProductionCentre());
-        parameterMap.put("null_allele_production_status", gene.getNullAlleleProductionStatus());
-        parameterMap.put("null_allele_production_status_pk", gene.getNullAlleleProductionStatusPk());
-        parameterMap.put("null_allele_production_status_date", gene.getNullAlleleProductionStatusDate());
-        parameterMap.put("null_allele_production_start_date", gene.getNullAlleleProductionStartDate());
-
-        parameterMap.put("phenotyping_centre", gene.getPhenotypingCentre());
-        parameterMap.put("phenotyping_status", gene.getPhenotypingStatus());
-        parameterMap.put("phenotyping_status_date", gene.getPhenotypingStatusDate());
-        parameterMap.put("phenotyping_status_pk", gene.getPhenotypingStatusPk());
-
-        parameterMap.put("number_of_significant_phenotypes", gene.getNumberOfSignificantPhenotypes());
-
-        parameterMap.put("created_at", gene.getCreatedAt());
-
-        return parameterMap;
-    }
-
-    private int insertGeneSent(SqlParameterSource parameterSource, KeyHolder keyholder) throws InterestException {
-
-        // Try to insert the row into gene_sent. If the gene_contact_pk already exists, the INSERT operation is ignored.
-        final String columnNames =
-                "subject, body, gene_contact_pk, " +
-                "assignment_status_pk, conditional_allele_production_status_pk, null_allele_production_status_pk, phenotyping_status_pk, " +
-                "created_at, sent_at";
-
-        final String columnValues =
-                ":subject, :body, :gene_contact_pk, " +
-                ":assignment_status_pk, :conditional_allele_production_status_pk, :null_allele_production_status_pk, :phenotyping_status_pk, " +
-                ":created_at, :sent_at";
-
-        final String query = "INSERT INTO gene_sent(" + columnNames + ") VALUES (" + columnValues + ")";
-
-        int count = jdbcInterest.update(query, parameterSource, keyholder);
-        if (count > 0) {
-            return keyholder.getKey().intValue();
-        }
-
-        throw new InterestException("Unable to get primary key after INSERT.");
-    }
-
     private int updateGeneSent(GeneSent geneSent, Map<String, Object> parameterMap) {
 
         final String colData =
-                // Omit gene_contact_pk in the UPDATE as it is used in the WHERE clause.
+                // Omit contact_gene_pk in the UPDATE as it is used in the WHERE clause.
 
                 "subject = :subject, " +
                 "body = :body, " +
-                "gene_contact_pk = :gene_contact_pk, " +
+                "contact_gene_pk = :contact_gene_pk, " +
 
                 "assignment_status_pk = :assignment_status_pk, " +
                 "conditional_allele_production_status_pk = :conditional_allele_production_status_pk, " +
@@ -1390,13 +1295,13 @@ public class SqlUtils {
 
                 "sent_at = :sent_at";
 
-        String query = "UPDATE gene_sent SET " + colData + " WHERE gene_contact_pk = :gene_contact_pk";
+        String query = "UPDATE gene_sent SET " + colData + " WHERE contact_gene_pk = :contact_gene_pk";
 
         int count = jdbcInterest.update(query, parameterMap);
         if (count > 0) {
 
             // Get and update the gene_sent primary key.
-            query = "SELECT pk FROM gene_sent WHERE gene_contact_pk = :gene_contact_pk";
+            query = "SELECT pk FROM gene_sent WHERE contact_gene_pk = :contact_gene_pk";
             int pk = jdbcInterest.queryForObject(query, parameterMap, Integer.class);
             geneSent.setPk(pk);
         }
@@ -1404,22 +1309,67 @@ public class SqlUtils {
         return count;
     }
 
-    private Map<String, Object> loadSentParameterMap(GeneSent geneSent) {
+
+
+
+
+
+
+    // KNOWN DEPRECATED METHODS
+
+    /**
+     * Activate interest described by {@code gene} and {@code email}.
+     *
+     * @param invoker The authorised invoker of this request
+     * @param geneAccessionId The mgi accession id of the gene being registgered
+     * @param emailAddress The email address being registered
+     *
+     * @return The primary key of the newly inserted contact_gene row.
+     *
+     *         @throws InterestException if the gene does not exist
+     */
+    @Deprecated
+    public int insertOrUpdateInterestGene(String invoker, String geneAccessionId, String emailAddress) throws InterestException {
+
+        String message;
+        SecurityUtils securityUtils = new SecurityUtils();
+
+        // Check that the gene exists.
+        Gene gene = getGene(geneAccessionId);
+        if (gene == null) {
+            message = "Register contact " + emailAddress + " for gene " + geneAccessionId + " failed: No such gene";
+            logger.error(message);
+            throw new InterestException(message, HttpStatus.NOT_FOUND);
+        }
+
+        Contact contact = getContact(emailAddress);
+        if (contact == null) {
+
+            // Insert new contact
+            createAccount(emailAddress, securityUtils.generateSecureRandomPassword());
+            contact = getContact(emailAddress);
+        }
+
+        // Register the gene.
+        registerGene(emailAddress, gene.getMgiAccessionId());
+
+        return getContactGenePrimaryKey(emailAddress, geneAccessionId);
+    }
+
+    // FIXME Needed only for ApplicationMigrateContactGeneSent.
+    @Deprecated
+    public int getContactGenePrimaryKey(String emailAddress, String geneAccessionId) {
+        Contact contact = getContact(emailAddress);
+        Gene gene = getGene(geneAccessionId);
+
+        final String query = "SELECT pk FROM contact_gene WHERE contact_pk = :contactPk AND gene_pk = :genePk";
 
         Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("contactPk", contact.getPk());
+        parameterMap.put("genePk", gene.getPk());
 
-        parameterMap.put("subject", geneSent.getSubject());
-        parameterMap.put("body", geneSent.getBody());
-        parameterMap.put("gene_contact_pk", geneSent.getGeneContactPk());
+        int pk  = jdbcInterest.queryForObject(query, parameterMap, Integer.class);
 
-        parameterMap.put("assignment_status_pk", geneSent.getAssignmentStatusPk());
-        parameterMap.put("conditional_allele_production_status_pk", geneSent.getConditionalAlleleProductionStatusPk());
-        parameterMap.put("null_allele_production_status_pk", geneSent.getNullAlleleProductionStatusPk());
-        parameterMap.put("phenotyping_status_pk", geneSent.getPhenotypingStatusPk());
-
-        parameterMap.put("created_at", (geneSent.getCreatedAt() == null ? new Date() : geneSent.getCreatedAt()));
-        parameterMap.put("sent_at", geneSent.getSentAt());
-
-        return parameterMap;
+        return pk;
     }
 }

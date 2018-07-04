@@ -18,6 +18,7 @@ package org.mousephenotype.ri.integrationtest;
 
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mousephenotype.ri.core.SqlUtils;
@@ -106,7 +107,7 @@ public class SendSummaryTest {
      *
      * @throws Exception
      */
-//@Ignore
+@Ignore
     @Test
     public void testSendSummary() throws Exception {
 
@@ -169,7 +170,7 @@ public class SendSummaryTest {
 
     private void register(String email, String geneAccessionId) {
 
-        ResponseEntity<String> response = interestController.register(email, "gene", geneAccessionId);
+        ResponseEntity<String> response = interestController.doGeneRegistration(geneAccessionId);
         System.out.println(response.getStatusCode().toString());
         System.out.println(response.getBody());
     }

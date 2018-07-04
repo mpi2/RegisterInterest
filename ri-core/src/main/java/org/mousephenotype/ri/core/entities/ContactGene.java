@@ -21,16 +21,11 @@ import java.util.Date;
 /**
  * Created by mrelac on 12/05/2017.
  */
-public class Log {
+public class ContactGene {
     private int pk;
-
     private int contactPk;
-    private int geneStatusPk;
-    private int imitsStatusPk;
     private int genePk;
-    private int sentPk;
-
-    private String message;
+    private Date createdAt;
     private Date updatedAt;
 
     public int getPk() {
@@ -49,22 +44,6 @@ public class Log {
         this.contactPk = contactPk;
     }
 
-    public int getGeneStatusPk() {
-        return geneStatusPk;
-    }
-
-    public void setGeneStatusPk(int geneStatusPk) {
-        this.geneStatusPk = geneStatusPk;
-    }
-
-    public int getImitsStatusPk() {
-        return imitsStatusPk;
-    }
-
-    public void setImitsStatusPk(int imitsStatusPk) {
-        this.imitsStatusPk = imitsStatusPk;
-    }
-
     public int getGenePk() {
         return genePk;
     }
@@ -73,20 +52,12 @@ public class Log {
         this.genePk = genePk;
     }
 
-    public int getSentPk() {
-        return sentPk;
+    public Date getCreatedAt() {
+        return createdAt;
     }
 
-    public void setSentPk(int sentPk) {
-        this.sentPk = sentPk;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
     public Date getUpdatedAt() {

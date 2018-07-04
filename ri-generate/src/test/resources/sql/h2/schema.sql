@@ -77,8 +77,8 @@ CREATE TABLE reset_credentials (
 );
 
 
-DROP TABLE IF EXISTS gene_contact;
-CREATE TABLE gene_contact (
+DROP TABLE IF EXISTS contact_gene;
+CREATE TABLE contact_gene (
   pk             INT          NOT NULL      AUTO_INCREMENT PRIMARY KEY,
 
   contact_pk     INT          NOT NULL,
@@ -122,7 +122,7 @@ CREATE TABLE gene_sent (
   pk                                          INT             NOT NULL        AUTO_INCREMENT PRIMARY KEY,
   subject                                     VARCHAR(78)     NOT NULL,
   body                                        VARCHAR(2048)   NOT NULL,
-  gene_contact_pk                             INT             NOT NULL,
+  contact_gene_pk                             INT             NOT NULL,
   assignment_status_pk                        INT             DEFAULT NULL,
   conditional_allele_production_status_pk     INT             DEFAULT NULL,
   null_allele_production_status_pk            INT             DEFAULT NULL,

@@ -16,14 +16,12 @@
 
 package org.mousephenotype.ri.web.controller;
 
-import org.apache.commons.validator.routines.EmailValidator;
 import org.mousephenotype.ri.core.SecurityUtils;
 import org.mousephenotype.ri.core.SqlUtils;
-import org.mousephenotype.ri.core.entities.GeneContact;
-import org.mousephenotype.ri.core.entities.Interest;
+import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.entities.Summary;
 import org.mousephenotype.ri.core.exceptions.InterestException;
-import org.mousephenotype.ri.reports.GeneContactReport;
+import org.mousephenotype.ri.reports.ContactGeneReport;
 import org.mousephenotype.ri.reports.support.MpCSVWriter;
 import org.mousephenotype.ri.reports.support.ReportException;
 import org.slf4j.Logger;
@@ -32,10 +30,8 @@ import org.springframework.boot.autoconfigure.web.ErrorController;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.inject.Inject;
@@ -43,8 +39,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Date;
-import java.util.List;
 
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
@@ -57,16 +51,12 @@ public class InterestController implements ErrorController {
 
     private SqlUtils sqlUtils;
 
-    private static final String PATH = "/error";
+    private static final String ERROR_PATH = "/error";
 
     @Inject
     public InterestController(SqlUtils sqlUtils) {
         this.sqlUtils = sqlUtils;
     }
-
-    public final static String INTEREST_DISEASE = "disease";
-    public final static String INTEREST_GENE = "gene";
-    public final static String INTEREST_PHENOTYPE = "phenotype";
 
 
     @RequestMapping(method = GET, value = "/api/summary")
@@ -76,152 +66,120 @@ public class InterestController implements ErrorController {
         HttpStatus  status          = HttpStatus.OK;
         Summary     summary;
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth.isAuthenticated()) {
-            summary = sqlUtils.getSummary(securityUtils.getPrincipal());
-        } else {
-            summary = new Summary();
-        }
+        summary = sqlUtils.getSummary(securityUtils.getPrincipal());
 
         return new ResponseEntity<>(summary, responseHeaders, status);
     }
 
-
-    @RequestMapping(method = GET, value = "/contacts")
-    public ResponseEntity<List<Interest>> getContacts(
-            @RequestParam(value = "email", required = false) String email,
-            @RequestParam(value = "type", required = false) String type,
-            @RequestParam(value = INTEREST_GENE, required = false) String geneAccessionId
+    /**
+     * Register Interest in Gene endpoint
+     *
+     * @param geneAccessionId
+     * @return message if an error or warning occurred; an empty string otherwise
+     */
+    @RequestMapping(method = POST, value = "/api/geneRegistration/{acc}")
+    public ResponseEntity<String> doGeneRegistration(
+            @PathVariable("acc") String geneAccessionId
     ) {
-
-        List<Interest> list = sqlUtils.getInterests(email, type, geneAccessionId);
+        String      message;
         HttpHeaders responseHeaders = new HttpHeaders();
-        HttpStatus status = HttpStatus.OK;
 
-        return new ResponseEntity<>(list, responseHeaders, status);
+        Gene gene = sqlUtils.getGene(geneAccessionId);
+        if (gene == null) {
+            message = "gene " + geneAccessionId + " does not exist.";
+            logger.warn(message);
+            return new ResponseEntity<>(message, responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        try {
+
+            sqlUtils.registerGene(securityUtils.getPrincipal(), geneAccessionId);
+
+        } catch (InterestException e) {
+
+            logger.warn(e.getLocalizedMessage());
+            return new ResponseEntity<>(e.getLocalizedMessage(), e.getHttpStatus());
+        }
+
+        return new ResponseEntity<>("", responseHeaders, HttpStatus.OK);
     }
-    
-    
 
-    @RequestMapping(method = POST, value = "/contacts")
-    public ResponseEntity<String> register(
-
-            @RequestParam(value = "email", required = true) String email,
-            @RequestParam(value = "type", required = true) String type,
-            @RequestParam(value = "gene", required = true) String geneAccessionId
+    /**
+     * Unregister Interest in Gene endpoint
+     *
+     * @param geneAccessionId
+     *
+     * @return message if an error or warning occurred; an empty string otherwise
+     */
+    @RequestMapping(method = DELETE, value = "/api/geneUnregistration/{acc}")
+    public ResponseEntity<String> doGeneUnregistration(
+            @PathVariable("acc") String geneAccessionId
     ) {
-
+        String      message;
         HttpHeaders responseHeaders = new HttpHeaders();
-        List<Interest> interests;
-        String message = "";
-        Date now = new Date();
 
-        if (( ! type.equals(INTEREST_GENE)) && (! type.equals("disease")) && ( ! type.equals("phenotype"))) {
-            return new ResponseEntity<>("Invalid type. Expected one of: gene, disease, or phenotype", responseHeaders, HttpStatus.BAD_REQUEST);
+        Gene gene = sqlUtils.getGene(geneAccessionId);
+        if (gene == null) {
+            message = "doGeneUnregistration(): gene " + geneAccessionId + " does not exist.";
+            logger.error(message);
+            return new ResponseEntity<>(message, responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String invoker = (auth == null ? "Unknown" : auth.getName());
+        try {
 
-        // Validate the email address.
-        EmailValidator validator = EmailValidator.getInstance(false);
-        if ( ! validator.isValid(email)) {
-            message = "Register contact " + email + " for gene " + geneAccessionId + " failed: malformatted email address";
-            sqlUtils.logSendAction(invoker, null, null, message);
-            return new ResponseEntity<>(message, responseHeaders, HttpStatus.BAD_REQUEST);
+            sqlUtils.registerGene(securityUtils.getPrincipal(), geneAccessionId);
+
+        } catch (InterestException e) {
+
+            return new ResponseEntity<>(e.getLocalizedMessage(), e.getHttpStatus());
         }
 
-        if (type.equals(INTEREST_GENE)) {
+        return new ResponseEntity<>("", responseHeaders, HttpStatus.OK);
+    }
+
+    /**
+     * Delete contact, all their genes of interest, any reset_credentials rows, and all of their roles
+     *
+     * @return message if an error or warning occurred; an empty string otherwise
+     */
+    @RequestMapping(method = DELETE, value = "/api/contactDeletion")
+    public ResponseEntity<String> doContactDeletion() {
+            String      message;
+            HttpHeaders responseHeaders = new HttpHeaders();
+            int         rowCount;
+
             try {
 
-                GeneContact geneContact = sqlUtils.getGeneContact(geneAccessionId, email);
-                if (geneContact == null) {
-                    sqlUtils.insertOrUpdateInterestGene(invoker, geneAccessionId, email, now,now);
-                } else {
-                    message = "Register contact " + email + " for gene " + geneAccessionId + ": contact is already registered for that gene.";
-                    sqlUtils.logSendAction(invoker, null, null, message);
-                    return new ResponseEntity<>(message, responseHeaders, HttpStatus.OK);
-                }
-
-                interests = sqlUtils.getInterests(email, INTEREST_GENE, geneAccessionId);
+                sqlUtils.deleteContact(securityUtils.getPrincipal());
 
             } catch (InterestException e) {
 
-                return new ResponseEntity<>(e.getLocalizedMessage(), responseHeaders, e.getHttpStatus());
+                logger.error(e.getLocalizedMessage());
+                return new ResponseEntity<>(e.getLocalizedMessage(), e.getHttpStatus());
             }
 
-            message = "Register contact " + email + " for gene " + geneAccessionId + ": OK";
-            if ( ! interests.isEmpty()) {
-                sqlUtils.logSendAction(invoker, interests.get(0).getGenes().get(0).getPk(), interests.get(0).getContact().getPk(), message);
-            }
-        }
-
-        return new ResponseEntity<>(message, responseHeaders, HttpStatus.OK);
+            return new ResponseEntity<>("", responseHeaders, HttpStatus.OK);
     }
 
-
-// FIXME FIXME FIXME
-    @RequestMapping(method = DELETE, value = "/contacts")
-    public ResponseEntity<String> unregister(
-
-            @RequestParam(value = "email", required = true) String email,
-            @RequestParam(value = "type", required = true) String type,
-            @RequestParam(value = "gene", required = true) String geneAccessionId
-    ) {
-
-        HttpHeaders responseHeaders = new HttpHeaders();
-//        GeneContact geneContact;
-        String message = "";
-//
-//        if (( ! type.equals(INTEREST_GENE)) && (! type.equals("disease")) && ( ! type.equals("phenotype"))) {
-//            return new ResponseEntity<>("Invalid type. Expected one of: gene, disease, or phenotype", responseHeaders, HttpStatus.BAD_REQUEST);
-//        }
-//
-//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//        String invoker = (auth == null ? "Unknown" : auth.getName());
-//
-//        if (type.equals(INTEREST_GENE)) {
-//            try {
-//
-//                geneContact = sqlUtils.getGeneContact(geneAccessionId, email);
-//                if (geneContact == null) {
-//                    message = "Unregister contact " + email + " for gene " + geneAccessionId + " failed: no such active registration exists";
-//                    throw new InterestException(message, HttpStatus.NOT_FOUND);
-//                }
-//
-//                int genePk = geneContact.getGenePk();
-//                int contactPk = geneContact.getContactPk();
-//
-//                sqlUtils.deleteGeneContact(genePk, contactPk, null);
-//
-//                message = "Unregister contact scheduled for " + email + " for gene " + geneAccessionId + ": OK";
-//                sqlUtils.logSendAction(invoker, genePk, contactPk, message);
-//
-//            } catch (InterestException e) {
-//
-//                sqlUtils.logSendAction(invoker, null, null, message);
-//
-//                return new ResponseEntity<>(e.getLocalizedMessage(), responseHeaders, e.getHttpStatus());
-//            }
-//        }
-//
-        return new ResponseEntity<>(message, responseHeaders, HttpStatus.OK);
-    }
-
-
-    @RequestMapping(method = GET, value = "/admin/reports/GeneContact")
-    public void getGeneContactReport(HttpServletResponse response) throws IOException, ReportException {
+    @RequestMapping(method = GET, value = "/admin/reports/ContactGene")
+    public void getContactGeneReport(HttpServletResponse response) throws IOException, ReportException {
 
         response.setContentType("text/csv; charset=utf-8");
         PrintWriter writer = response.getWriter();
         MpCSVWriter csvWriter = new MpCSVWriter(writer);
-        GeneContactReport report = new GeneContactReport(sqlUtils);
+        ContactGeneReport report = new ContactGeneReport(sqlUtils);
         report.run(new String[0], csvWriter);
 
         csvWriter.close();
     }
 
-    @RequestMapping(value = PATH)
+    @Override
+    public String getErrorPath() {
+        return ERROR_PATH;
+    }
+
+
+    @RequestMapping(value = ERROR_PATH)
     public String handleErrors(HttpServletRequest httpRequest) {
 
         int httpErrorCode = getErrorCode(httpRequest);
@@ -249,13 +207,12 @@ public class InterestController implements ErrorController {
         return errorMsg;
     }
 
+
+    // PRIVATE METHODS
+
+
     private int getErrorCode(HttpServletRequest httpRequest) {
         return (Integer) httpRequest
                 .getAttribute("javax.servlet.error.status_code");
-    }
-
-    @Override
-    public String getErrorPath() {
-        return PATH;
     }
 }

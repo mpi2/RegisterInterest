@@ -19,7 +19,6 @@ package org.mousephenotype.ri.generate;
 import org.h2.tools.Server;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mousephenotype.ri.core.SqlUtils;
@@ -123,7 +122,7 @@ public class GenerateTest {
         applicationGenerate.run();
 
         // Write to csv: Everything but the body
-        jdbc.getJdbcOperations().execute("CALL CSVWRITE('target/gene_sent1.csv', 'SELECT pk, gene_contact_pk, assignment_status_pk, conditional_allele_production_status_pk, null_allele_production_status_pk, phenotyping_status_pk, created_at, sent_at, updated_at, subject FROM gene_sent WHERE sent_at IS NULL', 'charset=UTF-8 fieldSeparator=,')");
+        jdbc.getJdbcOperations().execute("CALL CSVWRITE('target/gene_sent1.csv', 'SELECT pk, contact_gene_pk, assignment_status_pk, conditional_allele_production_status_pk, null_allele_production_status_pk, phenotyping_status_pk, created_at, sent_at, updated_at, subject FROM gene_sent WHERE sent_at IS NULL', 'charset=UTF-8 fieldSeparator=,')");
         //               body
         jdbc.getJdbcOperations().execute("CALL CSVWRITE('target/gene_sent2.csv', 'SELECT body FROM gene_sent WHERE sent_at IS NULL', 'charset=UTF-8 fieldSeparator=,')");
 

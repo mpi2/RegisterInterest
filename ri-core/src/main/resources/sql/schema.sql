@@ -35,17 +35,9 @@ CREATE TABLE contact_role (
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 
 
-DROP TABLE IF EXISTS reset_credentials;
-CREATE TABLE reset_credentials (
-    email_address  VARCHAR(255) NOT NULL PRIMARY KEY,
-    token          TEXT         NOT NULL,
-    created_at     DATETIME     NOT NULL
-
-) COLLATE=utf8_general_ci ENGINE=InnoDb;
-
-
-DROP TABLE IF EXISTS gene_contact;
-CREATE TABLE gene_contact (
+DROP TABLE IF EXISTS contact_gene;
+DROP TABLE IF EXISTS contact_gene;
+CREATE TABLE contact_gene (
     pk             INT          NOT NULL      AUTO_INCREMENT PRIMARY KEY,
 
     contact_pk     INT          NOT NULL,
@@ -53,11 +45,20 @@ CREATE TABLE gene_contact (
 
     created_at     DATETIME     NOT NULL,
     updated_at     TIMESTAMP    NOT NULL        DEFAULT CURRENT_TIMESTAMP
-                     ON UPDATE CURRENT_TIMESTAMP,
+    ON UPDATE CURRENT_TIMESTAMP,
 
     FOREIGN KEY contact_pk_fk   (contact_pk) REFERENCES contact(pk),
     FOREIGN KEY gene_pk_fk      (gene_pk)    REFERENCES gene(pk),
-    UNIQUE KEY  gene_contact_uk (contact_pk, gene_pk)
+    UNIQUE KEY  contact_gene_uk (contact_pk, gene_pk)
+
+) COLLATE=utf8_general_ci ENGINE=InnoDb;
+
+
+DROP TABLE IF EXISTS reset_credentials;
+CREATE TABLE reset_credentials (
+    email_address  VARCHAR(255) NOT NULL PRIMARY KEY,
+    token          TEXT         NOT NULL,
+    created_at     DATETIME     NOT NULL
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 
@@ -142,7 +143,7 @@ CREATE TABLE gene_sent (
 
     subject                                     VARCHAR(78)     NOT NULL,
     body                                        VARCHAR(2048)   NOT NULL,
-    gene_contact_pk                             INT             NOT NULL,
+    contact_gene_pk                             INT             NOT NULL,
     assignment_status_pk                        INT             DEFAULT NULL,
     conditional_allele_production_status_pk     INT             DEFAULT NULL,
     null_allele_production_status_pk            INT             DEFAULT NULL,
@@ -153,7 +154,7 @@ CREATE TABLE gene_sent (
     updated_at                                  TIMESTAMP       NOT NULL        DEFAULT CURRENT_TIMESTAMP
                                                   ON UPDATE CURRENT_TIMESTAMP,
 
-    FOREIGN KEY gene_contact_pk_fk                              (gene_contact_pk)                               REFERENCES gene_contact(pk),
+    FOREIGN KEY contact_gene_pk_fk                              (contact_gene_pk)                               REFERENCES contact_gene(pk),
     FOREIGN KEY assignment_status_pk_fk                         (assignment_status_pk)                          REFERENCES gene_status(pk),
     FOREIGN KEY conditional_allele_production_status_pk_fk      (conditional_allele_production_status_pk)       REFERENCES gene_status(pk),
     FOREIGN KEY null_allele_production_status_pk_fk             (null_allele_production_status_pk)              REFERENCES gene_status(pk),

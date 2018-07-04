@@ -9,7 +9,7 @@ INSERT INTO gene (mgi_accession_id, symbol, ri_assignment_status, ri_conditional
   ('MGI:0000020', 'gene-20', 'riAssignmentStatus-2', 'riConditionalAlleleProductionStatus-2', 'riNullAlleleProductionStatus-2', 'riPhenotypingStatus-2', @now),
   ('MGI:0000030', 'gene-30', 'riAssignmentStatus-3', 'riConditionalAlleleProductionStatus-3', 'riNullAlleleProductionStatus-3', 'riPhenotypingStatus-3', @now);
 
-insert into gene_contact(contact_pk, gene_pk, created_at) values
+insert into contact_gene(contact_pk, gene_pk, created_at) values
   (1, 1, @now),
   (1, 2, @now),
   (1, 3, @now),

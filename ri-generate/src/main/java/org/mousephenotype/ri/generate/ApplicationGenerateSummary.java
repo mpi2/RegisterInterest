@@ -110,7 +110,6 @@ public class ApplicationGenerateSummary implements CommandLineRunner {
             message = "ri-generate: ApplicationGenerateSummary: contactPk::geneSentSummaryPk -> " +
                     contactPk + "::" + geneSentSummaryPk;
 
-            sqlUtils.logGeneSentSummary(contactPk, message);
             count++;
         }
 

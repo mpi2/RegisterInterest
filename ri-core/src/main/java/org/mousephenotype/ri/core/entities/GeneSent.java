@@ -27,7 +27,7 @@ public class GeneSent {
     private String subject;
     private String body;
 
-    private int geneContactPk;
+    private int contactGenePk;
     private Integer assignmentStatusPk;
     private Integer conditionalAlleleProductionStatusPk;
     private Integer nullAlleleProductionStatusPk;
@@ -61,12 +61,12 @@ public class GeneSent {
         this.body = body;
     }
 
-    public int getGeneContactPk() {
-        return geneContactPk;
+    public int getContactGenePk() {
+        return contactGenePk;
     }
 
-    public void setGeneContactPk(int geneContactPk) {
-        this.geneContactPk = geneContactPk;
+    public void setContactGenePk(int contactGenePk) {
+        this.contactGenePk = contactGenePk;
     }
 
     public Integer getAssignmentStatusPk() {

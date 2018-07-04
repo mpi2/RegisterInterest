@@ -1,8 +1,5 @@
 [source,http,options="nowrap"]
 ----
-HTTP/1.1 200 OK
-Content-Type: application/json;charset=UTF-8
-Content-Length: 58
+HTTP/1.1 404 Not Found
 
-Register contact user10@ebi.ac.uk for gene MGI:0000010: OK
 ----

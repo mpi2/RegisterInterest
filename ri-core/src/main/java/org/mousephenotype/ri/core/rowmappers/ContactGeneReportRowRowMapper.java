@@ -16,7 +16,7 @@
 
 package org.mousephenotype.ri.core.rowmappers;
 
-import org.mousephenotype.ri.core.entities.GeneContactReportRow;
+import org.mousephenotype.ri.core.entities.ContactGeneReportRow;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
@@ -26,7 +26,7 @@ import java.util.Date;
 /**
  * Created by mrelac on 13/03/2018.
  */
-public class GeneContactReportRowRowMapper implements RowMapper<GeneContactReportRow> {
+public class ContactGeneReportRowRowMapper implements RowMapper<ContactGeneReportRow> {
 
     /**
      * Implementations must implement this method to map each row of data
@@ -40,16 +40,16 @@ public class GeneContactReportRowRowMapper implements RowMapper<GeneContactRepor
      *                      column values (that is, there's no need to catch SQLException)
      */
     @Override
-    public GeneContactReportRow mapRow(ResultSet rs, int rowNum) throws SQLException {
-        GeneContactReportRow geneContactReportRow = new GeneContactReportRow();
+    public ContactGeneReportRow mapRow(ResultSet rs, int rowNum) throws SQLException {
+        ContactGeneReportRow contactGeneReportRow = new ContactGeneReportRow();
 
-        geneContactReportRow.setContactEmail(rs.getString("contact_email"));
-        geneContactReportRow.setContactActiveState(rs.getInt("contact_active_state") == 1 ? 1 : 0);
-        geneContactReportRow.setContactCreatedAt(new Date(rs.getTimestamp("contact_created_at").getTime()));
-        geneContactReportRow.setMarkerSymbol(rs.getString("marker_symbol"));
-        geneContactReportRow.setMgiAccessionId(rs.getString("mgi_accession_id"));
-        geneContactReportRow.setGeneInterestCreatedDate(new Date(rs.getTimestamp("gene_interest_created_at").getTime()));
+        contactGeneReportRow.setContactEmail(rs.getString("contact_email"));
+        contactGeneReportRow.setContactActiveState(rs.getInt("contact_active_state") == 1 ? 1 : 0);
+        contactGeneReportRow.setContactCreatedAt(new Date(rs.getTimestamp("contact_created_at").getTime()));
+        contactGeneReportRow.setMarkerSymbol(rs.getString("marker_symbol"));
+        contactGeneReportRow.setMgiAccessionId(rs.getString("mgi_accession_id"));
+        contactGeneReportRow.setGeneInterestCreatedDate(new Date(rs.getTimestamp("gene_interest_created_at").getTime()));
 
-        return geneContactReportRow;
+        return contactGeneReportRow;
     }
 }

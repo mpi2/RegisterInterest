@@ -19,6 +19,10 @@ package org.mousephenotype.ri.core;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.security.SecureRandom;
 
 public class SecurityUtils {
 
@@ -38,5 +42,17 @@ public class SecurityUtils {
             userName = principal.toString();
         }
         return userName;
+    }
+
+    public String generateSecureRandomPassword() {
+        final Integer PASSWORD_LENGTH = 12;
+        SecureRandom  secureRandom    = new SecureRandom();
+        byte          bytes[]         = new byte[PASSWORD_LENGTH];
+
+        secureRandom.nextBytes(bytes);
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        String encryptedPassword = passwordEncoder.encode(bytes.toString());
+
+        return encryptedPassword;
     }
 }

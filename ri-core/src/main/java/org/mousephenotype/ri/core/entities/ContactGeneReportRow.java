@@ -21,7 +21,7 @@ import java.util.Date;
 /**
  * Created by mrelac on 13/03/2018.
  */
-public class GeneContactReportRow {
+public class ContactGeneReportRow {
     private String contactEmail;
     private int contactActiveState;
     private Date contactCreatedAt;
@@ -79,7 +79,7 @@ public class GeneContactReportRow {
 
     @Override
     public String toString() {
-        return "GeneContactReport{" +
+        return "ContactGeneReport{" +
                 "contactEmail='" + contactEmail + '\'' +
                 ", contactActiveState=" + contactActiveState +
                 ", contactCreatedAt=" + contactCreatedAt +

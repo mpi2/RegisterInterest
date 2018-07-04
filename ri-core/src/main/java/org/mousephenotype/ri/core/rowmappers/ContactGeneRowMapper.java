@@ -16,9 +16,9 @@
 
 package org.mousephenotype.ri.core.rowmappers;
 
+import org.mousephenotype.ri.core.entities.ContactGene;
 import org.springframework.jdbc.core.RowMapper;
 
-import org.mousephenotype.ri.core.entities.Log;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
@@ -26,7 +26,7 @@ import java.util.Date;
 /**
  * Created by mrelac on 12/05/2017.
  */
-public class LogRowMapper implements RowMapper<Log> {
+public class ContactGeneRowMapper implements RowMapper<ContactGene> {
 
     /**
      * Implementations must implement this method to map each row of data
@@ -40,21 +40,17 @@ public class LogRowMapper implements RowMapper<Log> {
      *                      column values (that is, there's no need to catch SQLException)
      */
     @Override
-    public Log mapRow(ResultSet rs, int rowNum) throws SQLException {
-        Log log = new Log();
+    public ContactGene mapRow(ResultSet rs, int rowNum) throws SQLException {
+        ContactGene contactGene = new ContactGene();
 
-        log.setPk(rs.getInt("pk"));
+        contactGene.setPk(rs.getInt("pk"));
 
-        log.setContactPk(rs.getInt("contact_pk"));
-        log.setGeneStatusPk(rs.getInt("gene_status_pk"));
-        log.setImitsStatusPk(rs.getInt("imits_status_pk"));
-        log.setGenePk(rs.getInt("gene_pk"));
-        log.setSentPk(rs.getInt("sent_pk"));
+        contactGene.setContactPk(rs.getInt("contact_pk"));
+        contactGene.setGenePk(rs.getInt("gene_pk"));
 
-        log.setMessage((rs.getString("message")));
+        contactGene.setCreatedAt(new Date(rs.getTimestamp("created_at").getTime()));
+        contactGene.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));
 
-        log.setUpdatedAt(new Date(rs.getTimestamp("updated_at").getTime()));
-
-        return log;
+        return contactGene;
     }
 }

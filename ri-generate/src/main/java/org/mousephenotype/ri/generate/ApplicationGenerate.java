@@ -18,8 +18,8 @@ package org.mousephenotype.ri.generate;
 
 import org.mousephenotype.ri.core.SqlUtils;
 import org.mousephenotype.ri.core.Validator;
+import org.mousephenotype.ri.core.entities.ContactGene;
 import org.mousephenotype.ri.core.entities.Gene;
-import org.mousephenotype.ri.core.entities.GeneContact;
 import org.mousephenotype.ri.core.entities.GeneSent;
 import org.mousephenotype.ri.core.entities.GeneStatus;
 import org.slf4j.LoggerFactory;
@@ -53,7 +53,7 @@ public class ApplicationGenerate implements CommandLineRunner {
     private SqlUtils sqlUtils;
 
     public final Set<String> errorMessages = ConcurrentHashMap.newKeySet();
-    private List<GeneContact> geneContacts;
+    private List<ContactGene> contactGenes;
     private Map<Integer, Gene> genesMap;
     private Map<Integer, GeneSent> geneSentMap;
 
@@ -79,28 +79,28 @@ public class ApplicationGenerate implements CommandLineRunner {
         int count = 0;
         String message;
 
-        geneContacts = sqlUtils.getGeneContacts();
+        contactGenes = sqlUtils.getContactGenes();
         genesMap = sqlUtils.getGenesByPk();
         geneSentMap = sqlUtils.getGeneSent();
 
         /**
-         * For each geneContact:
-         *      - Look up the Gene object from genesMap using the gene primary key (found in the geneContact object)
-         *      - Get the GeneSent object from the geneSentMap using the geneContact primary key.
+         * For each contactGene:
+         *      - Look up the Gene object from genesMap using the gene primary key (found in the contactGene object)
+         *      - Get the GeneSent object from the geneSentMap using the contactGene primary key.
          *      - If it is not found
          *          - create a new GeneSent instance and load the welcome subject.
          *      - Else
          *        - Determine if the status has changed by comparing the geneSent statuses with the gene statuses.
-         *          If none have changed, skip this record and continue to the next geneContact
+         *          If none have changed, skip this record and continue to the next contactGene
          *          Else load the mouse produced subject
          *      - Set the GeneSent statuses to the Gene statuses, build the body, and set the 'sent_at' field to null to
          *        indicate the new gene email has not yet been sent.
          *      - Write the GeneSent object to the gene_sent table.
          *      - Log the activity.
          */
-        for (GeneContact geneContact : geneContacts) {
+        for (ContactGene contactGene : contactGenes) {
 
-            Gene gene = genesMap.get(geneContact.getGenePk());
+            Gene gene = genesMap.get(contactGene.getGenePk());
 
             // Validate the gene. If it fails, log the error and continue to the next gene.
             gene = Validator.validate(gene, errorMessages);
@@ -111,7 +111,7 @@ public class ApplicationGenerate implements CommandLineRunner {
             boolean shouldWelcome = false;
 
             Date now = new Date();
-            GeneSent geneSent = geneSentMap.get(geneContact.getPk());
+            GeneSent geneSent = geneSentMap.get(contactGene.getPk());
             if (geneSent == null) {
 
                 geneSent = new GeneSent();
@@ -162,7 +162,7 @@ public class ApplicationGenerate implements CommandLineRunner {
             // The status has changed.
 
             // Fill in the geneSent fields and write the record.
-            geneSent.setGeneContactPk(geneContact.getPk());
+            geneSent.setContactGenePk(contactGene.getPk());
             geneSent.setAssignmentStatusPk(gene.getAssignmentStatusPk());
             geneSent.setConditionalAlleleProductionStatusPk(gene.getConditionalAlleleProductionStatusPk());
             geneSent.setNullAlleleProductionStatusPk(gene.getNullAlleleProductionStatusPk());
@@ -171,8 +171,7 @@ public class ApplicationGenerate implements CommandLineRunner {
             geneSent.setSentAt(null);
 
             geneSent = sqlUtils.insertGeneSent(geneSent);
-            
-            sqlUtils.logGeneStatusChangeAction(geneSent, geneContact.getContactPk(), geneContact.getGenePk(), message);
+
             count++;
         }
 
