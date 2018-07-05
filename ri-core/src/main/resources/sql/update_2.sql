@@ -52,7 +52,7 @@ ALTER TABLE imits_status
   DROP COLUMN active;
 
 -- Rename contact_gene table to contact_gene and gene_sent.contact_gene_pk to contact_gene_pk.
-RENAME TABLE contact_gene TO contact_gene;
+RENAME TABLE gene_contact TO contact_gene;
 ALTER TABLE `ri`.`gene_sent`
   DROP FOREIGN KEY `gene_sent_ibfk_1`;
 ALTER TABLE `ri`.`gene_sent`
@@ -61,3 +61,6 @@ ALTER TABLE `ri`.`gene_sent`
   ADD CONSTRAINT `gene_sent_ibfk_1`
 FOREIGN KEY (`contact_gene_pk`)
 REFERENCES `ri`.`contact_gene` (`pk`);
+
+-- Drop the log table
+DROP TABLE IF EXISTS log;

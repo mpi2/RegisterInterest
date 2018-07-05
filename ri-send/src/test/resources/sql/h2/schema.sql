@@ -150,22 +150,6 @@ CREATE TABLE gene_sent_summary (
 
 
 DROP TABLE IF EXISTS log;
-CREATE TABLE log (
-  pk                                      INT             NOT NULL      AUTO_INCREMENT PRIMARY KEY,
-  invoker                                 VARCHAR(64)     DEFAULT NULL,       -- This is the user that initiated the logged action (e.g. register, unregister)
-  contact_pk                              INT             DEFAULT NULL,
-
-  assignment_status_pk                    INT             DEFAULT NULL,
-  conditional_allele_production_status_pk INT             DEFAULT NULL,
-  null_allele_production_status_pk        INT             DEFAULT NULL,
-  phenotyping_status_pk                   INT             DEFAULT NULL,
-
-  gene_pk                                 INT             DEFAULT NULL,
-  gene_sent_pk                            INT             DEFAULT NULL,
-  message                                 VARCHAR(2048)   NOT NULL,
-  updated_at                              TIMESTAMP       NOT NULL       DEFAULT CURRENT_TIMESTAMP
-
-);
 
 
 -- POPULATE STATIC TABLES

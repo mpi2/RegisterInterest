@@ -18,24 +18,7 @@ CREATE TABLE contact (
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 
 
-DROP TABLE IF EXISTS contact_role;
-CREATE TABLE contact_role (
-    pk             INT          NOT NULL      AUTO_INCREMENT PRIMARY KEY,
-
-    contact_pk     INT          NOT NULL,
-    role           VARCHAR(64)  NOT NULL      DEFAULT 'USER',
-
-    created_at     DATETIME     NOT NULL,
-    updated_at     TIMESTAMP    NOT NULL      DEFAULT CURRENT_TIMESTAMP
-                     ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY contact_pk_fk   (contact_pk) REFERENCES contact(pk),
-    UNIQUE KEY  contact_role_uk (contact_pk, role)
-
-) COLLATE=utf8_general_ci ENGINE=InnoDb;
-
-
-DROP TABLE IF EXISTS contact_gene;
+DROP TABLE IF EXISTS gene_contact;
 DROP TABLE IF EXISTS contact_gene;
 CREATE TABLE contact_gene (
     pk             INT          NOT NULL      AUTO_INCREMENT PRIMARY KEY,
@@ -54,40 +37,19 @@ CREATE TABLE contact_gene (
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 
 
-DROP TABLE IF EXISTS reset_credentials;
-CREATE TABLE reset_credentials (
-    email_address  VARCHAR(255) NOT NULL PRIMARY KEY,
-    token          TEXT         NOT NULL,
-    created_at     DATETIME     NOT NULL
+DROP TABLE IF EXISTS contact_role;
+CREATE TABLE contact_role (
+    pk             INT          NOT NULL      AUTO_INCREMENT PRIMARY KEY,
 
-) COLLATE=utf8_general_ci ENGINE=InnoDb;
+    contact_pk     INT          NOT NULL,
+    role           VARCHAR(64)  NOT NULL      DEFAULT 'USER',
 
+    created_at     DATETIME     NOT NULL,
+    updated_at     TIMESTAMP    NOT NULL      DEFAULT CURRENT_TIMESTAMP
+                     ON UPDATE CURRENT_TIMESTAMP,
 
-DROP TABLE IF EXISTS gene_status;
-CREATE TABLE gene_status (
-    pk          INT          NOT NULL           AUTO_INCREMENT PRIMARY KEY,
-
-    status      VARCHAR(64)  NOT NULL UNIQUE,
-
-    created_at  DATETIME     NOT NULL,
-    updated_at  TIMESTAMP    NOT NULL           DEFAULT CURRENT_TIMESTAMP
-                  ON UPDATE CURRENT_TIMESTAMP
-
-) COLLATE=utf8_general_ci ENGINE=InnoDb;
-
-
-DROP TABLE IF EXISTS imits_status;
-CREATE TABLE imits_status (
-    pk              INT          NOT NULL           AUTO_INCREMENT PRIMARY KEY,
-
-    gene_status_pk  INT                             DEFAULT NULL,
-    status          VARCHAR(64)  NOT NULL UNIQUE,
-
-    created_at      DATETIME     NOT NULL,
-    updated_at      TIMESTAMP    NOT NULL           DEFAULT CURRENT_TIMESTAMP
-                      ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY gene_status_pk_fk   (gene_status_pk) REFERENCES gene_status(pk)
+    FOREIGN KEY contact_pk_fk   (contact_pk) REFERENCES contact(pk),
+    UNIQUE KEY  contact_role_uk (contact_pk, role)
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 
@@ -128,7 +90,7 @@ CREATE TABLE gene (
 
     created_at                                                  DATETIME     NOT NULL,
     updated_at                                                  TIMESTAMP    NOT NULL   DEFAULT CURRENT_TIMESTAMP
-                                                                  ON UPDATE CURRENT_TIMESTAMP,
+    ON UPDATE CURRENT_TIMESTAMP,
 
     FOREIGN KEY assignment_status_pk_fk                         (assignment_status_pk)                      REFERENCES gene_status(pk),
     FOREIGN KEY conditional_allele_production_status_pk_fk      (conditional_allele_production_status_pk)   REFERENCES gene_status(pk),
@@ -136,6 +98,7 @@ CREATE TABLE gene (
     FOREIGN KEY phenotyping_status_pk_fk                        (phenotyping_status_pk)                     REFERENCES gene_status(pk)
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
+
 
 DROP TABLE IF EXISTS gene_sent;
 CREATE TABLE gene_sent (
@@ -152,7 +115,7 @@ CREATE TABLE gene_sent (
     created_at                                  DATETIME        NOT NULL,
     sent_at                                     DATETIME,                       -- a null value means 'generated but not geneSent yet'.
     updated_at                                  TIMESTAMP       NOT NULL        DEFAULT CURRENT_TIMESTAMP
-                                                  ON UPDATE CURRENT_TIMESTAMP,
+    ON UPDATE CURRENT_TIMESTAMP,
 
     FOREIGN KEY contact_gene_pk_fk                              (contact_gene_pk)                               REFERENCES contact_gene(pk),
     FOREIGN KEY assignment_status_pk_fk                         (assignment_status_pk)                          REFERENCES gene_status(pk),
@@ -161,6 +124,7 @@ CREATE TABLE gene_sent (
     FOREIGN KEY phenotyping_status_pk_fk                        (phenotyping_status_pk)                         REFERENCES gene_status(pk)
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
+
 
 DROP TABLE IF EXISTS gene_sent_summary;
 CREATE TABLE gene_sent_summary (
@@ -180,34 +144,43 @@ CREATE TABLE gene_sent_summary (
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 
 
+DROP TABLE IF EXISTS gene_status;
+CREATE TABLE gene_status (
+    pk          INT          NOT NULL           AUTO_INCREMENT PRIMARY KEY,
+
+    status      VARCHAR(64)  NOT NULL UNIQUE,
+
+    created_at  DATETIME     NOT NULL,
+    updated_at  TIMESTAMP    NOT NULL           DEFAULT CURRENT_TIMESTAMP
+                  ON UPDATE CURRENT_TIMESTAMP
+
+) COLLATE=utf8_general_ci ENGINE=InnoDb;
+
+
+DROP TABLE IF EXISTS imits_status;
+CREATE TABLE imits_status (
+    pk              INT          NOT NULL           AUTO_INCREMENT PRIMARY KEY,
+
+    gene_status_pk  INT                             DEFAULT NULL,
+    status          VARCHAR(64)  NOT NULL UNIQUE,
+
+    created_at      DATETIME     NOT NULL,
+    updated_at      TIMESTAMP    NOT NULL           DEFAULT CURRENT_TIMESTAMP
+                      ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY gene_status_pk_fk   (gene_status_pk) REFERENCES gene_status(pk)
+
+) COLLATE=utf8_general_ci ENGINE=InnoDb;
+
+
 DROP TABLE IF EXISTS log;
-CREATE TABLE log (
-    pk                                      INT             NOT NULL      AUTO_INCREMENT PRIMARY KEY,
 
-    invoker                                 VARCHAR(64)     DEFAULT NULL,       -- This is the user that initiated the logged action (e.g. register, unregister)
-    contact_pk                              INT             DEFAULT NULL,
 
-    assignment_status_pk                    INT             DEFAULT NULL,
-    conditional_allele_production_status_pk INT             DEFAULT NULL,
-    null_allele_production_status_pk        INT             DEFAULT NULL,
-    phenotyping_status_pk                   INT             DEFAULT NULL,
-
-    gene_pk                                 INT             DEFAULT NULL,
-    gene_sent_pk                            INT             DEFAULT NULL,
-    message                                 VARCHAR(2048)   NOT NULL,
-
-    updated_at                              TIMESTAMP       NOT NULL      DEFAULT CURRENT_TIMESTAMP
-                                               ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY contact_pk_fk                               (contact_pk)                                REFERENCES contact(pk),
-    FOREIGN KEY assignment_status_pk_fk                     (assignment_status_pk)                      REFERENCES gene_status(pk),
-    FOREIGN KEY conditional_allele_production_status_pk_fk  (conditional_allele_production_status_pk)   REFERENCES gene_status(pk),
-    FOREIGN KEY null_allele_production_status_pk_fk         (null_allele_production_status_pk)          REFERENCES gene_status(pk),
-    FOREIGN KEY phenotyping_status_pk_fk                    (phenotyping_status_pk)                     REFERENCES gene_status(pk),
-
-    FOREIGN KEY gene_pk_fk              (gene_pk)           REFERENCES gene(pk),
-    FOREIGN KEY gene_sent_pk_fk         (gene_sent_pk)      REFERENCES gene_sent(pk),
-    KEY         invoker_idx             (invoker)
+DROP TABLE IF EXISTS reset_credentials;
+CREATE TABLE reset_credentials (
+    email_address  VARCHAR(255) NOT NULL PRIMARY KEY,
+    token          TEXT         NOT NULL,
+    created_at     DATETIME     NOT NULL
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 
