@@ -4,13 +4,16 @@
 <%@ taglib prefix="t" tagdir="/WEB-INF/tags" %>
 <%@ taglib prefix='fn' uri='http://java.sun.com/jsp/jstl/functions' %>
 
+
 <!DOCTYPE html>
 <html>
 
 <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
     <title>Register Interest Summary page</title>
 </head>
+
 
 <body>
 <div class="region region-content">
@@ -28,6 +31,39 @@
                             <a href="logout">Logout</a>
                             &nbsp;&nbsp;&nbsp;&nbsp;
                             <a href="changePasswordRequest">Reset password</a>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <a href="account">Delete account</a>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+
+
+
+
+
+
+                            <br />
+                            <br />
+
+                            <form id="registerForm" class="form-horizontal" action="registration/genereg/")>
+                                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+                                <div class="form-actions">
+                                    <input type="text" id="regAcc" class="btn btn-block btn-primary btn-default" placeholder="MGI:1924076" value="MGI:1924076" />
+                                    &nbsp;&nbsp;
+                                    <button type="submit" id="regButton">Go</button>
+                                </div>
+                            </form>
+
+                            <form id="unregisterForm" class="form-horizontal" action="registration/gene/")>
+                                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+                                <div class="form-actions">
+                                    <input type="text" id="unregAcc" class="btn btn-block btn-primary btn-default" placeholder="MGI:1924076" value="MGI:1924076" />
+                                    &nbsp;&nbsp;
+                                    <button type="submit" id="unregButton">Go</button>
+                                </div>
+                            </form>
+
+
                         </div>
 
                         <c:choose>
@@ -110,7 +146,9 @@
                                                             </c:otherwise>
                                                         </c:choose>
                                                     </td>
-                                                    <td>Unregister</td>
+                                                    <td>
+                                                        <a href="${paHostname}$paContextRoot}/">Unregister</a>
+                                                    </td>
                                                 </tr>
                                             </c:forEach>
                                         </tbody>
@@ -124,5 +162,48 @@
         </div>
     </div>
 </div>
+
+<script>
+
+    $("#registerForm").on("submit", function(){
+        // alert('registration/genereg/' + $("#regAcc").val());
+        $.ajax({
+            url: $("#registerForm").attr("action"),
+            type: 'GET',
+            contentType: "application/json",
+            data: { id: $("#regAcc").val() },
+            // data:$("#registerForm").serialize(),
+            success: function(msg) {
+                alert(msg);
+            },
+            error: function(e) {
+                alert("error: " + e.val());
+            }
+
+        });
+        return true;
+    });
+
+    $("#unregisterForm").on("submit", function(){
+        $.ajax({
+            url: $("#unregisterForm").attr("action"),
+            type: 'GET',
+            contentType: "application/json",
+            data: { id: $("#unregAcc").val() },
+            // data:$("#registerForm").serialize(),
+            success: function(msg) {
+                alert(msg);
+            },
+            error: function(e) {
+                alert("error: " + e.val());
+            }
+
+        });
+        return true;
+    });
+
+
+
+</script>
 </body>
 </html>

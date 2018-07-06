@@ -27,10 +27,6 @@ import org.mousephenotype.ri.core.entities.ResetCredentials;
 import org.mousephenotype.ri.core.entities.Summary;
 import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -39,10 +35,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
 import javax.mail.Message;
@@ -67,21 +63,28 @@ public class SummaryController {
 
     // Error messages
     public final static String ERR_ACCOUNT_LOCKED         = "Your account is locked.";
+    public final static String ERR_ACCOUNT_NOT_DELETED    = "We were unable to delete your account. Please contact IMPC mouse informatics.";
     public final static String ERR_EMAIL_ADDRESS_MISMATCH = "The e-mail addresses do not match.";
     public final static String ERR_INVALID_EMAIL_ADDRESS  = "The value provided is not a valid e-mail address. Please enter a valid e-mail address.";
     public final static String ERR_INVALID_TOKEN          = "Invalid token.";
     public final static String ERR_PASSWORD_MISMATCH      = "The passwords do not match.";
+    public final static String ERR_REGISTER_GENE_FAILED   = "The gene could not be registered.";
+    public final static String ERR_UNREGISTER_GENE_FAILED = "The gene could not be unregistered.";
     public final static String ERR_CHANGE_PASSWORD_FAILED = "The password could not be changed.";
     public final static String ERR_SEND_MAIL_FAILED       = "The e-mail send failed.";
     public final static String ERR_INVALID_CREDENTIALS    = "Invalid username and password.";
 
     // Info messages
+    public final static String INFO_CHANGE_PASSWORD  = "Send an e-mail to the address below to change the password.";
+    public final static String INFO_ACCOUNT_CREATED  = "Your account has been created.";
     public final static String INFO_PASSWORD_EXPIRED = "Your password is expired. Please use the <i>change password</i> link below to change your password.";
-    public final static String INFO_CHANGE_PASSWORD  = "Send an e-mail to the address below to set/change the password.";
+    public final static String INFO_PASSWORD_CHANGED = "Your password has been changed.";
 
 
     // Title strings
+    public final static String TITLE_ACCOUNT_CREATED            = "Account created";
     public final static String TITLE_ACCOUNT_LOCKED             = "Account locked";
+    public final static String TITLE_ACCOUNT_NOT_DELETED        = "Account not deleted";
     public final static String TITLE_INVALID_TOKEN              = "Invalid token";
     public final static String TITLE_INVALID_EMAIL_ADDRESS      = "Invalid e-mail address";
     public final static String TITLE_PASSWORD_EXPIRED           = "Password expired";
@@ -91,6 +94,9 @@ public class SummaryController {
     public final static String TITLE_CHANGE_PASSWORD_FAILED     = "Change password failed";
     public final static String TITLE_CHANGE_PASSWORD_REQUEST    = "Change password";
     public final static String TITLE_CHANGE_PASSWORD_EMAIL_SENT = "Change password e-mail sent";
+    public final static String TITLE_PASSWORD_CHANGED           = "Password Changed";
+    public final static String TITLE_REGISTER_GENE_FAILED       = "Gene registration failed.";
+    public final static String TITLE_UNREGISTER_GENE_FAILED     = "Gene unregistration failed.";
     public final static String TITLE_SEND_MAIL_FAILED           = "Mail server is down";
 
     private final org.slf4j.Logger logger        = LoggerFactory.getLogger(this.getClass());
@@ -135,10 +141,7 @@ public class SummaryController {
 
 
     @RequestMapping(value = "login", method = RequestMethod.GET)
-    public String loginUrl(
-            HttpServletRequest request,
-            ModelMap model
-    ) {
+    public String loginUrl(HttpServletRequest request) {
         String error = request.getQueryString();
 
         if (error != null) {
@@ -150,9 +153,7 @@ public class SummaryController {
 
 
     @RequestMapping(value = "failedLogin", method = RequestMethod.GET)
-    public String failedLoginUrl(
-            HttpServletRequest request
-    ) {
+    public String failedLoginUrl( HttpServletRequest request) {
 
         String error = request.getQueryString();
         if (error != null) {
@@ -164,9 +165,7 @@ public class SummaryController {
 
 
     @RequestMapping(value = "Access_Denied", method = RequestMethod.GET)
-    public String accessDeniedUrl(
-            ModelMap model
-    ) {
+    public String accessDeniedUrl(ModelMap model) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -195,16 +194,80 @@ public class SummaryController {
     }
 
 
+
+
+
+
+
+@Deprecated
+    @RequestMapping(value = "registration/genereg", method = RequestMethod.GET)
+    public String registerGeneUrl(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            ModelMap model,
+            @PathVariable(value = "acc", required = false) String geneAccessionId
+    ) {
+        String message;
+if (geneAccessionId == null) geneAccessionId = "MGI:95698";
+        try {
+
+            sqlUtils.unregisterGene(securityUtils.getPrincipal(), geneAccessionId);
+
+        } catch (InterestException e) {
+
+            message = "registerGene " + geneAccessionId + " falied. Reason: " + e.getLocalizedMessage();
+            logger.error(message);
+
+            model.addAttribute("title", TITLE_REGISTER_GENE_FAILED);
+            model.addAttribute("error", ERR_REGISTER_GENE_FAILED);
+
+            return "errorPage";
+        }
+
+        return "summary";
+    }
+
+    @RequestMapping(value = "registration/gene", method = RequestMethod.GET)
+    public String unregisterGene(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            ModelMap model,
+            @PathVariable(value = "acc", required = false) String geneAccessionId
+    ) {
+        String message;
+
+        try {
+
+if (geneAccessionId == null) geneAccessionId = "MGI:95698";
+
+            sqlUtils.registerGene(securityUtils.getPrincipal(), geneAccessionId);
+
+        } catch (InterestException e) {
+
+            message = "unregisterGene " + geneAccessionId + " falied. Reason: " + e.getLocalizedMessage();
+            logger.error(message);
+
+            model.addAttribute("title", TITLE_UNREGISTER_GENE_FAILED);
+            model.addAttribute("error", ERR_UNREGISTER_GENE_FAILED);
+
+            return "errorPage";
+        }
+
+        return "summaryPage";
+    }
+
+
     @RequestMapping(value = "summary", method = RequestMethod.GET)
     public String summaryUrl(ModelMap model, HttpServletRequest request) throws InterestException {
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Contact contact = sqlUtils.getContact(securityUtils.getPrincipal());
 
         if (contact == null) {
             model.addAttribute("title", TITLE_INVALID_CREDENTIALS);
             model.addAttribute("error", ERR_INVALID_CREDENTIALS);
 
+            // contact is null. Get roles from authentication.
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             List<String> roles = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
             logger.info("summaryUrl: Unable to get principal for user {} with role {}", securityUtils.getPrincipal(), StringUtils.join(roles, ", "));
 
@@ -221,7 +284,7 @@ public class SummaryController {
             return "errorPage";
         }
 
-        // Redirect to chanbgePasswordRequestPage if password is expired.
+        // Redirect to changePasswordRequestPage if password is expired.
         if (contact.isPasswordExpired()) {
             model.addAttribute("title", TITLE_PASSWORD_EXPIRED);
             model.addAttribute("status", INFO_PASSWORD_EXPIRED);
@@ -230,14 +293,9 @@ public class SummaryController {
             return "changePasswordRequestPage";
         }
 
-        // Use the web service to get the data for the page.
-        String cookie = getMySessionCookie(request);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Cookie", cookie);
-        String wsUrl = paHostname + paContextRoot + "/api/summary";
-        ResponseEntity<Summary> response = new RestTemplate().exchange(wsUrl, HttpMethod.GET, new HttpEntity<String>(headers), Summary.class);
+        Summary summary = sqlUtils.getSummary(securityUtils.getPrincipal());
 
-        model.addAttribute("summary", response.getBody());
+        model.addAttribute("summary", summary);
 
         return "summaryPage";
     }
@@ -256,8 +314,8 @@ public class SummaryController {
     public String changePasswordEmailUrl(
             ModelMap model,
             @RequestParam(value = "emailAddress", defaultValue = "") String emailAddress,
-            @RequestParam(value = "repeatEmailAddress", defaultValue = "") String repeatEmailAddress)
-    {
+            @RequestParam(value = "repeatEmailAddress", defaultValue = "") String repeatEmailAddress
+    ) {
         // Validate e-mail addresses are identical.
         if ( ! emailAddress.equals(repeatEmailAddress)) {
             model.addAttribute("emailAddress", emailAddress);
@@ -278,9 +336,18 @@ public class SummaryController {
         // Generate and assemble email with password change
         String token     = buildToken(emailAddress);
         String tokenLink = paHostname + paContextRoot + "/changePasswordResponse?token=" + token;
-        System.out.println("tokenLink = " + tokenLink);
-        String  body    = generateChangePasswordEmail(tokenLink);
-        String  subject = "Change IMPC Register Interest password link";
+        logger.debug("tokenLink = " + tokenLink);
+
+        String body;
+        String subject;
+        Contact contact = sqlUtils.getContact(emailAddress);
+        if (contact == null) {
+            body = generateCreateAccountEmail(tokenLink);
+            subject = "Your request to create new IMPC Register Interest account";
+        } else {
+            body    = generateChangePasswordEmail(tokenLink);
+            subject = "Your request to change your IMPC Register Interest password";
+        }
         Message message = emailUtils.assembleEmail(smtpHost, smtpPort, smtpFrom, smtpReplyto, subject, body, emailAddress, true);
 
         // Insert request to reset_credentials table
@@ -353,11 +420,15 @@ public class SummaryController {
 
 
     @RequestMapping(value = "changePasswordResponse", method = RequestMethod.POST)
-    public String changePasswordResponsePostUrl(ModelMap model, HttpServletRequest request, HttpServletResponse response,
-                                       @RequestParam("token") String token,
-                                       @RequestParam("newPassword") String newPassword,
-                                       @RequestParam("repeatPassword") String repeatPassword)
-    {
+    public String changePasswordResponsePostUrl(
+            ModelMap model, HttpServletRequest request,
+            HttpServletResponse response,
+            @RequestParam("token") String token,
+            @RequestParam("newPassword") String newPassword,
+            @RequestParam("repeatPassword") String repeatPassword
+    ) {
+        String title;
+        String status;
         model.addAttribute("token", token);
 
         // Validate the new password. Return to changePasswordResponsePage if validation fails.
@@ -390,10 +461,22 @@ public class SummaryController {
 
         String emailAddress = resetCredentials.getAddress();
 
-        // Encrypt the password, update it in the contact table, and consume (remove) reset_credential record.
+        Contact contact = sqlUtils.getContact(emailAddress);
         try {
 
-            updatePassword(emailAddress, passwordEncoder.encode(newPassword));
+            // If the contact doesn't exist, create a new account; otherwise, just update the password.
+            if (contact == null) {
+                sqlUtils.createAccount(emailAddress, passwordEncoder.encode(newPassword));
+                contact = sqlUtils.getContact(emailAddress);
+                title = TITLE_ACCOUNT_CREATED;
+                status = INFO_ACCOUNT_CREATED;
+            } else {
+                sqlUtils.updatePassword(emailAddress, passwordEncoder.encode(newPassword));
+                title = TITLE_PASSWORD_CHANGED;
+                status = INFO_PASSWORD_CHANGED;
+            }
+
+            // Consume (remove) the reset_credential record.
             sqlUtils.deleteResetCredentialsByEmailAddress(emailAddress);
 
         } catch (InterestException e) {
@@ -401,21 +484,59 @@ public class SummaryController {
             model.addAttribute("title", TITLE_CHANGE_PASSWORD_FAILED);
             model.addAttribute("error", ERR_CHANGE_PASSWORD_FAILED);
             logger.error("Error trying to change password for {}: {}", emailAddress, e.getLocalizedMessage());
+
             return "errorPage";
         }
 
         logger.info("Password successfully changed for {}", emailAddress);
 
         // Get the user's roles and mark the user as authenticated.
-        Contact contact = sqlUtils.getContact(emailAddress);
         Authentication  authentication  = new UsernamePasswordAuthenticationToken(emailAddress, null, contact.getRoles());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        model.addAttribute("statusTitle", "Password is change");
-        model.addAttribute("status", "Your password has been changed.");
+        model.addAttribute("title", title);
+        model.addAttribute("status", status);
         model.addAttribute("emailAddress", emailAddress);
 
         return "statusPage";
+    }
+
+
+    @RequestMapping(value = "account", method = RequestMethod.GET)
+    public String accountGetUrl(ModelMap model) {
+        model.addAttribute("emailAddress", securityUtils.getPrincipal());
+
+        return "deleteAccountConfirmationPage";
+    }
+
+
+    @RequestMapping(value = "account", method = RequestMethod.POST)
+    public String accountDeleteUrl(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            ModelMap model
+    ) {
+        try {
+
+            sqlUtils.deleteContact(securityUtils.getPrincipal());
+
+        } catch (InterestException e) {
+
+            logger.error(e.getLocalizedMessage().toString());
+            model.addAttribute("title", TITLE_ACCOUNT_NOT_DELETED);
+            model.addAttribute("error", ERR_ACCOUNT_NOT_DELETED);
+
+            return "errorPage";
+        }
+
+        // Log user out.
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            logger.info("deleteAccountDeleteUrl(): User {} logged out.", securityUtils.getPrincipal());
+            new SecurityContextLogoutHandler().logout(request, response, auth);
+        }
+
+        return "redirect:login?deleted";
     }
 
 
@@ -486,6 +607,37 @@ public class SummaryController {
         return body.toString();
     }
 
+    private String generateCreateAccountEmail(String tokenLink) {
+
+        StringBuilder body = new StringBuilder()
+                .append("<html>")
+                .append(EMAIL_STYLE)
+                .append("<table>")
+                .append("<tr>")
+                .append("<td>")
+                .append("Dear colleague,")
+                .append("<br />")
+                .append("<br />")
+                .append("This e-mail was sent in response to a request to create a new IMPC Register Interest account. ")
+                .append("Your username will be your e-mail address.")
+                .append("<br />")
+                .append("If you made no such request, please ignore this e-mail; otherwise, please click on the link ")
+                .append("below to set your IMPC Register Interest password and create your account.")
+                .append("<br />")
+                .append("<br />")
+                .append("</td>")
+                .append("</tr>")
+                .append("<tr>")
+                .append("<td class=\"button\">")
+                .append("<a href=\"" + tokenLink + "\">Create account</a>")
+                .append("</td>")
+                .append("</tr>")
+                .append("</table>")
+                .append("</html>");
+
+        return body.toString();
+    }
+
     /**
      * @return my JSESSIONID cookie string
      *
@@ -527,11 +679,6 @@ public class SummaryController {
 
         } catch (InterruptedException e) {
         }
-    }
-
-    private void updatePassword(String emailAddress, String encryptedPassword) throws InterestException {
-
-        sqlUtils.updatePassword(emailAddress, encryptedPassword);
     }
 
     private String validateNewPassword(String newPassword, String repeatPassword) {

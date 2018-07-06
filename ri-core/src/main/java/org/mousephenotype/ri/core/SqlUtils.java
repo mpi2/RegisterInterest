@@ -212,7 +212,7 @@ public class SqlUtils {
         jdbcInterest.update(delete, parameterMap);
 
         // Delete all matching emailAddress from contact
-        delete = "DELETE FROM contact WHERE contact_pk = :contactPk";
+        delete = "DELETE FROM contact WHERE pk = :contactPk";
         jdbcInterest.update(delete, parameterMap);
     }
 
@@ -746,14 +746,6 @@ public class SqlUtils {
         return imitsStatusMap;
     }
 
-    /*
-     * If {@code emailAddress} has {@code role}, remove it from {@code emailAddress}; otherwise, ignore the request.
-     * @param emailAddress contact email address
-     * @param role role to be removed
-     * @return number of records removed
-     * @throws InterestException
-     */
-
     /**
      * @param token the token to match
      * @return the most recent {@link ResetCredentials} instance matching {@code token}, if found; null otherwise
@@ -938,7 +930,58 @@ public class SqlUtils {
         jdbcInterest.getJdbcOperations().execute(query);
     }
 
-    /*
+    /**
+     * Unregister {@code geneAccessionId} from {@code emailAddress}
+     *
+     * @param emailAddress contact email address
+     * @param geneAccessionId gene accession id
+     *
+     * @throws InterestException (HttpRequest.INTERNAL_SERVER_ERROR) if either {@code emailAddress} or
+     *                           {@code geneAccessionId} doesn't exist
+     */
+    public void unregisterGene(String emailAddress, String geneAccessionId) throws InterestException {
+
+        String message;
+
+        Gene gene = getGene(geneAccessionId);
+        if (gene == null) {
+            message = "Invalid gene " + geneAccessionId + ".";
+            logger.error(message);
+            throw new InterestException(message, HttpStatus.NOT_FOUND);
+        }
+
+        Contact contact = getContact(emailAddress);
+        if (contact == null) {
+            message = "Invalid contact " + emailAddress + ".";
+            logger.error(message);
+            throw new InterestException(message, HttpStatus.NOT_FOUND);
+        }
+
+        String delete = "DELETE FROM contact_gene WHERE contact_pk = :contactPk AND gene_pk = :genePk";
+
+        Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("contactPk", contact.getPk());
+        parameterMap.put("genePk", gene.getPk());
+
+        int rowCount;
+        try {
+
+            rowCount = jdbcInterest.update(delete, parameterMap);
+            if (rowCount < 1) {
+                message = "Unable to unregister gene " + geneAccessionId + " for contact " + emailAddress + ".";
+                logger.error(message);
+                throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+        } catch (Exception e) {
+
+            message = "Exception while trying to unregister gene " + geneAccessionId + " for contact " + emailAddress + ": " + e.getLocalizedMessage();
+            logger.error(message);
+            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Update the account_locked flag to the supplied value
      * @param emailAddress contact email address
      * @param accountLocked new value

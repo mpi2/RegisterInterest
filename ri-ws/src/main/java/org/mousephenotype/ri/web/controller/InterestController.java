@@ -60,7 +60,7 @@ public class InterestController implements ErrorController {
 
 
     @RequestMapping(method = GET, value = "/api/summary")
-    public ResponseEntity<Summary> getSummary() {
+    public ResponseEntity<Summary> summaryGetUrl() {
 
         HttpHeaders responseHeaders = new HttpHeaders();
         HttpStatus  status          = HttpStatus.OK;
@@ -77,8 +77,8 @@ public class InterestController implements ErrorController {
      * @param geneAccessionId
      * @return message if an error or warning occurred; an empty string otherwise
      */
-    @RequestMapping(method = POST, value = "/api/geneRegistration/{acc}")
-    public ResponseEntity<String> doGeneRegistration(
+    @RequestMapping(method = POST, value = "/api/registration/gene/{acc}")
+    public ResponseEntity<String> registrationGenePostUrl(
             @PathVariable("acc") String geneAccessionId
     ) {
         String      message;
@@ -112,7 +112,7 @@ public class InterestController implements ErrorController {
      * @return message if an error or warning occurred; an empty string otherwise
      */
     @RequestMapping(method = DELETE, value = "/api/geneUnregistration/{acc}")
-    public ResponseEntity<String> doGeneUnregistration(
+    public ResponseEntity<String> registrationGeneDeleteUrl(
             @PathVariable("acc") String geneAccessionId
     ) {
         String      message;
@@ -135,30 +135,6 @@ public class InterestController implements ErrorController {
         }
 
         return new ResponseEntity<>("", responseHeaders, HttpStatus.OK);
-    }
-
-    /**
-     * Delete contact, all their genes of interest, any reset_credentials rows, and all of their roles
-     *
-     * @return message if an error or warning occurred; an empty string otherwise
-     */
-    @RequestMapping(method = DELETE, value = "/api/contactDeletion")
-    public ResponseEntity<String> doContactDeletion() {
-            String      message;
-            HttpHeaders responseHeaders = new HttpHeaders();
-            int         rowCount;
-
-            try {
-
-                sqlUtils.deleteContact(securityUtils.getPrincipal());
-
-            } catch (InterestException e) {
-
-                logger.error(e.getLocalizedMessage());
-                return new ResponseEntity<>(e.getLocalizedMessage(), e.getHttpStatus());
-            }
-
-            return new ResponseEntity<>("", responseHeaders, HttpStatus.OK);
     }
 
     @RequestMapping(method = GET, value = "/admin/reports/ContactGene")

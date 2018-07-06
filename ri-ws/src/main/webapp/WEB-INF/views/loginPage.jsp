@@ -38,6 +38,11 @@
                             <p>You have been logged out successfully.</p>
                         </div>
                     </c:if>
+                    <c:if test="${param.deleted != null}">
+                        <div class="alert alert-success">
+                            <p>Your account has been deleted as requested.</p>
+                        </div>
+                    </c:if>
                     <div class="input-group input-sm">
                         <label class="input-group-addon" for="username"><i class="fa fa-user"></i></label>
                         <input type="text" class="form-control" id="username" name="ssoId" placeholder="Enter Username" required />

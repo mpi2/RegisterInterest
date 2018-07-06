@@ -53,13 +53,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         http
                 .authorizeRequests()
-                .antMatchers(HttpMethod.GET, "/admin/**").hasRole(ADMIN)
-                .antMatchers(HttpMethod.GET, "/api/summary/**").access("hasRole('USER') or hasRole('ADMIN')")
-                .antMatchers(HttpMethod.POST, "/api/geneRegistration/**").access("hasRole('USER') or hasRole('ADMIN')")
-                .antMatchers(HttpMethod.DELETE, "/api/geneUnregistration/**").access("hasRole('USER') or hasRole('ADMIN')")
-                .antMatchers(HttpMethod.DELETE, "/api/contactDeletion/**").access("hasRole('USER') or hasRole('ADMIN')")
 
+                // Web service
+                .antMatchers(HttpMethod.POST, "/api/registration/**").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers(HttpMethod.DELETE, "/api/registration/**").access("hasRole('USER') or hasRole('ADMIN')")
+
+                // Web pages
                 .antMatchers(HttpMethod.GET, "/summary").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers(HttpMethod.POST, "/registration/**").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers(HttpMethod.DELETE, "/registration/**").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers(HttpMethod.GET, "/account").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers(HttpMethod.POST, "/account").access("hasRole('USER') or hasRole('ADMIN')")
 
                 .and().csrf()
                 .and().exceptionHandling().accessDeniedPage("/Access_Denied")
