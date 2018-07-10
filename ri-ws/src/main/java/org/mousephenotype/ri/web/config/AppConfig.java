@@ -35,6 +35,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -126,22 +127,23 @@ public class AppConfig {
 
     // phenotype archive properties
 
-    @NotNull
-    @Value("${paContextRoot}")
-    String paContextRoot;
 
     @NotNull
-    @Value("${paHostname}")
-    String paHostname;
+    @Value("${riBaseUrl}")
+    String riBaseUrl;
+
+    @NotNull
+    @Value("${paBaseUrl}")
+    String paBaseUrl;
 
     @Bean
-    public String paContextRoot() {
-        return paContextRoot;
+    public String paBaseUrl() {
+        return paBaseUrl;
     }
 
     @Bean
-    public String paHostname() {
-        return paHostname;
+    public String riBaseUrl() {
+        return riBaseUrl;
     }
 
 
@@ -150,6 +152,14 @@ public class AppConfig {
     @NotNull
     @Resource(name = "globalConfiguration")
     private Map<String, String> config;
+
+    @Bean(name = "globalConfiguration")
+    public Map<String, String> getGlobalConfig() {
+        Map<String, String> map = new HashMap<>();
+        map.put("riBaseUrl", riBaseUrl);
+        map.put("paBaseUrl", paBaseUrl);
+        return map;
+    }
 
     @Bean
     public Map<String, String> config() {

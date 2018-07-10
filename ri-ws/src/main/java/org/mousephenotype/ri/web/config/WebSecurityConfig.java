@@ -60,12 +60,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                 // Web pages
                 .antMatchers(HttpMethod.GET, "/summary").access("hasRole('USER') or hasRole('ADMIN')")
-                .antMatchers(HttpMethod.POST, "/registration/**").access("hasRole('USER') or hasRole('ADMIN')")
-                .antMatchers(HttpMethod.DELETE, "/registration/**").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers(HttpMethod.GET, "/registration/generegister/**").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers(HttpMethod.POST, "/registration/gene/**").access("hasRole('USER') or hasRole('ADMIN')")
                 .antMatchers(HttpMethod.GET, "/account").access("hasRole('USER') or hasRole('ADMIN')")
                 .antMatchers(HttpMethod.POST, "/account").access("hasRole('USER') or hasRole('ADMIN')")
 
-                .and().csrf()
+//                .and().csrf()
                 .and().exceptionHandling().accessDeniedPage("/Access_Denied")
 
                 .and()

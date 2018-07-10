@@ -78,7 +78,7 @@ public class InterestController implements ErrorController {
      * @return message if an error or warning occurred; an empty string otherwise
      */
     @RequestMapping(method = POST, value = "/api/registration/gene/{acc}")
-    public ResponseEntity<String> registrationGenePostUrl(
+    public ResponseEntity<String> apiRegistrationGene(
             @PathVariable("acc") String geneAccessionId
     ) {
         String      message;
@@ -112,7 +112,7 @@ public class InterestController implements ErrorController {
      * @return message if an error or warning occurred; an empty string otherwise
      */
     @RequestMapping(method = DELETE, value = "/api/geneUnregistration/{acc}")
-    public ResponseEntity<String> registrationGeneDeleteUrl(
+    public ResponseEntity<String> apiUnregistrationGene(
             @PathVariable("acc") String geneAccessionId
     ) {
         String      message;

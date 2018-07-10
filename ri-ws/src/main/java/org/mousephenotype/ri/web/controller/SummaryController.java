@@ -27,6 +27,7 @@ import org.mousephenotype.ri.core.entities.ResetCredentials;
 import org.mousephenotype.ri.core.entities.Summary;
 import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -35,7 +36,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,6 +45,7 @@ import javax.mail.Message;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.List;
@@ -75,10 +76,12 @@ public class SummaryController {
     public final static String ERR_INVALID_CREDENTIALS    = "Invalid username and password.";
 
     // Info messages
-    public final static String INFO_CHANGE_PASSWORD  = "Send an e-mail to the address below to change the password.";
-    public final static String INFO_ACCOUNT_CREATED  = "Your account has been created.";
-    public final static String INFO_PASSWORD_EXPIRED = "Your password is expired. Please use the <i>change password</i> link below to change your password.";
-    public final static String INFO_PASSWORD_CHANGED = "Your password has been changed.";
+    public final static String INFO_ACCOUNT_CREATED    = "Your account has been created.";
+    public static final String INFO_ALREADY_REGISTERED = "You are already registered for this gene.";
+    public final static String INFO_CHANGE_PASSWORD    = "Send an e-mail to the address below to change the password.";
+    public static final String INFO_NOT_REGISTERED     = "You are not registered for this gene.";
+    public final static String INFO_PASSWORD_EXPIRED   = "Your password is expired. Please use the <i>change password</i> link below to change your password.";
+    public final static String INFO_PASSWORD_CHANGED   = "Your password has been changed.";
 
 
     // Title strings
@@ -106,8 +109,8 @@ public class SummaryController {
 
     // Properties
     private Map<String, String> config;
-    private String              paContextRoot;
-    private String              paHostname;
+    private String              paBaseUrl;
+    private String              riBaseUrl;
     private PasswordEncoder     passwordEncoder;
     private SqlUtils            sqlUtils;
     private String              smtpFrom;
@@ -118,8 +121,8 @@ public class SummaryController {
 
     @Inject
     public SummaryController(
-            String paContextRoot,
-            String paHostname,
+            String paBaseUrl,
+            String riBaseUrl,
             PasswordEncoder passwordEncoder,
             SqlUtils sqlUtils,
             String smtpFrom,
@@ -128,8 +131,8 @@ public class SummaryController {
             String smtpReplyto,
             Map<String, String> config
     ) {
-        this.paContextRoot = paContextRoot;
-        this.paHostname = paHostname;
+        this.paBaseUrl = paBaseUrl;
+        this.riBaseUrl = riBaseUrl;
         this.passwordEncoder = passwordEncoder;
         this.sqlUtils = sqlUtils;
         this.smtpFrom = smtpFrom;
@@ -140,7 +143,7 @@ public class SummaryController {
     }
 
 
-    @RequestMapping(value = "login", method = RequestMethod.GET)
+    @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String loginUrl(HttpServletRequest request) {
         String error = request.getQueryString();
 
@@ -148,23 +151,27 @@ public class SummaryController {
             sleep(INVALID_PASSWORD_SLEEP_SECONDS);
         }
 
+        HttpSession session = request.getSession();
+        session.setAttribute("riBaseUrl", riBaseUrl);
+        session.setAttribute("paBaseUrl", paBaseUrl);
+
         return "loginPage";
     }
 
 
-    @RequestMapping(value = "failedLogin", method = RequestMethod.GET)
-    public String failedLoginUrl( HttpServletRequest request) {
+    @RequestMapping(value = "/failedLogin", method = RequestMethod.GET)
+    public String failedLoginUrl(HttpServletRequest request) {
 
         String error = request.getQueryString();
         if (error != null) {
             sleep(INVALID_PASSWORD_SLEEP_SECONDS);
         }
 
-        return "redirect:/login?error";
+        return "redirect:" + riBaseUrl + "/login?error";
     }
 
 
-    @RequestMapping(value = "Access_Denied", method = RequestMethod.GET)
+    @RequestMapping(value = "/Access_Denied", method = RequestMethod.GET)
     public String accessDeniedUrl(ModelMap model) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -182,7 +189,7 @@ public class SummaryController {
     }
 
 
-    @RequestMapping(value = "logout", method = RequestMethod.GET)
+    @RequestMapping(value = "/logout", method = RequestMethod.GET)
     public String logoutUrl(HttpServletRequest request, HttpServletResponse response) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
@@ -190,28 +197,31 @@ public class SummaryController {
             new SecurityContextLogoutHandler().logout(request, response, auth);
         }
 
-        return "redirect:summary";
+        return "redirect:" + riBaseUrl + "/summary";
     }
 
 
-
-
-
-
-
-@Deprecated
-    @RequestMapping(value = "registration/genereg", method = RequestMethod.GET)
+    @Deprecated
+    @RequestMapping(value = "/registration/generegister", method = RequestMethod.GET)
     public String registerGeneUrl(
             HttpServletRequest request,
             HttpServletResponse response,
             ModelMap model,
-            @PathVariable(value = "acc", required = false) String geneAccessionId
+            @RequestParam("geneAccessionId") String geneAccessionId
     ) {
         String message;
-if (geneAccessionId == null) geneAccessionId = "MGI:95698";
+
+        model.put("riBaseUrl", riBaseUrl);
+
         try {
 
-            sqlUtils.unregisterGene(securityUtils.getPrincipal(), geneAccessionId);
+            sqlUtils.registerGene(securityUtils.getPrincipal(), geneAccessionId);
+
+        } catch (DuplicateKeyException e) {
+            model.addAttribute("title", TITLE_REGISTER_GENE_FAILED);
+            model.addAttribute("status", INFO_ALREADY_REGISTERED);
+
+            return "statusPage";
 
         } catch (InterestException e) {
 
@@ -224,27 +234,27 @@ if (geneAccessionId == null) geneAccessionId = "MGI:95698";
             return "errorPage";
         }
 
-        return "summary";
+        return "redirect:" + riBaseUrl + "/summary";
     }
 
-    @RequestMapping(value = "registration/gene", method = RequestMethod.GET)
+    @RequestMapping(value = "/registration/gene", method = RequestMethod.POST)
     public String unregisterGene(
             HttpServletRequest request,
             HttpServletResponse response,
             ModelMap model,
-            @PathVariable(value = "acc", required = false) String geneAccessionId
+            @RequestParam("geneAccessionId") String geneAccessionId
     ) {
         String message;
 
+        model.put("riBaseUrl", riBaseUrl);
+
         try {
 
-if (geneAccessionId == null) geneAccessionId = "MGI:95698";
-
-            sqlUtils.registerGene(securityUtils.getPrincipal(), geneAccessionId);
+            sqlUtils.unregisterGene(securityUtils.getPrincipal(), geneAccessionId);
 
         } catch (InterestException e) {
 
-            message = "unregisterGene " + geneAccessionId + " falied. Reason: " + e.getLocalizedMessage();
+            message = "registerGene " + geneAccessionId + " falied. Reason: " + e.getLocalizedMessage();
             logger.error(message);
 
             model.addAttribute("title", TITLE_UNREGISTER_GENE_FAILED);
@@ -253,11 +263,11 @@ if (geneAccessionId == null) geneAccessionId = "MGI:95698";
             return "errorPage";
         }
 
-        return "summaryPage";
+        return "redirect:" + riBaseUrl + "/summary";
     }
 
 
-    @RequestMapping(value = "summary", method = RequestMethod.GET)
+    @RequestMapping(value = "/summary", method = RequestMethod.GET)
     public String summaryUrl(ModelMap model, HttpServletRequest request) throws InterestException {
 
         Contact contact = sqlUtils.getContact(securityUtils.getPrincipal());
@@ -268,7 +278,7 @@ if (geneAccessionId == null) geneAccessionId = "MGI:95698";
 
             // contact is null. Get roles from authentication.
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            List<String> roles = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+            List<String>   roles          = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
             logger.info("summaryUrl: Unable to get principal for user {} with role {}", securityUtils.getPrincipal(), StringUtils.join(roles, ", "));
 
             sleep(SHORT_SLEEP_SECONDS);
@@ -276,7 +286,7 @@ if (geneAccessionId == null) geneAccessionId = "MGI:95698";
             return "errorPage";
         }
 
-        // Redirect to error page if account is locked.
+        // show error page if account is locked.
         if (contact.isAccountLocked()) {
             model.addAttribute("title", TITLE_ACCOUNT_LOCKED);
             model.addAttribute("error", ERR_ACCOUNT_LOCKED);
@@ -284,7 +294,7 @@ if (geneAccessionId == null) geneAccessionId = "MGI:95698";
             return "errorPage";
         }
 
-        // Redirect to changePasswordRequestPage if password is expired.
+        // Display changePasswordRequestPage if password is expired.
         if (contact.isPasswordExpired()) {
             model.addAttribute("title", TITLE_PASSWORD_EXPIRED);
             model.addAttribute("status", INFO_PASSWORD_EXPIRED);
@@ -296,12 +306,14 @@ if (geneAccessionId == null) geneAccessionId = "MGI:95698";
         Summary summary = sqlUtils.getSummary(securityUtils.getPrincipal());
 
         model.addAttribute("summary", summary);
+        model.addAttribute("riBaseUrl", request.getSession().getAttribute("riBaseUrl"));
+        model.addAttribute("paBaseUrl", request.getSession().getAttribute("paBaseUrl"));
 
         return "summaryPage";
     }
 
 
-    @RequestMapping(value = "changePasswordRequest", method = RequestMethod.GET)
+    @RequestMapping(value = "/changePasswordRequest", method = RequestMethod.GET)
     public String changePasswordRequestUrl(ModelMap model) {
         model.addAttribute("title", TITLE_CHANGE_PASSWORD_REQUEST);
         model.addAttribute("status", INFO_CHANGE_PASSWORD);
@@ -310,14 +322,14 @@ if (geneAccessionId == null) geneAccessionId = "MGI:95698";
     }
 
 
-    @RequestMapping(value = "changePasswordEmail", method = RequestMethod.POST)
+    @RequestMapping(value = "/changePasswordEmail", method = RequestMethod.POST)
     public String changePasswordEmailUrl(
             ModelMap model,
             @RequestParam(value = "emailAddress", defaultValue = "") String emailAddress,
             @RequestParam(value = "repeatEmailAddress", defaultValue = "") String repeatEmailAddress
     ) {
         // Validate e-mail addresses are identical.
-        if ( ! emailAddress.equals(repeatEmailAddress)) {
+        if (!emailAddress.equals(repeatEmailAddress)) {
             model.addAttribute("emailAddress", emailAddress);
             model.addAttribute("title", TITLE_EMAIL_ADDRESS_MISMATCH);
             model.addAttribute("error", ERR_EMAIL_ADDRESS_MISMATCH);
@@ -326,7 +338,7 @@ if (geneAccessionId == null) geneAccessionId = "MGI:95698";
         }
 
         // Validate that it looks like an e-mail address.
-        if ( !  emailUtils.isValidEmailAddress(emailAddress)) {
+        if (!emailUtils.isValidEmailAddress(emailAddress)) {
             model.addAttribute("title", TITLE_INVALID_EMAIL_ADDRESS);
             model.addAttribute("error", ERR_INVALID_EMAIL_ADDRESS);
 
@@ -335,17 +347,17 @@ if (geneAccessionId == null) geneAccessionId = "MGI:95698";
 
         // Generate and assemble email with password change
         String token     = buildToken(emailAddress);
-        String tokenLink = paHostname + paContextRoot + "/changePasswordResponse?token=" + token;
+        String tokenLink = paBaseUrl + "/changePasswordResponse?token=" + token;
         logger.debug("tokenLink = " + tokenLink);
 
-        String body;
-        String subject;
+        String  body;
+        String  subject;
         Contact contact = sqlUtils.getContact(emailAddress);
         if (contact == null) {
             body = generateCreateAccountEmail(tokenLink);
             subject = "Your request to create new IMPC Register Interest account";
         } else {
-            body    = generateChangePasswordEmail(tokenLink);
+            body = generateChangePasswordEmail(tokenLink);
             subject = "Your request to change your IMPC Register Interest password";
         }
         Message message = emailUtils.assembleEmail(smtpHost, smtpPort, smtpFrom, smtpReplyto, subject, body, emailAddress, true);
@@ -368,7 +380,7 @@ if (geneAccessionId == null) geneAccessionId = "MGI:95698";
         }
 
         String status = "An e-mail containing a change password link has been sent to <i>" + emailAddress + "</i>.\n" +
-                        "Any previous links are no longer valid. This link is valid for " + PASSWORD_CHANGE_TTL_MINUTES + " minutes.";
+                "Any previous links are no longer valid. This link is valid for " + PASSWORD_CHANGE_TTL_MINUTES + " minutes.";
         model.addAttribute("emailAddress", emailAddress);
         model.addAttribute("title", TITLE_CHANGE_PASSWORD_EMAIL_SENT);
         model.addAttribute("status", status);
@@ -380,7 +392,7 @@ if (geneAccessionId == null) geneAccessionId = "MGI:95698";
     }
 
 
-    @RequestMapping(value = "changePasswordResponse", method = RequestMethod.GET)
+    @RequestMapping(value = "/changePasswordResponse", method = RequestMethod.GET)
     public String changePasswordResponseGetUrl(ModelMap model, HttpServletRequest request) {
 
         // Parse out query string for token value.
@@ -419,7 +431,7 @@ if (geneAccessionId == null) geneAccessionId = "MGI:95698";
     }
 
 
-    @RequestMapping(value = "changePasswordResponse", method = RequestMethod.POST)
+    @RequestMapping(value = "/changePasswordResponse", method = RequestMethod.POST)
     public String changePasswordResponsePostUrl(
             ModelMap model, HttpServletRequest request,
             HttpServletResponse response,
@@ -433,7 +445,7 @@ if (geneAccessionId == null) geneAccessionId = "MGI:95698";
 
         // Validate the new password. Return to changePasswordResponsePage if validation fails.
         String error = validateNewPassword(newPassword, repeatPassword);
-        if ( ! error.isEmpty()) {
+        if (!error.isEmpty()) {
             model.addAttribute("title", TITLE_PASSWORD_MISMATCH);
             model.addAttribute("error", ERR_PASSWORD_MISMATCH);
 
@@ -491,7 +503,7 @@ if (geneAccessionId == null) geneAccessionId = "MGI:95698";
         logger.info("Password successfully changed for {}", emailAddress);
 
         // Get the user's roles and mark the user as authenticated.
-        Authentication  authentication  = new UsernamePasswordAuthenticationToken(emailAddress, null, contact.getRoles());
+        Authentication authentication = new UsernamePasswordAuthenticationToken(emailAddress, null, contact.getRoles());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         model.addAttribute("title", title);
@@ -502,7 +514,7 @@ if (geneAccessionId == null) geneAccessionId = "MGI:95698";
     }
 
 
-    @RequestMapping(value = "account", method = RequestMethod.GET)
+    @RequestMapping(value = "/account", method = RequestMethod.GET)
     public String accountGetUrl(ModelMap model) {
         model.addAttribute("emailAddress", securityUtils.getPrincipal());
 
@@ -510,7 +522,7 @@ if (geneAccessionId == null) geneAccessionId = "MGI:95698";
     }
 
 
-    @RequestMapping(value = "account", method = RequestMethod.POST)
+    @RequestMapping(value = "/account", method = RequestMethod.POST)
     public String accountDeleteUrl(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -536,7 +548,7 @@ if (geneAccessionId == null) geneAccessionId = "MGI:95698";
             new SecurityContextLogoutHandler().logout(request, response, auth);
         }
 
-        return "redirect:login?deleted";
+        return "redirect:" + riBaseUrl + "/login?deleted";
     }
 
 
@@ -640,7 +652,6 @@ if (geneAccessionId == null) geneAccessionId = "MGI:95698";
 
     /**
      * @return my JSESSIONID cookie string
-     *
      */
     private String getMySessionCookie(HttpServletRequest request) {
 
@@ -687,7 +698,7 @@ if (geneAccessionId == null) geneAccessionId = "MGI:95698";
             return "Please specify a new password";
         }
 
-        if ( ! newPassword.equals(repeatPassword)) {
+        if (!newPassword.equals(repeatPassword)) {
             return "Passwords do not match";
         }
 

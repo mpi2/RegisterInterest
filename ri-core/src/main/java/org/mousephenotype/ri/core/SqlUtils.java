@@ -916,11 +916,8 @@ public class SqlUtils {
                 throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
             }
 
-        } catch (Exception e) {
-
-            message = "Exception while trying to register gene " + geneAccessionId + " for contact " + emailAddress + ": " + e.getLocalizedMessage();
-            logger.error(message);
-            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (DuplicateKeyException e) {
+            throw e;
         }
     }
 
@@ -964,7 +961,7 @@ public class SqlUtils {
         parameterMap.put("genePk", gene.getPk());
 
         int rowCount;
-        try {
+//        try {
 
             rowCount = jdbcInterest.update(delete, parameterMap);
             if (rowCount < 1) {
@@ -973,12 +970,12 @@ public class SqlUtils {
                 throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
             }
 
-        } catch (Exception e) {
-
-            message = "Exception while trying to unregister gene " + geneAccessionId + " for contact " + emailAddress + ": " + e.getLocalizedMessage();
-            logger.error(message);
-            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+//        } catch (Exception e) {
+//
+//            message = "Exception while trying to unregister gene " + geneAccessionId + " for contact " + emailAddress + ": " + e.getLocalizedMessage();
+//            logger.error(message);
+//            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
     }
 
     /**

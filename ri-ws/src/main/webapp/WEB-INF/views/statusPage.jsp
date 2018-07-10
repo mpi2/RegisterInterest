@@ -29,7 +29,7 @@
             <div class="login-form">
                 <form action="changePasswordEmail" method="post" class="form-horizontal">
 
-                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+                    <%--<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />--%>
 
                     <div class="alert alert-success">
                         <c:if test="${showWhen}">
@@ -40,7 +40,7 @@
 
                     <br />
 
-                    <a href="summary">Summary</a>
+                    <a href="/summary">Summary</a>
 
                 </form>
             </div>

@@ -170,7 +170,7 @@ public class SendSummaryTest {
 
     private void register(String email, String geneAccessionId) {
 
-        ResponseEntity<String> response = interestController.doGeneRegistration(geneAccessionId);
+        ResponseEntity<String> response = interestController.apiRegistrationGene(geneAccessionId);
         System.out.println(response.getStatusCode().toString());
         System.out.println(response.getBody());
     }
