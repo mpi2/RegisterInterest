@@ -27,7 +27,10 @@ import org.mousephenotype.ri.core.entities.ResetCredentials;
 import org.mousephenotype.ri.core.entities.Summary;
 import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -39,6 +42,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
 import javax.mail.Message;
@@ -201,66 +205,56 @@ public class SummaryController {
     }
 
 
+
+
+
+
     @Deprecated
-    @RequestMapping(value = "/registration/generegister", method = RequestMethod.GET)
+    @RequestMapping(value = "/registration/gene", method = RequestMethod.POST)
     public String registerGeneUrl(
             HttpServletRequest request,
-            HttpServletResponse response,
             ModelMap model,
-            @RequestParam("geneAccessionId") String geneAccessionId
+            @RequestParam(value = "geneAccessionId", required = false) String geneAccessionId
     ) {
         String message;
 
         model.put("riBaseUrl", riBaseUrl);
 
-        try {
-
-            sqlUtils.registerGene(securityUtils.getPrincipal(), geneAccessionId);
-
-        } catch (DuplicateKeyException e) {
-            model.addAttribute("title", TITLE_REGISTER_GENE_FAILED);
-            model.addAttribute("status", INFO_ALREADY_REGISTERED);
-
-            return "statusPage";
-
-        } catch (InterestException e) {
-
-            message = "registerGene " + geneAccessionId + " falied. Reason: " + e.getLocalizedMessage();
-            logger.error(message);
-
-            model.addAttribute("title", TITLE_REGISTER_GENE_FAILED);
-            model.addAttribute("error", ERR_REGISTER_GENE_FAILED);
-
-            return "errorPage";
+        // Use the web service to register
+        String      cookie  = getMySessionCookie(request);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cookie", cookie);
+        ResponseEntity<String> response = new RestTemplate().exchange(riBaseUrl + "/api/registration/gene?geneAccessionId=" + geneAccessionId, HttpMethod.POST, new HttpEntity<String>(headers), String.class);
+        String body = response.getBody();
+        if ((body != null) && (body.isEmpty())) {
+            logger.warn(body);
         }
 
         return "redirect:" + riBaseUrl + "/summary";
     }
 
-    @RequestMapping(value = "/registration/gene", method = RequestMethod.POST)
+
+
+
+
+    @RequestMapping(value = "/unregistration/gene", method = RequestMethod.POST)
     public String unregisterGene(
             HttpServletRequest request,
-            HttpServletResponse response,
             ModelMap model,
-            @RequestParam("geneAccessionId") String geneAccessionId
+            @RequestParam(value = "geneAccessionId", required = false) String geneAccessionId
     ) {
         String message;
 
         model.put("riBaseUrl", riBaseUrl);
 
-        try {
-
-            sqlUtils.unregisterGene(securityUtils.getPrincipal(), geneAccessionId);
-
-        } catch (InterestException e) {
-
-            message = "registerGene " + geneAccessionId + " falied. Reason: " + e.getLocalizedMessage();
-            logger.error(message);
-
-            model.addAttribute("title", TITLE_UNREGISTER_GENE_FAILED);
-            model.addAttribute("error", ERR_UNREGISTER_GENE_FAILED);
-
-            return "errorPage";
+        // Use the web service to unregister
+        String      cookie  = getMySessionCookie(request);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cookie", cookie);
+        ResponseEntity<String> response = new RestTemplate().exchange(riBaseUrl + "/api/unregistration/gene?geneAccessionId=" + geneAccessionId, HttpMethod.DELETE, new HttpEntity<String>(headers), String.class);
+        String body = response.getBody();
+        if ((body != null) && (body.isEmpty())) {
+            logger.warn(body);
         }
 
         return "redirect:" + riBaseUrl + "/summary";
@@ -313,6 +307,28 @@ public class SummaryController {
     }
 
 
+    @RequestMapping(value = "/summary", method = RequestMethod.POST)
+    public String summaryPostUrl(ModelMap model, HttpServletRequest request) throws InterestException {
+
+        Contact contact = sqlUtils.getContact(securityUtils.getPrincipal());
+        if (contact == null) {
+            model.addAttribute("title", TITLE_INVALID_CREDENTIALS);
+            model.addAttribute("error", ERR_INVALID_CREDENTIALS);
+
+            // contact is null. Get roles from authentication.
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            List<String>   roles          = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+            logger.info("summaryUrl: Unable to get principal for user {} with role {}", securityUtils.getPrincipal(), StringUtils.join(roles, ", "));
+
+            sleep(SHORT_SLEEP_SECONDS);
+
+            return "errorPage";
+        }
+
+        return "summaryPage";
+    }
+
+
     @RequestMapping(value = "/changePasswordRequest", method = RequestMethod.GET)
     public String changePasswordRequestUrl(ModelMap model) {
         model.addAttribute("title", TITLE_CHANGE_PASSWORD_REQUEST);
@@ -347,7 +363,7 @@ public class SummaryController {
 
         // Generate and assemble email with password change
         String token     = buildToken(emailAddress);
-        String tokenLink = paBaseUrl + "/changePasswordResponse?token=" + token;
+        String tokenLink = riBaseUrl + "/changePasswordResponse?token=" + token;
         logger.debug("tokenLink = " + tokenLink);
 
         String  body;

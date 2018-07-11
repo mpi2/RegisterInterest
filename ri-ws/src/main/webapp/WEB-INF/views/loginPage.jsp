@@ -58,9 +58,9 @@
 
                     <br/>
 
-                    <a href="changePasswordRequest">New account</a>
+                    <a href="${riBaseUrl}/changePasswordRequest">New account</a>
                     &nbsp;&nbsp;&nbsp;&nbsp;
-                    <a href="changePasswordRequest">Forgot password?</a>
+                    <a href="${riBaseUrl}/changePasswordRequest">Forgot password?</a>
 
                 </form>
             </div>

@@ -30,8 +30,8 @@ import org.springframework.boot.autoconfigure.web.ErrorController;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.inject.Inject;
@@ -71,15 +71,16 @@ public class InterestController implements ErrorController {
         return new ResponseEntity<>(summary, responseHeaders, status);
     }
 
+
     /**
      * Register Interest in Gene endpoint
      *
      * @param geneAccessionId
      * @return message if an error or warning occurred; an empty string otherwise
      */
-    @RequestMapping(method = POST, value = "/api/registration/gene/{acc}")
+    @RequestMapping(method = POST, value = "/api/registration/gene")
     public ResponseEntity<String> apiRegistrationGene(
-            @PathVariable("acc") String geneAccessionId
+            @RequestParam("geneAccessionId") String geneAccessionId
     ) {
         String      message;
         HttpHeaders responseHeaders = new HttpHeaders();
@@ -104,6 +105,7 @@ public class InterestController implements ErrorController {
         return new ResponseEntity<>("", responseHeaders, HttpStatus.OK);
     }
 
+
     /**
      * Unregister Interest in Gene endpoint
      *
@@ -111,23 +113,23 @@ public class InterestController implements ErrorController {
      *
      * @return message if an error or warning occurred; an empty string otherwise
      */
-    @RequestMapping(method = DELETE, value = "/api/geneUnregistration/{acc}")
-    public ResponseEntity<String> apiUnregistrationGene(
-            @PathVariable("acc") String geneAccessionId
+    @RequestMapping(method = DELETE, value = "/api/unregistration/gene")
+    public ResponseEntity<String> apiUnregisterGene(
+            @RequestParam("geneAccessionId") String geneAccessionId
     ) {
         String      message;
         HttpHeaders responseHeaders = new HttpHeaders();
 
         Gene gene = sqlUtils.getGene(geneAccessionId);
         if (gene == null) {
-            message = "doGeneUnregistration(): gene " + geneAccessionId + " does not exist.";
+            message = "apiUnregisterGene(): gene " + geneAccessionId + " does not exist.";
             logger.error(message);
             return new ResponseEntity<>(message, responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         try {
 
-            sqlUtils.registerGene(securityUtils.getPrincipal(), geneAccessionId);
+            sqlUtils.unregisterGene(securityUtils.getPrincipal(), geneAccessionId);
 
         } catch (InterestException e) {
 
@@ -136,6 +138,7 @@ public class InterestController implements ErrorController {
 
         return new ResponseEntity<>("", responseHeaders, HttpStatus.OK);
     }
+
 
     @RequestMapping(method = GET, value = "/admin/reports/ContactGene")
     public void getContactGeneReport(HttpServletResponse response) throws IOException, ReportException {
@@ -148,6 +151,7 @@ public class InterestController implements ErrorController {
 
         csvWriter.close();
     }
+
 
     @Override
     public String getErrorPath() {

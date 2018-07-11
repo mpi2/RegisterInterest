@@ -16,79 +16,7 @@
 </head>
 
 
-
 <c:set var="paBaseUrl" value="${paBaseUrl}" />
-
-<script>
-
-    $(document).ready(function() {
-
-        $('.unregisterAction').on({'click':function(event) {
-
-                var geneAccessionId = $(this).attr('data-gene_accession_id');
-                return unregisterClick(geneAccessionId);
-            }});
-
-
-        $('.registerAction').on({'click':function(event) {
-
-                var geneAccessionId = $(this).attr('data-gene_accession_id');
-                return registerClick(geneAccessionId);
-            }});
-
-        $('#registerButton').on({'click':function(event) {
-            var geneAccessionId = $("#registerAcc").val();
-            return registerClick(geneAccessionId);
-            }});
-
-        $('#unregisterButton').on({'click':function(event) {
-            var geneAccessionId = $("#unregisterAcc").val();
-            return unregisterClick(geneAccessionId);
-            }});
-
-
-
-        function unregisterClick(geneAccessionId) {
-
-            $.ajax({
-                // url: $("#unregisterForm").attr("action"),
-                'url': '${riBaseUrl}/registration/gene',
-                'type': 'POST',
-                'contentType': "application/json",
-                'data': {'geneAccessionId': geneAccessionId},
-                'success': function (msg) {
-                    return true;
-                },
-                'error': function (e) {
-                    alert("error: " + e.val());
-                }
-
-            });
-            return true;
-        }
-
-
-        function registerClick(geneAccessionId) {
-            $.ajax({
-                'url': '${riBaseUrl}/registration/generegister',
-                'type': 'GET',
-                'contentType': "application/json",
-                'data': {'geneAccessionId': geneAccessionId},
-                'success': function (msg) {
-                    return true;
-                },
-                'error': function (e) {
-                    alert("error: " + e.val());
-                }
-
-            });
-            return true;
-        }
-
-
-    });
-</script>
-
 
 <div class="region region-content">
     <div class="block block-system">
@@ -118,25 +46,41 @@
                             <br />
                             <br />
 
-                            <form id="registerForm" class="form-horizontal" action="${riBaseUrl}/registration/generegister">
+                            <form id="registerForm1" class="form-horizontal" action="${riBaseUrl}/registration/gene?geneAccessionId=MGI:1924076" method="post">
                                 <%--<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />--%>
                                 <div class="form-actions">
-                                    <input type="text" id="registerAcc" class="btn btn-block btn-primary btn-default" placeholder="Register acc" value="MGI:1924076" />
+                                    <input type="text" id="registerAcc1" class="btn btn-block btn-primary btn-default" placeholder="Register MGI:1924076" value="MGI:1924076" />
                                     &nbsp;&nbsp;
-                                    <button type="submit" id="registerButton">Go</button>
+                                    <button type="submit" id="registerButton1">Go</button>
                                 </div>
                             </form>
 
-                            <form id="unregisterForm" class="form-horizontal" action="/registration/gene")>
+                            <form id="registerForm2" class="form-horizontal" action="${riBaseUrl}/registration/gene?geneAccessionId=MGI:1916469" method="post">
                                 <%--<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />--%>
-
                                 <div class="form-actions">
-                                    <input type="text" id="unregisterAcc" class="btn btn-block btn-primary btn-default" placeholder="Unregister acc" value="MGI:1924076" />
+                                    <input type="text" id="registerAcc2" class="btn btn-block btn-primary btn-default" placeholder="Register MGI:1916469" value="MGI:1916469" />
                                     &nbsp;&nbsp;
-                                    <button type="submit" id="unregisterButton">Go</button>
+                                    <button type="submit" id="registerButton2">Go</button>
                                 </div>
                             </form>
 
+                            <form id="registerForm3" class="form-horizontal" action="${riBaseUrl}/registration/gene?geneAccessionId=MGI:1920942" method="post">
+                                <%--<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />--%>
+                                <div class="form-actions">
+                                    <input type="text" id="registerAcc3" class="btn btn-block btn-primary btn-default" placeholder="Register MGI1920942:" value="MGI:1920942" />
+                                    &nbsp;&nbsp;
+                                    <button type="submit" id="registerButton3">Go</button>
+                                </div>
+                            </form>
+
+                            <form id="registerForm4" class="form-horizontal" action="${riBaseUrl}/registration/gene?geneAccessionId=MGI:2443967" method="post">
+                                <%--<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />--%>
+                                <div class="form-actions">
+                                    <input type="text" id="registerAcc4" class="btn btn-block btn-primary btn-default" placeholder="Register MGI:2443967" value="MGI:2443967" />
+                                    &nbsp;&nbsp;
+                                    <button type="submit" id="registerButton4">Go</button>
+                                </div>
+                            </form>
 
                         </div>
 
@@ -144,7 +88,7 @@
                             <c:when test="${fn:length(summary.genes) eq 0}">
                                 <h4>You have not yet registered interest in any genes.</h4>
 
-                                <a href='${riBaseUrl}/search?kw=*"'>IMPC Gene page</a>
+                                <a href='${paBaseUrl}/search?kw=*"'>IMPC Gene page</a>
 
                             </c:when>
                             <c:otherwise>
@@ -221,7 +165,13 @@
                                                         </c:choose>
                                                     </td>
                                                     <td>
-                                                        <a class="unregisterAction" data-gene_accession_id="${gene.mgiAccessionId}">Unregister</a>
+                                                        <form id="unregisterForm" class="form-horizontal" action="${riBaseUrl}/unregistration/gene?geneAccessionId=${gene.mgiAccessionId}" method="post">
+
+                                                            <div class="form-actions">
+                                                                <input type="submit" id="unregisterGene"
+                                                                       class="btn btn-block btn-primary btn-default" value="Unregister">
+                                                            </div>
+                                                        </form>
                                                     </td>
                                                 </tr>
                                             </c:forEach>
@@ -237,51 +187,5 @@
     </div>
 </div>
 
-<%--<script>--%>
-
-    <%--$("#registerForm").on("submit", function(){--%>
-        <%--// alert('registration/genereg/' + $("#regAcc").val());--%>
-        <%--$.ajax({--%>
-            <%--url: $("#registerForm").attr("action"),--%>
-            <%--type: 'GET',--%>
-            <%--contentType: "application/json",--%>
-            <%--data: { id: $("#regAcc").val() },--%>
-            <%--// data:$("#registerForm").serialize(),--%>
-            <%--success: function(msg) {--%>
-                <%--alert(msg);--%>
-            <%--},--%>
-            <%--error: function(e) {--%>
-                <%--alert("error: " + e.val());--%>
-            <%--}--%>
-
-        <%--});--%>
-        <%--return true;--%>
-    <%--});--%>
-
-    <%--$("#unregisterForm").on("submit", function(){--%>
-        <%--$.ajax({--%>
-            <%--url: $("#unregisterForm").attr("action"),--%>
-            <%--type: 'GET',--%>
-            <%--contentType: "application/json",--%>
-            <%--data: { id: $("#unregAcc").val() },--%>
-            <%--// data:$("#registerForm").serialize(),--%>
-            <%--success: function(msg) {--%>
-                <%--alert(msg);--%>
-            <%--},--%>
-            <%--error: function(e) {--%>
-                <%--alert("error: " + e.val());--%>
-            <%--}--%>
-
-        <%--});--%>
-        <%--return true;--%>
-    <%--});--%>
-
-
-
-
-
-
-
-<%--</script>--%>
 </body>
 </html>

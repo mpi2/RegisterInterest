@@ -43,7 +43,7 @@
                     <br/>
                     <br />
 
-                    <a href="summary">Summary</a>
+                    <a href="${riBaseUrl}/summary">Summary</a>
 
                 </form>
             </div>

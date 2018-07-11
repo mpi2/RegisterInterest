@@ -40,7 +40,7 @@
 
                     <br />
 
-                    <a href="login">Login</a>
+                    <a href="${riBaseUrl}/login">Login</a>
 
                 </form>
             </div>
