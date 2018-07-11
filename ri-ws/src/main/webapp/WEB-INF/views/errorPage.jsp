@@ -28,7 +28,6 @@
         <div class="login-card">
             <div class="login-form">
                 <form action="changePasswordEmail" method="post" class="form-horizontal">
-
                     <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
 
                     <div class="alert alert-danger">

@@ -47,7 +47,7 @@
                             <br />
 
                             <form id="registerForm1" class="form-horizontal" action="${riBaseUrl}/registration/gene?geneAccessionId=MGI:1924076" method="post">
-                                <%--<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />--%>
+                                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
                                 <div class="form-actions">
                                     <input type="text" id="registerAcc1" class="btn btn-block btn-primary btn-default" placeholder="Register MGI:1924076" value="MGI:1924076" />
                                     &nbsp;&nbsp;
@@ -56,7 +56,7 @@
                             </form>
 
                             <form id="registerForm2" class="form-horizontal" action="${riBaseUrl}/registration/gene?geneAccessionId=MGI:1916469" method="post">
-                                <%--<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />--%>
+                                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
                                 <div class="form-actions">
                                     <input type="text" id="registerAcc2" class="btn btn-block btn-primary btn-default" placeholder="Register MGI:1916469" value="MGI:1916469" />
                                     &nbsp;&nbsp;
@@ -65,7 +65,7 @@
                             </form>
 
                             <form id="registerForm3" class="form-horizontal" action="${riBaseUrl}/registration/gene?geneAccessionId=MGI:1920942" method="post">
-                                <%--<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />--%>
+                                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
                                 <div class="form-actions">
                                     <input type="text" id="registerAcc3" class="btn btn-block btn-primary btn-default" placeholder="Register MGI1920942:" value="MGI:1920942" />
                                     &nbsp;&nbsp;
@@ -74,7 +74,7 @@
                             </form>
 
                             <form id="registerForm4" class="form-horizontal" action="${riBaseUrl}/registration/gene?geneAccessionId=MGI:2443967" method="post">
-                                <%--<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />--%>
+                                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
                                 <div class="form-actions">
                                     <input type="text" id="registerAcc4" class="btn btn-block btn-primary btn-default" placeholder="Register MGI:2443967" value="MGI:2443967" />
                                     &nbsp;&nbsp;
@@ -166,7 +166,7 @@
                                                     </td>
                                                     <td>
                                                         <form id="unregisterForm" class="form-horizontal" action="${riBaseUrl}/unregistration/gene?geneAccessionId=${gene.mgiAccessionId}" method="post">
-
+                                                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
                                                             <div class="form-actions">
                                                                 <input type="submit" id="unregisterGene"
                                                                        class="btn btn-block btn-primary btn-default" value="Unregister">
