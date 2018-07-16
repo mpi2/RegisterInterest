@@ -86,9 +86,8 @@
 
                         <c:choose>
                             <c:when test="${fn:length(summary.genes) eq 0}">
-                                <h4>You have not yet registered interest in any genes.</h4>
 
-                                <a href='${paBaseUrl}/search?kw=*"'>IMPC Gene page</a>
+                                <h4>You have not yet registered interest in any genes.</h4>
 
                             </c:when>
                             <c:otherwise>
@@ -180,6 +179,11 @@
                                 </div>
                             </c:otherwise>
                         </c:choose>
+
+                        <br />
+
+                        <a href='${paBaseUrl}/search?kw=*"'>Search for more genes to register</a>
+
                     </div>
                 </div>
             </div>

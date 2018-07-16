@@ -30,7 +30,12 @@ import org.springframework.boot.autoconfigure.web.ErrorController;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -39,6 +44,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 
@@ -60,7 +68,7 @@ public class InterestController implements ErrorController {
 
 
     @RequestMapping(method = GET, value = "/api/summary")
-    public ResponseEntity<Summary> summaryGetUrl() {
+    public ResponseEntity<Summary> summaryUrl() {
 
         HttpHeaders responseHeaders = new HttpHeaders();
         HttpStatus  status          = HttpStatus.OK;
@@ -69,6 +77,26 @@ public class InterestController implements ErrorController {
         summary = sqlUtils.getSummary(securityUtils.getPrincipal());
 
         return new ResponseEntity<>(summary, responseHeaders, status);
+    }
+
+
+    @RequestMapping(method = GET, value = "/api/summary/list")
+    public ResponseEntity<List<String>> summaryListUrl() {
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        HttpStatus  status          = HttpStatus.OK;
+        Summary     summary;
+
+        summary = sqlUtils.getSummary(securityUtils.getPrincipal());
+
+        List<Gene> genes = summary.getGenes();
+
+        List<String> geneAccessionIds = new ArrayList<>();
+        for (Gene gene : genes) {
+            geneAccessionIds.add(gene.getMgiAccessionId());
+        }
+
+        return new ResponseEntity<>(geneAccessionIds, responseHeaders, status);
     }
 
 
@@ -152,6 +180,22 @@ public class InterestController implements ErrorController {
         csvWriter.close();
     }
 
+
+    @RequestMapping(value = "/api/roles", method = RequestMethod.GET)
+    public List<String> rolesUrl(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            ModelMap model
+    ) {
+        List<String> roles = new ArrayList<>();
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+        }
+
+        return roles;
+    }
 
     @Override
     public String getErrorPath() {

@@ -148,7 +148,15 @@ public class SummaryController {
 
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
-    public String loginUrl(HttpServletRequest request) {
+    public String loginUrl(
+            HttpServletRequest request,
+            ModelMap model,
+            @RequestParam(value = "returnTo", required = false) String returnTo
+    ) {
+        if (returnTo != null) {
+            request.getSession().setAttribute("returnTo", returnTo);
+        }
+
         String error = request.getQueryString();
 
         if (error != null) {
@@ -208,20 +216,19 @@ public class SummaryController {
 
 
 
-
+// FIXME
     @Deprecated
     @RequestMapping(value = "/registration/gene", method = RequestMethod.POST)
     public String registerGeneUrl(
             HttpServletRequest request,
             ModelMap model,
-            @RequestParam(value = "geneAccessionId", required = false) String geneAccessionId
+            @RequestParam("geneAccessionId") String geneAccessionId
     ) {
-        String message;
 
         model.put("riBaseUrl", riBaseUrl);
 
         // Use the web service to register
-        String      cookie  = getMySessionCookie(request);
+        String      cookie  = getMySessionId(request);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cookie", cookie);
         ResponseEntity<String> response = new RestTemplate().exchange(riBaseUrl + "/api/registration/gene?geneAccessionId=" + geneAccessionId, HttpMethod.POST, new HttpEntity<String>(headers), String.class);
@@ -241,14 +248,13 @@ public class SummaryController {
     public String unregisterGene(
             HttpServletRequest request,
             ModelMap model,
-            @RequestParam(value = "geneAccessionId", required = false) String geneAccessionId
+            @RequestParam("geneAccessionId") String geneAccessionId
     ) {
-        String message;
 
         model.put("riBaseUrl", riBaseUrl);
 
         // Use the web service to unregister
-        String      cookie  = getMySessionCookie(request);
+        String      cookie  = getMySessionId(request);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cookie", cookie);
         ResponseEntity<String> response = new RestTemplate().exchange(riBaseUrl + "/api/unregistration/gene?geneAccessionId=" + geneAccessionId, HttpMethod.DELETE, new HttpEntity<String>(headers), String.class);
@@ -261,9 +267,12 @@ public class SummaryController {
     }
 
 
-    @RequestMapping(value = "/summary", method = RequestMethod.GET)
-    public String summaryUrl(ModelMap model, HttpServletRequest request) throws InterestException {
-
+    @RequestMapping(value = "/successHandler", method = RequestMethod.GET)
+    public String successHandlerUrl(
+            ModelMap model,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
         Contact contact = sqlUtils.getContact(securityUtils.getPrincipal());
 
         if (contact == null) {
@@ -277,6 +286,7 @@ public class SummaryController {
 
             sleep(SHORT_SLEEP_SECONDS);
 
+            // FIXME - Deauthenticate.
             return "errorPage";
         }
 
@@ -285,6 +295,7 @@ public class SummaryController {
             model.addAttribute("title", TITLE_ACCOUNT_LOCKED);
             model.addAttribute("error", ERR_ACCOUNT_LOCKED);
 
+            // FIXME - Deauthenticate.
             return "errorPage";
         }
 
@@ -294,21 +305,35 @@ public class SummaryController {
             model.addAttribute("status", INFO_PASSWORD_EXPIRED);
             model.addAttribute("showWhen", true);
 
+            // FIXME - Deauthenticate (possibly)
             return "changePasswordRequestPage";
         }
 
-        Summary summary = sqlUtils.getSummary(securityUtils.getPrincipal());
+        Object o = request.getSession().getAttribute("returnTo");
+        String returnTo = "";
+        if (o != null) {
+            returnTo = o.toString().trim();
+            request.getSession().removeAttribute("returnTo");
+        }
 
-        model.addAttribute("summary", summary);
-        model.addAttribute("riBaseUrl", request.getSession().getAttribute("riBaseUrl"));
-        model.addAttribute("paBaseUrl", request.getSession().getAttribute("paBaseUrl"));
+        if (returnTo.isEmpty()) {
 
-        return "summaryPage";
+            return "summaryPage";
+        }
+
+        String id = getMySessionId(request);
+        String[] parts = id.split("=");
+        String token = parts[1];
+
+        String redirectUrl = "redirect:" + paBaseUrl + "/" + returnTo+ "?token=" + token;
+
+System.out.println(redirectUrl);
+        return redirectUrl;
     }
 
 
-    @RequestMapping(value = "/summary", method = RequestMethod.POST)
-    public String summaryPostUrl(ModelMap model, HttpServletRequest request) throws InterestException {
+    @RequestMapping(value = "/summary", method = RequestMethod.GET)
+    public String summaryUrl(ModelMap model, HttpServletRequest request) throws InterestException {
 
         Contact contact = sqlUtils.getContact(securityUtils.getPrincipal());
         if (contact == null) {
@@ -324,6 +349,12 @@ public class SummaryController {
 
             return "errorPage";
         }
+
+        Summary summary = sqlUtils.getSummary(securityUtils.getPrincipal());
+
+        model.addAttribute("summary", summary);
+        model.addAttribute("riBaseUrl", request.getSession().getAttribute("riBaseUrl"));
+        model.addAttribute("paBaseUrl", request.getSession().getAttribute("paBaseUrl"));
 
         return "summaryPage";
     }
@@ -669,7 +700,7 @@ public class SummaryController {
     /**
      * @return my JSESSIONID cookie string
      */
-    private String getMySessionCookie(HttpServletRequest request) {
+    private String getMySessionId(HttpServletRequest request) {
 
         String session = "";
 
@@ -684,6 +715,26 @@ public class SummaryController {
         }
 
         return session;
+    }
+
+    /**
+     * @return my JSESSIONID cookie string
+     */
+    private Cookie getMySessionCookie(HttpServletRequest request) {
+
+        Cookie cookieReturned = null;
+
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("JSESSIONID")) {
+                    cookieReturned = cookie;
+                    break;
+                }
+            }
+        }
+
+        return cookieReturned;
     }
 
     private String getTokenFromQueryString(String queryString) {
