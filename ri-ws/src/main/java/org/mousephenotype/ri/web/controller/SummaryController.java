@@ -328,7 +328,7 @@ public class SummaryController {
     @RequestMapping(value = "/summary", method = RequestMethod.GET)
     public String summaryUrl(ModelMap model, HttpServletRequest request) throws InterestException {
 
-        logger.debug("summaryUrl: Referer: " + UrlUtils.getReferer(request));
+        logger.info("summaryUrl: Referer: " + UrlUtils.getReferer(request));
 
         Contact contact = sqlUtils.getContact(securityUtils.getPrincipal());
         if (contact == null) {
