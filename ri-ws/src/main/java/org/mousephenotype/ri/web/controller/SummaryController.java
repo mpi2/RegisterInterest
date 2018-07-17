@@ -18,10 +18,7 @@ package org.mousephenotype.ri.web.controller;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.mousephenotype.ri.core.DateUtils;
-import org.mousephenotype.ri.core.EmailUtils;
-import org.mousephenotype.ri.core.SecurityUtils;
-import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.*;
 import org.mousephenotype.ri.core.entities.Contact;
 import org.mousephenotype.ri.core.entities.ResetCredentials;
 import org.mousephenotype.ri.core.entities.Summary;
@@ -213,11 +210,6 @@ public class SummaryController {
     }
 
 
-
-
-
-// FIXME
-    @Deprecated
     @RequestMapping(value = "/registration/gene", method = RequestMethod.POST)
     public String registerGeneUrl(
             HttpServletRequest request,
@@ -228,7 +220,7 @@ public class SummaryController {
         model.put("riBaseUrl", riBaseUrl);
 
         // Use the web service to register
-        String      cookie  = getMySessionId(request);
+        String      cookie  = getMyRiSessionId(request);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cookie", cookie);
         ResponseEntity<String> response = new RestTemplate().exchange(riBaseUrl + "/api/registration/gene?geneAccessionId=" + geneAccessionId, HttpMethod.POST, new HttpEntity<String>(headers), String.class);
@@ -241,9 +233,6 @@ public class SummaryController {
     }
 
 
-
-
-
     @RequestMapping(value = "/unregistration/gene", method = RequestMethod.POST)
     public String unregisterGene(
             HttpServletRequest request,
@@ -254,7 +243,7 @@ public class SummaryController {
         model.put("riBaseUrl", riBaseUrl);
 
         // Use the web service to unregister
-        String      cookie  = getMySessionId(request);
+        String      cookie  = getMyRiSessionId(request);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cookie", cookie);
         ResponseEntity<String> response = new RestTemplate().exchange(riBaseUrl + "/api/unregistration/gene?geneAccessionId=" + geneAccessionId, HttpMethod.DELETE, new HttpEntity<String>(headers), String.class);
@@ -286,7 +275,8 @@ public class SummaryController {
 
             sleep(SHORT_SLEEP_SECONDS);
 
-            // FIXME - Deauthenticate.
+            logoutUrl(request, response);
+
             return "errorPage";
         }
 
@@ -295,7 +285,8 @@ public class SummaryController {
             model.addAttribute("title", TITLE_ACCOUNT_LOCKED);
             model.addAttribute("error", ERR_ACCOUNT_LOCKED);
 
-            // FIXME - Deauthenticate.
+            logoutUrl(request, response);
+
             return "errorPage";
         }
 
@@ -305,7 +296,8 @@ public class SummaryController {
             model.addAttribute("status", INFO_PASSWORD_EXPIRED);
             model.addAttribute("showWhen", true);
 
-            // FIXME - Deauthenticate (possibly)
+            logoutUrl(request, response);
+
             return "changePasswordRequestPage";
         }
 
@@ -318,22 +310,25 @@ public class SummaryController {
 
         if (returnTo.isEmpty()) {
 
-            return "summaryPage";
+            return "redirect:" + riBaseUrl + "/summary";
         }
 
-        String id = getMySessionId(request);
+        String id = getMyRiSessionId(request);
         String[] parts = id.split("=");
         String token = parts[1];
 
         String redirectUrl = "redirect:" + paBaseUrl + "/" + returnTo+ "?token=" + token;
 
-System.out.println(redirectUrl);
+        logger.debug(redirectUrl);
+
         return redirectUrl;
     }
 
 
     @RequestMapping(value = "/summary", method = RequestMethod.GET)
     public String summaryUrl(ModelMap model, HttpServletRequest request) throws InterestException {
+
+        logger.debug("summaryUrl: Referer: " + UrlUtils.getReferer(request));
 
         Contact contact = sqlUtils.getContact(securityUtils.getPrincipal());
         if (contact == null) {
@@ -700,41 +695,32 @@ System.out.println(redirectUrl);
     /**
      * @return my JSESSIONID cookie string
      */
-    private String getMySessionId(HttpServletRequest request) {
+    private String getMyRiSessionId(HttpServletRequest request) {
 
-        String session = "";
+        Cookie cookie = getMyRiSessionCookie(request);
 
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("JSESSIONID")) {
-                    session = cookie.getName() + "=" + cookie.getValue();
-                    break;
-                }
-            }
+        if (cookie != null) {
+            return cookie.getName() + "=" + cookie.getValue();
         }
 
-        return session;
+        return "";
     }
 
     /**
      * @return my JSESSIONID cookie string
      */
-    private Cookie getMySessionCookie(HttpServletRequest request) {
-
-        Cookie cookieReturned = null;
+    private Cookie getMyRiSessionCookie(HttpServletRequest request) {
 
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if (cookie.getName().equals("JSESSIONID")) {
-                    cookieReturned = cookie;
-                    break;
+                    return cookie;
                 }
             }
         }
 
-        return cookieReturned;
+        return null;
     }
 
     private String getTokenFromQueryString(String queryString) {
