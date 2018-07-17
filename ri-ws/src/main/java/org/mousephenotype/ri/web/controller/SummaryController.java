@@ -306,17 +306,46 @@ public class SummaryController {
         String[] parts = id.split("=");
         String token = parts[1];
 
+
+        /**
+         * Compute the return url.
+         *
+         * All referer values are from ri /login, regardless where they came from. If they came from pa, we must first
+         * authenticate via ri /login, then redirect as directed by referer and Http params 'target'. We must include
+         * the token in all cases except when redirecting to ri /summary.
+         *
+         * referer:         target:             Destination:                    Pass token?
+         *   ri /summary    /search?kw=*        paBaseUrl + /riSuccessHandler   Yes
+         *   ri /login      /search?kw=*        paBaseUrl + /riSuccessHandler   Yes
+         *   ri /login      /genes?acc={acc}    paBaseUrl + /riSuccessHandler   Yes
+         *   <any other>    <ignored>           riBaseUrl + /summary            No
+         *
+         */
+        final String SEARCH_TARGET = "search?kw=*";
+        final String GENES_TARGET_PREFIX = "genes?acc=";
+
         String returnUrl = "";
         String referer = UrlUtils.getReferer(request);
         logger.info("referer = " + UrlUtils.getReferer(request));
 
-        // If we came from ri summary or from pa (via ri login with param 'pasearch'), redirect to paBaseUrl /riSuccessHandler, passing the token.
-        // Else redirect to /summary without passing the token
-        if (referer.equals(riBaseUrl + "/summary") || referer.endsWith("pasearch")) {
+        Map<String, String> parms = UrlUtils.getParams(referer);
+        String target = parms.get("target");
+        String geneAccessionId = parms.get("acc");
 
-            returnUrl = "redirect:" + paBaseUrl + "/riSuccessHandler?token=" + token;
+        // Special case. Referer from ri /summary doesn't include any parameters, so set target using request.getParameter.
+        if (referer.equals(riBaseUrl + "/summary")) {
+            target = request.getParameter("target");
+        }
 
-        }  else {
+        if (target != null) {
+            if (target.equals(SEARCH_TARGET)) {
+
+                returnUrl = "redirect:" + paBaseUrl + "/riSuccessHandler?token=" + token + "&target=" + target;
+
+            } else if (target.startsWith((GENES_TARGET_PREFIX)) && (geneAccessionId != null)) {
+                returnUrl = "redirect:" + paBaseUrl + "/riSuccessHandler?token=" + token + "&target=" + target + "&acc=" + geneAccessionId;
+            }
+        } else {
 
             returnUrl = "redirect:" + riBaseUrl + "/summary";
         }

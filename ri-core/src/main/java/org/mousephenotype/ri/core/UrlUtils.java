@@ -18,9 +18,12 @@ package org.mousephenotype.ri.core;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class encapsulates the code and data necessary to manage the composition of url strings.
@@ -192,5 +195,43 @@ public class UrlUtils {
         }
 
         return "";
+    }
+
+    /**
+     *
+     * @param urlString
+     * @return {@link Map} containing key, value pairs of each <i>unique</i> query parameter. As maps cannot contain
+     * duplicate values, this method will return only the last (rightmost) duplicate parms.
+     */
+    public static Map<String, String> getParams(String urlString) {
+
+        Map<String, String> map = new HashMap<>();
+
+        try {
+
+            URL url = new URL(urlString);
+            String query = url.getQuery();
+            if ((query != null) && ( ! query.isEmpty())) {   // token=asdf=*
+                String[] parts = query.split("&");
+                for (String part : parts) {
+                    int idx = part.indexOf("=");
+                    String key = "";
+                    String value = "";
+                    if (idx > 0) {
+                        key = part.substring(0, idx);
+                        value = part.substring(idx + 1);
+                    } else {
+                        key = part;
+                    }
+
+                    map.put(key, value);
+                }
+            }
+
+        } catch (MalformedURLException e) {
+
+        }
+
+        return map;
     }
 }
