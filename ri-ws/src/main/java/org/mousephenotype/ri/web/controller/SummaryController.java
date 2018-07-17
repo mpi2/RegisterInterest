@@ -301,34 +301,34 @@ public class SummaryController {
             return "changePasswordRequestPage";
         }
 
-        Object o = request.getSession().getAttribute("returnTo");
-        String returnTo = "";
-        if (o != null) {
-            returnTo = o.toString().trim();
-            request.getSession().removeAttribute("returnTo");
-        }
-
-        if (returnTo.isEmpty()) {
-
-            return "redirect:" + riBaseUrl + "/summary";
-        }
-
+        // Get the token.
         String id = getMyRiSessionId(request);
         String[] parts = id.split("=");
         String token = parts[1];
 
-        String redirectUrl = "redirect:" + paBaseUrl + "/" + returnTo+ "?token=" + token;
+        String returnUrl = "";
+        String referer = UrlUtils.getReferer(request);
+        logger.info("referer = " + UrlUtils.getReferer(request));
 
-        logger.debug(redirectUrl);
+        // If we came from ri summary or from pa (via ri login with param 'pasearch'), redirect to paBaseUrl /riSuccessHandler, passing the token.
+        // Else redirect to /summary without passing the token
+        if (referer.equals(riBaseUrl + "/summary") || referer.endsWith("pasearch")) {
 
-        return redirectUrl;
+            returnUrl = "redirect:" + paBaseUrl + "/riSuccessHandler?token=" + token;
+
+        }  else {
+
+            returnUrl = "redirect:" + riBaseUrl + "/summary";
+        }
+
+        logger.info(returnUrl);
+
+        return returnUrl;
     }
 
 
     @RequestMapping(value = "/summary", method = RequestMethod.GET)
     public String summaryUrl(ModelMap model, HttpServletRequest request) throws InterestException {
-
-        logger.info("summaryUrl: Referer: " + UrlUtils.getReferer(request));
 
         Contact contact = sqlUtils.getContact(securityUtils.getPrincipal());
         if (contact == null) {

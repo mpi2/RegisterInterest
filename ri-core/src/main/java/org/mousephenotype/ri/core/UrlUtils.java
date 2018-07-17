@@ -185,7 +185,7 @@ public class UrlUtils {
         try {
 
             url = new URL(referer);
-            return url.getPath().replace(request.getContextPath() + "/", "");
+            return url.toString();
 
         } catch (Exception e) {
 
