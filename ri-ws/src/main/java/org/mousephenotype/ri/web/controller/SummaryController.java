@@ -317,12 +317,12 @@ public class SummaryController {
          * referer:         target:             Destination:                    Pass token?
          *   ri /summary    /search?kw=*        paBaseUrl + /riSuccessHandler   Yes
          *   ri /login      /search?kw=*        paBaseUrl + /riSuccessHandler   Yes
-         *   ri /login      /genes?acc={acc}    paBaseUrl + /riSuccessHandler   Yes
+         *   ri /login      /genes/{acc}        paBaseUrl + /riSuccessHandler   Yes
          *   <any other>    <ignored>           riBaseUrl + /summary            No
          *
          */
         final String SEARCH_TARGET = "search?kw=*";
-        final String GENES_TARGET_PREFIX = "genes?acc=";
+        final String GENES_TARGET_PREFIX = "genes";
 
         String returnUrl = "";
         String referer = UrlUtils.getReferer(request);
@@ -343,7 +343,7 @@ public class SummaryController {
                 returnUrl = "redirect:" + paBaseUrl + "/riSuccessHandler?token=" + token + "&target=" + target;
 
             } else if (target.startsWith((GENES_TARGET_PREFIX)) && (geneAccessionId != null)) {
-                returnUrl = "redirect:" + paBaseUrl + "/riSuccessHandler?token=" + token + "&target=" + target + "&acc=" + geneAccessionId;
+                returnUrl = "redirect:" + paBaseUrl + "/riSuccessHandler?token=" + token + "&target=" + target + "/" + geneAccessionId;
             }
         } else {
 
