@@ -146,15 +146,10 @@ public class SummaryController {
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String loginUrl(
-            HttpServletRequest request,
-            ModelMap model,
-            @RequestParam(value = "returnTo", required = false) String returnTo
+            HttpServletRequest request
     ) {
-        if (returnTo != null) {
-            request.getSession().setAttribute("returnTo", returnTo);
-        }
 
-        String error = request.getQueryString();
+        String error = request.getParameter("error");
 
         if (error != null) {
             sleep(INVALID_PASSWORD_SLEEP_SECONDS);
