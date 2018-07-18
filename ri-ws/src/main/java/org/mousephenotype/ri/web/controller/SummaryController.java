@@ -337,8 +337,8 @@ public class SummaryController {
 
                 returnUrl = "redirect:" + paBaseUrl + "/riSuccessHandler?token=" + token + "&target=" + target;
 
-            } else if (target.startsWith((GENES_TARGET_PREFIX)) && (geneAccessionId != null)) {
-                returnUrl = "redirect:" + paBaseUrl + "/riSuccessHandler?token=" + token + "&target=" + target + "/" + geneAccessionId;
+            } else if (target.startsWith(GENES_TARGET_PREFIX)) {
+                returnUrl = "redirect:" + paBaseUrl + "/riSuccessHandler?token=" + token + "&target=" + target;
             }
         } else {
 
