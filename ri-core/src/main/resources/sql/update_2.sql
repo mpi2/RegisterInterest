@@ -38,6 +38,9 @@ INSERT INTO contact_role(contact_pk, role, created_at)
   SELECT c.pk, 'USER', NOW() FROM contact c;
 
 
+-- Rename contact_gene table to contact_gene.
+RENAME TABLE gene_contact TO contact_gene;
+
 -- DROP active flags.
 ALTER TABLE contact
 DROP COLUMN `active`;
@@ -51,12 +54,11 @@ ALTER TABLE gene_status
 ALTER TABLE imits_status
   DROP COLUMN active;
 
--- Rename contact_gene table to contact_gene and gene_sent.contact_gene_pk to contact_gene_pk.
-RENAME TABLE gene_contact TO contact_gene;
+-- Rename gene_sent.contact_gene_pk to contact_gene_pk.
 ALTER TABLE `ri`.`gene_sent`
   DROP FOREIGN KEY `gene_sent_ibfk_1`;
 ALTER TABLE `ri`.`gene_sent`
-  CHANGE COLUMN `contact_gene_pk` `contact_gene_pk` INT(11) NOT NULL ;
+  CHANGE COLUMN `gene_contact_pk` `contact_gene_pk` INT(11) NOT NULL ;
 ALTER TABLE `ri`.`gene_sent`
   ADD CONSTRAINT `gene_sent_ibfk_1`
 FOREIGN KEY (`contact_gene_pk`)
