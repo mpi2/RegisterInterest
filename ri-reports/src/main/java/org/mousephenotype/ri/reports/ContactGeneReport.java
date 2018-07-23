@@ -95,7 +95,7 @@ public class ContactGeneReport extends AbstractReport implements CommandLineRunn
         long start = System.currentTimeMillis();
 
         List<String> headerParams = Arrays.asList(
-                "contact_email", "contact_active_state", "contact_created_at", "marker_symbol", "mgi_accession_id", "gene_interest_created_at");
+                "contact_email", "contact_created_at", "marker_symbol", "mgi_accession_id", "gene_interest_created_at");
 
         csvWriter.writeRow(headerParams);
 
@@ -109,7 +109,6 @@ public class ContactGeneReport extends AbstractReport implements CommandLineRunn
 
             List<String> row = Arrays.asList(
                       contactGeneReportRow.getContactEmail()
-                    , Integer.toString(contactGeneReportRow.getContactActiveState())
                     , (contactGeneReportRow.getContactCreatedAt() != null ? fmt.format(contactGeneReportRow.getContactCreatedAt()) : NO_DATA)
                     , contactGeneReportRow.getMarkerSymbol()
                     , contactGeneReportRow.getMgiAccessionId()

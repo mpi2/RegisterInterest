@@ -124,7 +124,6 @@ public class InterestControllerTest {
                 .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].contact.address", Matchers.comparesEqualTo("user1@ebi.ac.uk")))
-                .andExpect(jsonPath("$[0].contact.active", Matchers.comparesEqualTo(true)))
 
                 .andExpect(jsonPath("$[0].genes[0].mgiAccessionId", Matchers.comparesEqualTo("MGI:0000010")))
                 .andExpect(jsonPath("$[0].genes[0].symbol", Matchers.comparesEqualTo("gene-10")))

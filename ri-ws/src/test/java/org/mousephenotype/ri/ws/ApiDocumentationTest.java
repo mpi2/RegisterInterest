@@ -86,8 +86,7 @@ public class ApiDocumentationTest {
             fieldWithPath("pk").description("The primary key of the contact instance"),
             fieldWithPath("address").description("The contact's email address"),
             fieldWithPath("createdAt").description("The time and date the contact was created"),
-            fieldWithPath("updatedAt").description("The time and date the contact was last updated"),
-            fieldWithPath("active").description("A flag indicating whether or not the contact is active (true) or inactive (false)")
+            fieldWithPath("updatedAt").description("The time and date the contact was last updated")
     };
 
     FieldDescriptor[] gene = new FieldDescriptor[] {

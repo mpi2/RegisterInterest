@@ -23,7 +23,6 @@ import java.util.Date;
  */
 public class ContactGeneReportRow {
     private String contactEmail;
-    private int contactActiveState;
     private Date contactCreatedAt;
     private String markerSymbol;
     private String mgiAccessionId;
@@ -35,14 +34,6 @@ public class ContactGeneReportRow {
 
     public void setContactEmail(String contactEmail) {
         this.contactEmail = contactEmail;
-    }
-
-    public int getContactActiveState() {
-        return contactActiveState;
-    }
-
-    public void setContactActiveState(int contactActiveState) {
-        this.contactActiveState = contactActiveState;
     }
 
     public Date getContactCreatedAt() {
@@ -81,7 +72,6 @@ public class ContactGeneReportRow {
     public String toString() {
         return "ContactGeneReport{" +
                 "contactEmail='" + contactEmail + '\'' +
-                ", contactActiveState=" + contactActiveState +
                 ", contactCreatedAt=" + contactCreatedAt +
                 ", markerSymbol='" + markerSymbol + '\'' +
                 ", mgiAccessionId='" + mgiAccessionId + '\'' +

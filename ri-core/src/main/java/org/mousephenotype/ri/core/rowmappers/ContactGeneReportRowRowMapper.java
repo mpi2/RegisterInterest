@@ -44,7 +44,6 @@ public class ContactGeneReportRowRowMapper implements RowMapper<ContactGeneRepor
         ContactGeneReportRow contactGeneReportRow = new ContactGeneReportRow();
 
         contactGeneReportRow.setContactEmail(rs.getString("contact_email"));
-        contactGeneReportRow.setContactActiveState(rs.getInt("contact_active_state") == 1 ? 1 : 0);
         contactGeneReportRow.setContactCreatedAt(new Date(rs.getTimestamp("contact_created_at").getTime()));
         contactGeneReportRow.setMarkerSymbol(rs.getString("marker_symbol"));
         contactGeneReportRow.setMgiAccessionId(rs.getString("mgi_accession_id"));
