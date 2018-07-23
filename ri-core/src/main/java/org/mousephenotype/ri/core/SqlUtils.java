@@ -513,7 +513,7 @@ public class SqlUtils {
     /**
      * @return A map of all genes, indexed by mgi accession id.
      */
-    public Map<String, Gene> getGenes() {
+    public Map<String, Gene> getGenesByGeneAccessionId() {
 
         Map<String, Gene> genes = new HashMap<>();
 

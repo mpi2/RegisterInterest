@@ -28,6 +28,14 @@ public class ContactGene {
     private Date createdAt;
     private Date updatedAt;
 
+    public String buildContactGeneKey() {
+        return Integer.toString(contactPk) + "_" + Integer.toString(genePk);
+    }
+
+    public static String buildContactGeneKey(int contactPk, int genePk) {
+        return Integer.toString(contactPk) + "_" + Integer.toString(genePk);
+    }
+
     public int getPk() {
         return pk;
     }

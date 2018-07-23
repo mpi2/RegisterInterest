@@ -171,7 +171,7 @@ public class AppConfig {
     @Bean(name = "geneProcessor")
     public GeneProcessor geneProcessor() throws InterestException {
 
-        Map<String, Gene> genesMap = sqlUtils().getGenes();
+        Map<String, Gene> genesMap = sqlUtils().getGenesByGeneAccessionId();
         Map<String, ImitsStatus> imitsStatusMap = sqlUtils().getImitsStatusMap();
 
         return new GeneProcessor(imitsStatusMap, genesMap);
