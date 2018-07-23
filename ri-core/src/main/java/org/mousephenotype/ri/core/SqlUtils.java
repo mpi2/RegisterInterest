@@ -184,6 +184,18 @@ public class SqlUtils {
         p.execute(datasource);
     }
 
+    public void deleteAllContactGenes() {
+        String delete = "DELETE FROM contact_gene";
+        Map<String, Object> parameterMap = new HashMap<>();
+        jdbcInterest.update(delete, parameterMap);
+    }
+
+    public void deleteAllContacts() {
+        String delete = "DELETE FROM contact";
+        Map<String, Object> parameterMap = new HashMap<>();
+        jdbcInterest.update(delete, parameterMap);
+    }
+
     @Transactional
     public void deleteContact(String emailAddress) throws InterestException {
 

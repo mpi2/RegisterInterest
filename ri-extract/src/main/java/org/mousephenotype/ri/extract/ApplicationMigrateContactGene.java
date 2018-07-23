@@ -19,8 +19,6 @@ package org.mousephenotype.ri.extract;
 import org.mousephenotype.ri.core.DateUtils;
 import org.mousephenotype.ri.core.SecurityUtils;
 import org.mousephenotype.ri.core.SqlUtils;
-import org.mousephenotype.ri.core.entities.Contact;
-import org.mousephenotype.ri.core.entities.ContactGene;
 import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.slf4j.Logger;
@@ -48,8 +46,6 @@ import java.nio.file.StandardCopyOption;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -118,8 +114,8 @@ public class ApplicationMigrateContactGene implements CommandLineRunner {
         try {
 
             start = new Date().getTime();
-            int count = extract();
-            logger.info("Extracted " + count + " records in " + dateUtils.msToHms(new Date().getTime() - start));
+            int count = migrateContactGenes();
+            logger.info("Extracted " + count + " contact-gene associations in " + dateUtils.msToHms(new Date().getTime() - start));
 
         } catch (InterestException e) {
 
@@ -169,22 +165,12 @@ public class ApplicationMigrateContactGene implements CommandLineRunner {
 
 
     @Transactional
-    public int extract() throws InterestException {
+    public int migrateContactGenes() throws InterestException {
 
-        int                      count                              = 0;
-        String                   line;
-        String[]                 parts;
-        List<Contact>            contacts                           = sqlUtils.getContacts();
-        Map<String, Gene>        genesByGeneAccessionId             = sqlUtils.getGenesByGeneAccessionId();
-        List<ContactGene>        contactGeneList                   = sqlUtils.getContactGenes();
-        Map<String, ContactGene> contactGeneByContactKeyAndGeneKey = new HashMap<>();
-        Map<String, Contact>     contactsByAddress                  = new HashMap<>();
-        for (Contact contact : contacts) {
-            contactsByAddress.put(contact.getEmailAddress(), contact);
-        }
-        for (ContactGene contactGene : contactGeneList) {
-            contactGeneByContactKeyAndGeneKey.put(contactGene.buildContactGeneKey(), contactGene);
-        }
+        int               count                  = 0;
+        String            line;
+        String[]          parts;
+        Map<String, Gene> genesByGeneAccessionId = sqlUtils.getGenesByGeneAccessionId();
 
         try {
             BufferedReader br = new BufferedReader(new FileReader(targetFilename));
@@ -199,53 +185,32 @@ public class ApplicationMigrateContactGene implements CommandLineRunner {
                 parts = line.split(Pattern.quote("\t"));
 
                 if (parts.length != 5) {
-                    logger.error(" Input file '" + targetFilename + "' contains " + parts.length + " fields. Expected 5.");
+
+                    logger.error("FATAL ERROR: Input file '{}' contains {} fields. Expected 5.", targetFilename, parts.length);
+
                     return count;
                 }
 
-                String mgiAccessionId = parts[COL_MGI_ACCESSION_ID];
+                String geneAccessionId = parts[COL_MGI_ACCESSION_ID];
                 String emailAddress = parts[COL_EMAIL];
 
-                // Create the contact if it does not yet exist.
-                Contact contact = contactsByAddress.get(emailAddress);
-                if (contact == null) {
-                    try {
-
-                        sqlUtils.createAccount(emailAddress, securityUtils.generateSecureRandomPassword());
-                        contact = sqlUtils.getContact(emailAddress);
-                        contactsByAddress.put(emailAddress, contact);
-                        logger.info("Created new account for contact '{}'", emailAddress);
-
-                    } catch (InterestException e) {
-
-                        logger.error("createAccount for contact '{}' failed because gene accession id {} doesn't exist. Reason: {}", emailAddress, mgiAccessionId, e.getLocalizedMessage());
-                        continue;
-                    }
-                }
-
-                // Create the contact <--> gene association if it doesn't exist.
-                Gene gene = genesByGeneAccessionId.get(mgiAccessionId);
+                // Get the gene. It is an error if the gene does not exist.
+                Gene gene = genesByGeneAccessionId.get(geneAccessionId);
                 if (gene == null) {
 
-                    logger.error("createAccount for contact '{}' failed because gene accession id {} doesn't exist.", emailAddress, mgiAccessionId);
+                    logger.error("ERROR: createAccount for contact '{}' failed because gene accession id {} doesn't exist.", emailAddress, geneAccessionId);
                     continue;
                 }
 
-                ContactGene contactGene = contactGeneByContactKeyAndGeneKey.get(ContactGene.buildContactGeneKey(contact.getPk(), gene.getPk()));
-                if (contactGene == null) {
+                // The imits report that fees this method contains all registered contact/gene pairs, so there's no need
+                // to compute unregistered associations - simply remove all contact_gene and contact rows, then add.
+                sqlUtils.deleteAllContactGenes();
+                sqlUtils.deleteAllContacts();
 
-                    try {
-
-                        sqlUtils.registerGene(emailAddress, gene.getMgiAccessionId());
-                        logger.info("Created contact/gene association for contact '{}', gene '{}' ({})", emailAddress, gene.getSymbol(), gene.getMgiAccessionId());
-                        count ++;
-
-                    } catch (InterestException e) {
-
-                        logger.error("registerGene for contact '{}', gene '{}' ({}) failed. Reason: {}", emailAddress, gene.getSymbol(), gene.getMgiAccessionId(), e.getLocalizedMessage());
-                        continue;
-                    }
-                }
+                // Create the contact and register the gene association to the contact.
+                sqlUtils.createAccount(emailAddress, securityUtils.generateSecureRandomPassword());
+                sqlUtils.registerGene(emailAddress, gene.getMgiAccessionId());
+                count++;
             }
 
             if (br != null) {
