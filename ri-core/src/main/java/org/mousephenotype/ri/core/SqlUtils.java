@@ -470,7 +470,7 @@ public class SqlUtils {
         return contactList;
     }
 
-    public Map<Integer, Contact> getContactsIndexedByContactPk() {
+    public Map<Integer, Contact> getContactsByPk() {
         final String query = "SELECT * FROM contact";
 
         Map<Integer, Contact> contactMap = new HashMap<>();

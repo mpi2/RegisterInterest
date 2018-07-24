@@ -172,6 +172,12 @@ public class ApplicationMigrateContactGene implements CommandLineRunner {
         String[]          parts;
         Map<String, Gene> genesByGeneAccessionId = sqlUtils.getGenesByGeneAccessionId();
 
+        // The imits report that fees this method contains all registered contact/gene pairs, so there's no need
+        // to compute unregistered associations - simply remove all contact_gene and contact rows, then add.
+        sqlUtils.deleteAllContactGenes();
+        sqlUtils.deleteAllContactRoles();
+        sqlUtils.deleteAllContacts();
+
         try {
             BufferedReader br = new BufferedReader(new FileReader(targetFilename));
             int lineNumber = 1;
@@ -201,12 +207,6 @@ public class ApplicationMigrateContactGene implements CommandLineRunner {
                     logger.error("ERROR: createAccount for contact '{}' failed because gene accession id {} doesn't exist.", emailAddress, geneAccessionId);
                     continue;
                 }
-
-                // The imits report that fees this method contains all registered contact/gene pairs, so there's no need
-                // to compute unregistered associations - simply remove all contact_gene and contact rows, then add.
-                sqlUtils.deleteAllContactGenes();
-                sqlUtils.deleteAllContactRoles();
-                sqlUtils.deleteAllContacts();
 
                 // Create the contact and register the gene association to the contact.
                 sqlUtils.createAccount(emailAddress, securityUtils.generateSecureRandomPassword());

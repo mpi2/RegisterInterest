@@ -158,7 +158,7 @@ public class ApplicationSend implements CommandLineRunner {
         int sent = 0;
         Message message;
         Map<Integer, GeneSentSummary> summaryMap = sqlUtils.getGeneSentSummary();
-        Map<Integer, Contact> contactMap = sqlUtils.getContactsIndexedByContactPk();
+        Map<Integer, Contact> contactMap = sqlUtils.getContactsByPk();
 
         for (Map.Entry<Integer, GeneSentSummary> entry : summaryMap.entrySet()) {
             int contactPk = entry.getKey();
