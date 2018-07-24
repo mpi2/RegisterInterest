@@ -372,22 +372,20 @@ public class SqlUtils {
 
     /**
      *
+     * @param address the email address of interest
      * @param gene The mgi accession id of the gene of interest
-     * @param email the email address of interest
      * @return the {@link ContactGene} instance, if found; null otherwise
      */
-    @Deprecated
-    // FIXME IS THIS USED ANYWHERE? IF NOT, GET RID OF IT.
-    public ContactGene getContactGene(String gene, String email) {
+    public ContactGene getContactGene(String address, String gene) {
         String query =
                 "SELECT * FROM contact_gene cg\n" +
                         "JOIN gene g ON g.pk = cg.gene_pk\n" +
                         "JOIN contact c ON c.pk = cg.contact_pk\n" +
-                        "WHERE g.mgi_accession_id = :gene AND c.address = :email";
+                        "WHERE g.mgi_accession_id = :gene AND c.address = :address";
 
         Map<String, Object> parameterMap = new HashMap<>();
+        parameterMap.put("address", address);
         parameterMap.put("gene", gene);
-        parameterMap.put("email", email);
 
         List<ContactGene> list = jdbcInterest.query(query, parameterMap, new ContactGeneRowMapper());
 

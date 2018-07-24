@@ -19,6 +19,8 @@ package org.mousephenotype.ri.extract;
 import org.mousephenotype.ri.core.DateUtils;
 import org.mousephenotype.ri.core.SecurityUtils;
 import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.entities.Contact;
+import org.mousephenotype.ri.core.entities.ContactGene;
 import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.slf4j.Logger;
@@ -45,8 +47,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -172,11 +173,25 @@ public class ApplicationMigrateContactGene implements CommandLineRunner {
         String[]          parts;
         Map<String, Gene> genesByGeneAccessionId = sqlUtils.getGenesByGeneAccessionId();
 
-        // The imits report that fees this method contains all registered contact/gene pairs, so there's no need
-        // to compute unregistered associations - simply remove all contact_gene and contact rows, then add.
-        sqlUtils.deleteAllContactGenes();
-        sqlUtils.deleteAllContactRoles();
-        sqlUtils.deleteAllContacts();
+        List<ContactGene>    impcContactGenes      = sqlUtils.getContactGenes();
+        List<Contact>        impcContacts          = sqlUtils.getContacts();
+        Map<String, Contact> impcContactsByAddress = new HashMap<>();
+        Map<Integer, Gene>   genes                 = sqlUtils.getGenesByPk();
+
+        Map<String, ContactGene> impcContactGenesByCustomKey = new HashMap<>();
+        for (ContactGene contactGene : impcContactGenes) {
+            String key = impcContactsByAddress.get(contactGene.getContactPk()).getEmailAddress() + "::" + genes.get(contactGene.getGenePk()).getMgiAccessionId();
+            impcContactGenesByCustomKey.put(key, contactGene);
+        }
+
+        for (Contact contact : impcContacts) {
+            impcContactsByAddress.put(contact.getEmailAddress(), contact);
+        }
+
+        Set<String> imitsContactGenes = new HashSet<>();
+        Set<String> impcContactsCreated = new HashSet<>();
+        Set<String> impcContactGenesCreated = new HashSet<>();
+
 
         try {
             BufferedReader br = new BufferedReader(new FileReader(targetFilename));
@@ -208,9 +223,29 @@ public class ApplicationMigrateContactGene implements CommandLineRunner {
                     continue;
                 }
 
-                // Create the contact and register the gene association to the contact.
-                sqlUtils.createAccount(emailAddress, securityUtils.generateSecureRandomPassword());
-                sqlUtils.registerGene(emailAddress, gene.getMgiAccessionId());
+                imitsContactGenes.add(emailAddress + "::" + geneAccessionId);
+
+                // If the contact doesn't exist in impc, create it.
+                Contact contact = impcContactsByAddress.get(emailAddress);
+                if (contact == null) {
+                    sqlUtils.createAccount(emailAddress, securityUtils.generateSecureRandomPassword());
+                    contact = sqlUtils.getContact(emailAddress);
+
+                    impcContactsCreated.add(emailAddress);
+                    impcContactsByAddress.put(emailAddress, contact);
+                }
+
+                // If the contactGene doesn't exist in impc, create it.
+                String key = emailAddress + "::" + geneAccessionId;
+                ContactGene contactGene = impcContactGenesByCustomKey.get(key);
+                if (contactGene == null) {
+                    sqlUtils.registerGene(emailAddress, geneAccessionId);
+                    contactGene = sqlUtils.getContactGene(emailAddress, geneAccessionId);
+
+                    impcContactGenesCreated.add(key);
+                    impcContactGenesByCustomKey.put(key, contactGene);
+                }
+
                 count++;
             }
 
@@ -222,6 +257,43 @@ public class ApplicationMigrateContactGene implements CommandLineRunner {
 
             String message = "Open file '" + targetFilename + "' failed. Reason: " + e.getLocalizedMessage();
             throw new InterestException(message);
+        }
+
+        ArrayList<String> impcContactsCreatedList = new ArrayList<>(impcContactsCreated);
+        ArrayList<String> impcContactGenesCreatedList = new ArrayList<>(impcContactGenesCreated);
+
+        Collections.sort(impcContactsCreatedList);
+        Collections.sort(impcContactGenesCreatedList);
+
+        // Print statistics.
+        if (impcContactsCreatedList.isEmpty()) {
+            logger.info("Created no new accounts.");
+        } else {
+            logger.info("Created new accounts for:");
+            for (String s : impcContactsCreatedList) {
+                logger.info("  {}", s);
+            }
+        }
+
+        System.out.println();
+
+        if (impcContactGenesCreatedList.isEmpty()) {
+            logger.info("Created no new contact-gene registrations.");
+        } else {
+            logger.info("Created new contact-gene registrations for:");
+            for (String s : impcContactGenesCreatedList) {
+                logger.info("  {}", s);
+            }
+        }
+
+        impcContactGenesCreated.removeAll(imitsContactGenes);
+        if (impcContactGenesCreated.isEmpty()) {
+            logger.info("No contact-gene unregistrations.");
+        } else {
+            logger.info("Unregistrations:");
+            for (String s : impcContactGenesCreated) {
+                logger.info("  {}", s);
+            }
         }
 
         return count;
