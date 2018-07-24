@@ -190,6 +190,12 @@ public class SqlUtils {
         jdbcInterest.update(delete, parameterMap);
     }
 
+    public void deleteAllContactRoles() {
+        String delete = "DELETE FROM contact_role";
+        Map<String, Object> parameterMap = new HashMap<>();
+        jdbcInterest.update(delete, parameterMap);
+    }
+
     public void deleteAllContacts() {
         String delete = "DELETE FROM contact";
         Map<String, Object> parameterMap = new HashMap<>();
@@ -214,6 +220,16 @@ public class SqlUtils {
         // Delete all matching emailAddress from contact_gene.
         delete = "DELETE FROM contact_gene WHERE contact_pk = :contactPk";
         parameterMap.put("contactPk", contact.getPk());
+        jdbcInterest.update(delete, parameterMap);
+
+        // Delete all matching emailAddress from gene_sent (GDPR).
+        delete = "DELETE FROM gene_sent WHERE address = :address";
+        parameterMap.put("address", contact.getEmailAddress());
+        jdbcInterest.update(delete, parameterMap);
+
+        // Delete all matching emailAddress from gene_sent_summary (GDPR).
+        delete = "DELETE FROM gene_sent_summary WHERE address = :address";
+        parameterMap.put("address", contact.getEmailAddress());
         jdbcInterest.update(delete, parameterMap);
 
         // Delete all matching emailAddress from reset_credentials

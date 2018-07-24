@@ -205,6 +205,7 @@ public class ApplicationMigrateContactGene implements CommandLineRunner {
                 // The imits report that fees this method contains all registered contact/gene pairs, so there's no need
                 // to compute unregistered associations - simply remove all contact_gene and contact rows, then add.
                 sqlUtils.deleteAllContactGenes();
+                sqlUtils.deleteAllContactRoles();
                 sqlUtils.deleteAllContacts();
 
                 // Create the contact and register the gene association to the contact.
