@@ -168,24 +168,20 @@ public class ApplicationMigrateContactGene implements CommandLineRunner {
     @Transactional
     public int migrateContactGenes() throws InterestException {
 
-        int               count                  = 0;
-        String            line;
-        String[]          parts;
-        Map<String, Gene> genesByGeneAccessionId = sqlUtils.getGenesByGeneAccessionId();
-
-        List<ContactGene>    impcContactGenes      = sqlUtils.getContactGenes();
-        List<Contact>        impcContacts          = sqlUtils.getContacts();
-        Map<String, Contact> impcContactsByAddress = new HashMap<>();
-        Map<Integer, Gene>   genes                 = sqlUtils.getGenesByPk();
+        int                   count                  = 0;
+        String                line;
+        String[]              parts;
+        Map<String, Gene>     genesByGeneAccessionId = sqlUtils.getGenesByGeneAccessionId();
+        List<ContactGene>     impcContactGenes       = sqlUtils.getContactGenes();
+        Map<Integer, Contact> impcContactsByPk       = sqlUtils.getContactsByPk();
+        Map<Integer, Gene>    genesByPk                  = sqlUtils.getGenesByPk();
 
         Map<String, ContactGene> impcContactGenesByCustomKey = new HashMap<>();
         for (ContactGene contactGene : impcContactGenes) {
-            String key = impcContactsByAddress.get(contactGene.getContactPk()).getEmailAddress() + "::" + genes.get(contactGene.getGenePk()).getMgiAccessionId();
+            Contact contact = impcContactsByPk.get(contactGene.getContactPk());
+            Gene gene = genesByPk.get(contactGene.getGenePk());
+            String key = contact.getEmailAddress() + "::" + gene.getMgiAccessionId();
             impcContactGenesByCustomKey.put(key, contactGene);
-        }
-
-        for (Contact contact : impcContacts) {
-            impcContactsByAddress.put(contact.getEmailAddress(), contact);
         }
 
         Set<String> imitsContactGenes = new HashSet<>();
@@ -226,13 +222,13 @@ public class ApplicationMigrateContactGene implements CommandLineRunner {
                 imitsContactGenes.add(emailAddress + "::" + geneAccessionId);
 
                 // If the contact doesn't exist in impc, create it.
-                Contact contact = impcContactsByAddress.get(emailAddress);
+                Contact contact = impcContactsByPk.get(emailAddress);
                 if (contact == null) {
                     sqlUtils.createAccount(emailAddress, securityUtils.generateSecureRandomPassword());
                     contact = sqlUtils.getContact(emailAddress);
 
                     impcContactsCreated.add(emailAddress);
-                    impcContactsByAddress.put(emailAddress, contact);
+                    impcContactsByPk.put(contact.getPk(), contact);
                 }
 
                 // If the contactGene doesn't exist in impc, create it.
