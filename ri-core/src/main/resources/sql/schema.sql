@@ -106,7 +106,8 @@ CREATE TABLE gene_sent (
 
     subject                                     VARCHAR(78)     NOT NULL,
     body                                        VARCHAR(2048)   NOT NULL,
-    contact_gene_pk                             INT             NOT NULL,
+    address                                     VARCHAR(255)    NOT NULL,
+    mgi_accession_id                            VARCHAR(32)    NOT NULL,
     assignment_status_pk                        INT             DEFAULT NULL,
     conditional_allele_production_status_pk     INT             DEFAULT NULL,
     null_allele_production_status_pk            INT             DEFAULT NULL,
@@ -117,7 +118,6 @@ CREATE TABLE gene_sent (
     updated_at                                  TIMESTAMP       NOT NULL        DEFAULT CURRENT_TIMESTAMP
     ON UPDATE CURRENT_TIMESTAMP,
 
-    FOREIGN KEY contact_gene_pk_fk                              (contact_gene_pk)                               REFERENCES contact_gene(pk),
     FOREIGN KEY assignment_status_pk_fk                         (assignment_status_pk)                          REFERENCES gene_status(pk),
     FOREIGN KEY conditional_allele_production_status_pk_fk      (conditional_allele_production_status_pk)       REFERENCES gene_status(pk),
     FOREIGN KEY null_allele_production_status_pk_fk             (null_allele_production_status_pk)              REFERENCES gene_status(pk),
@@ -132,14 +132,12 @@ CREATE TABLE gene_sent_summary (
 
     subject                                     VARCHAR(78)     NOT NULL,
     body                                        MEDIUMTEXT      NOT NULL,
-    contact_pk                                  INT             NOT NULL,
+    address                                     VARCHAR(255)    NOT NULL,
 
     created_at                                  DATETIME        NOT NULL,
     sent_at                                     DATETIME,                       -- a null value means 'generated but not geneSent yet'.
     updated_at                                  TIMESTAMP       NOT NULL        DEFAULT CURRENT_TIMESTAMP
-    ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY contact_pk_fk                                   (contact_pk)                                    REFERENCES contact(pk)
+    ON UPDATE CURRENT_TIMESTAMP
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 

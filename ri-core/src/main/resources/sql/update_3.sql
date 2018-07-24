@@ -24,9 +24,11 @@ ALTER TABLE gene_sent
 ALTER TABLE gene_sent_summary
   ADD COLUMN address VARCHAR(255) NOT NULL after body;
 
+
 UPDATE gene_sent_summary gss
   JOIN contact c ON c.pk = gss.contact_pk
 SET gss.address = c.address;
+
 
 ALTER TABLE gene_sent_summary
   DROP COLUMN contact_pk,
