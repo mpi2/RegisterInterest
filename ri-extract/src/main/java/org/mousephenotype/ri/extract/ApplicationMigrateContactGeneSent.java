@@ -54,9 +54,14 @@ import java.util.regex.Pattern;
  * This class implements the migration and extraction of the ContactGene report from iMits.
  *
  * Created by mrelac on 19/07/2017.
+ *
+ * 2018-07-24 (mrelac) NOTE: This class is no longer needed, as its purpose was to capture the last e-mail that was sent.
+ *                           The last e-mail sent by RegisterInterest was the 25 May GDPR summary, and no RI jobs have
+ *                           run since then that generate e-mails.
  */
 @EnableBatchProcessing
 @ComponentScan({"org.mousephenotype.ri.extract"})
+@Deprecated
 public class ApplicationMigrateContactGeneSent implements CommandLineRunner {
 
     @NotNull

@@ -53,10 +53,13 @@ import java.util.regex.Pattern;
 /**
  * This class implements the migration and extraction of the ContactGene report from iMits.
  *
+ * 2018-07-24 (mrelac) NOTE: This class will be obsolete once we unplug Harwell from Register Interest management.
+ *
  * Created by mrelac on 19/07/2017.
  */
 @EnableBatchProcessing
 @ComponentScan({"org.mousephenotype.ri.extract"})
+@Deprecated
 public class ApplicationMigrateContactGene implements CommandLineRunner {
 
     @NotNull
