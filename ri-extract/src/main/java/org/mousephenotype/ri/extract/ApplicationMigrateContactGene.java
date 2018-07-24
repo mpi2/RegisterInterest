@@ -168,17 +168,25 @@ public class ApplicationMigrateContactGene implements CommandLineRunner {
     @Transactional
     public int migrateContactGenes() throws InterestException {
 
-        int                   count                  = 0;
-        String                line;
-        String[]              parts;
-        Map<String, Gene>     genesByGeneAccessionId = sqlUtils.getGenesByGeneAccessionId();
-        List<ContactGene>     impcContactGenes       = sqlUtils.getContactGenes();
-        Map<Integer, Contact> impcContactsByPk       = sqlUtils.getContactsByPk();
-        Map<Integer, Gene>    genesByPk                  = sqlUtils.getGenesByPk();
+        int               count            = 0;
+        String            line;
+        String[]          parts;
+        List<Contact>     impcContacts     = sqlUtils.getContacts();
+        List<ContactGene> impcContactGenes = sqlUtils.getContactGenes();
+
+        Map<String, Gene>  genesByGeneAccessionId = sqlUtils.getGenesByGeneAccessionId();
+        Map<Integer, Gene> genesByPk              = sqlUtils.getGenesByPk();
+
+        Map<String, Contact>  impcContactsByAddress = new HashMap<>();
+        Map<Integer, Contact> contactsByPk          = new HashMap<>();
+        for (Contact contact : impcContacts) {
+            impcContactsByAddress.put(contact.getEmailAddress(), contact);
+            contactsByPk.put(contact.getPk(), contact);
+        }
 
         Map<String, ContactGene> impcContactGenesByCustomKey = new HashMap<>();
         for (ContactGene contactGene : impcContactGenes) {
-            Contact contact = impcContactsByPk.get(contactGene.getContactPk());
+            Contact contact = contactsByPk.get(contactGene.getContactPk());
             Gene gene = genesByPk.get(contactGene.getGenePk());
             String key = contact.getEmailAddress() + "::" + gene.getMgiAccessionId();
             impcContactGenesByCustomKey.put(key, contactGene);
@@ -222,13 +230,13 @@ public class ApplicationMigrateContactGene implements CommandLineRunner {
                 imitsContactGenes.add(emailAddress + "::" + geneAccessionId);
 
                 // If the contact doesn't exist in impc, create it.
-                Contact contact = impcContactsByPk.get(emailAddress);
+                Contact contact = impcContactsByAddress.get(emailAddress);
                 if (contact == null) {
                     sqlUtils.createAccount(emailAddress, securityUtils.generateSecureRandomPassword());
                     contact = sqlUtils.getContact(emailAddress);
 
                     impcContactsCreated.add(emailAddress);
-                    impcContactsByPk.put(contact.getPk(), contact);
+                    impcContactsByAddress.put(emailAddress, contact);
                 }
 
                 // If the contactGene doesn't exist in impc, create it.
