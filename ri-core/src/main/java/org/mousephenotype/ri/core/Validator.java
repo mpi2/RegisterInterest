@@ -34,9 +34,9 @@ public class Validator {
             // if assignment_status == Not planned (NP)
 
             if (gene.getAssignmentStatus().equals(GeneStatus.NOT_PLANNED)) {
-                if ((gene.getConditionalAlleleProductionStatusPk() != null) ||
-                        (gene.getNullAlleleProductionStatusPk() != null) ||
-                        (gene.getPhenotypingStatusPk() != null) ||
+                if ((gene.getRiConditionalAlleleProductionStatus() != null) ||
+                        (gene.getRiNullAlleleProductionStatus() != null) ||
+                        (gene.getRiPhenotypingStatus() != null) ||
                         (gene.getNumberOfSignificantPhenotypes() > 0)) {
                     errMessages.add("Data Error for " + gene.getMgiAccessionId() + ": assignmentStatus = Not Planned and other statuses/counts are not empty");
                     return null;
@@ -45,9 +45,9 @@ public class Validator {
 
             // if assignment_status == Withdrawn (W)
             if (gene.getAssignmentStatus().equals(GeneStatus.WITHDRAWN)) {
-                if ((gene.getConditionalAlleleProductionStatusPk() != null) ||
-                        (gene.getNullAlleleProductionStatusPk() != null) ||
-                        (gene.getPhenotypingStatusPk() != null) ||
+                if ((gene.getRiConditionalAlleleProductionStatus() != null) ||
+                        (gene.getRiNullAlleleProductionStatus() != null) ||
+                        (gene.getRiPhenotypingStatus() != null) ||
                         (gene.getNumberOfSignificantPhenotypes() > 0)) {
                     errMessages.add("Data Error for " + gene.getMgiAccessionId() + ": assignmentStatus = Withdrawn and other statuses/counts are not empty");
                     return null;
@@ -56,10 +56,10 @@ public class Validator {
 
             // if assignment_status == Production And Phenotyping Planned (PAPP) AND phenotyping_status NOT empty AND NOT MOUSE_PRODUCED
             if ((gene.getAssignmentStatus().equals(GeneStatus.PRODUCTION_AND_PHENOTYPING_PLANNED)) &&
-                    (gene.getPhenotypingStatusPk() != null)) {
+                    (gene.getRiPhenotypingStatus() != null)) {
 
-                if (((gene.getConditionalAlleleProductionStatusPk() != null) && (gene.getConditionalAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCED))) ||
-                        ((gene.getNullAlleleProductionStatusPk() != null) && (gene.getNullAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCED)))) {
+                if (((gene.getRiConditionalAlleleProductionStatus() != null) && (gene.getConditionalAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCED))) ||
+                        ((gene.getRiNullAlleleProductionStatus() != null) && (gene.getNullAlleleProductionStatus().equals(GeneStatus.MOUSE_PRODUCED)))) {
                     // NULL statement
                 } else {
                     errMessages.add("Data Error for " + gene.getMgiAccessionId() + ": assignmentStatus = PAPP and production status != Mouse Produced");

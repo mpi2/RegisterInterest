@@ -16,9 +16,9 @@
 
 package org.mousephenotype.ri.core.rowmappers;
 
+import org.mousephenotype.ri.core.entities.GeneSent;
 import org.springframework.jdbc.core.RowMapper;
 
-import org.mousephenotype.ri.core.entities.GeneSent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -49,19 +49,16 @@ public class GeneSentRowMapper implements RowMapper<GeneSent> {
         geneSent.setSubject((rs.getString("subject")));
         geneSent.setBody((rs.getString("body")));
 
-        geneSent.setContactGenePk(rs.getInt("contact_gene_pk"));
+        geneSent.setAddress(rs.getString("address"));
+        geneSent.setMgiAccessionId(rs.getString("mgi_accession_id"));
 
-        Integer i = rs.getInt("assignment_status_pk");
-        geneSent.setAssignmentStatusPk((i == null) || (i == 0) ? null : i);
+        geneSent.setAssignmentStatus(rs.getString("assignment_status"));
 
-        i = rs.getInt("conditional_allele_production_status_pk");
-        geneSent.setConditionalAlleleProductionStatusPk((i == null) || (i == 0) ? null : i);
+        geneSent.setConditionalAlleleProductionStatus(rs.getString("conditional_allele_production_status"));
 
-        i = rs.getInt("null_allele_production_status_pk");
-        geneSent.setNullAlleleProductionStatusPk((i == null) || (i == 0) ? null : i);
+        geneSent.setNullAlleleProductionStatus(rs.getString("null_allele_production_status"));
 
-                i = rs.getInt("phenotyping_status_pk");
-        geneSent.setPhenotypingStatusPk((i == null) || (i == 0) ? null : i);
+        geneSent.setPhenotypingStatus(rs.getString("phenotyping_status"));
 
         geneSent.setCreatedAt(new Date(rs.getTimestamp("created_at").getTime()));
 

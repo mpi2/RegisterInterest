@@ -604,25 +604,6 @@ public class SqlUtils {
     }
 
     /**
-     *
-     * @return A {@link Map} of all {@link GeneSent} instances, indexed by contact_gene_pk
-     */
-    public Map<Integer, GeneSent> getGeneSent() {
-
-        Map<Integer, GeneSent> sentMap = new HashMap<>();
-
-        final String query = "SELECT * FROM gene_sent";
-        Map<String, Object> parameterMap = new HashMap<>();
-
-        List<GeneSent> geneSentList = jdbcInterest.query(query, parameterMap, new GeneSentRowMapper());
-        for (GeneSent geneSent : geneSentList) {
-            sentMap.put(geneSent.getContactGenePk(), geneSent);
-        }
-
-        return sentMap;
-    }
-
-    /**
      * Return the {@link GeneSent}
      *
      * @param pk the gene_sent primary key
@@ -757,19 +738,19 @@ public class SqlUtils {
     /**
      * @return a {@link Map} of all imits status, indexed by status (i.e. name)
      */
-    public Map<String, ImitsStatus> getImitsStatusMap() {
+    public Map<String, ImitsStatus> getImitsStatusByStatus() {
 
-        Map<String, ImitsStatus> imitsStatusMap = new HashMap<>();
+        Map<String, ImitsStatus> imitsStatusByStatus = new HashMap<>();
         String query = "SELECT * FROM imits_status";
 
         Map<String, Object> parameterMap = new HashMap<>();
 
         List<ImitsStatus> imitsStatusList = jdbcInterest.query(query, parameterMap, new ImitsStatusRowMapper());
         for (ImitsStatus imitsStatus : imitsStatusList) {
-            imitsStatusMap.put(imitsStatus.getStatus(), imitsStatus);
+            imitsStatusByStatus.put(imitsStatus.getStatus(), imitsStatus);
         }
 
-        return imitsStatusMap;
+        return imitsStatusByStatus;
     }
 
     /**
@@ -1207,21 +1188,21 @@ public class SqlUtils {
 
     private int insertGene(Map<String, Object> parameterMap) throws InterestException {
         final String columnNames =
-                "mgi_accession_id, symbol, assigned_to, assignment_status, assignment_status_date, assignment_status_pk, " +
-                "conditional_allele_production_centre, conditional_allele_production_status, conditional_allele_production_status_pk, " +
+                "mgi_accession_id, symbol, assigned_to, assignment_status, assignment_status_date, ri_assignment_status, " +
+                "conditional_allele_production_centre, conditional_allele_production_status, ri_conditional_allele_production_status, " +
                 "conditional_allele_production_status_date, conditional_allele_production_start_date, " +
-                "null_allele_production_centre, null_allele_production_status, null_allele_production_status_pk, " +
+                "null_allele_production_centre, null_allele_production_status, ri_null_allele_production_status, " +
                 "null_allele_production_status_date, null_allele_production_start_date, " +
-                "phenotyping_centre, phenotyping_status, phenotyping_status_date, phenotyping_status_pk, " +
+                "phenotyping_centre, phenotyping_status, phenotyping_status_date, ri_phenotyping_status, " +
                 "number_of_significant_phenotypes, created_at";
 
         final String columnValues =
-                ":mgi_accession_id, :symbol, :assigned_to, :assignment_status, :assignment_status_date, :assignment_status_pk, " +
-                ":conditional_allele_production_centre, :conditional_allele_production_status, :conditional_allele_production_status_pk, " +
+                ":mgi_accession_id, :symbol, :assigned_to, :assignment_status, :assignment_status_date, :ri_assignment_status, " +
+                ":conditional_allele_production_centre, :conditional_allele_production_status, :ri_conditional_allele_production_status, " +
                 ":conditional_allele_production_status_date, :conditional_allele_production_start_date, " +
-                ":null_allele_production_centre, :null_allele_production_status, :null_allele_production_status_pk, " +
+                ":null_allele_production_centre, :null_allele_production_status, :ri_null_allele_production_status, " +
                 ":null_allele_production_status_date, :null_allele_production_start_date, " +
-                ":phenotyping_centre, :phenotyping_status, :phenotyping_status_date, :phenotyping_status_pk, " +
+                ":phenotyping_centre, :phenotyping_status, :phenotyping_status_date, :ri_phenotyping_status, " +
                 ":number_of_significant_phenotypes, :created_at";
 
         final String query = "INSERT INTO gene(" + columnNames + ") VALUES (" + columnValues + ")";
@@ -1235,13 +1216,13 @@ public class SqlUtils {
 
         // Try to insert the row into gene_sent. If the contact_gene_pk already exists, the INSERT operation is ignored.
         final String columnNames =
-                "subject, body, contact_gene_pk, " +
-                        "assignment_status_pk, conditional_allele_production_status_pk, null_allele_production_status_pk, phenotyping_status_pk, " +
+                "subject, body, address, mgi_accession_id, " +
+                        "ri_assignment_status, ri_conditional_allele_production_status, ri_null_allele_production_status, ri_phenotyping_status, " +
                         "created_at, sent_at";
 
         final String columnValues =
-                ":subject, :body, :contact_gene_pk, " +
-                        ":assignment_status_pk, :conditional_allele_production_status_pk, :null_allele_production_status_pk, :phenotyping_status_pk, " +
+                ":subject, :body, :address, :mgi_accession_id, " +
+                        ":ri_assignment_status, :ri_conditional_allele_production_status, :ri_null_allele_production_status, :ri_phenotyping_status, " +
                         ":created_at, :sent_at";
 
         final String query = "INSERT INTO gene_sent(" + columnNames + ") VALUES (" + columnValues + ")";
@@ -1263,24 +1244,24 @@ public class SqlUtils {
         parameterMap.put("assigned_to", gene.getAssignedTo());
         parameterMap.put("assignment_status", gene.getAssignmentStatus());
         parameterMap.put("assignment_status_date", gene.getAssignmentStatusDate());
-        parameterMap.put("assignment_status_pk", gene.getAssignmentStatusPk());
+        parameterMap.put("ri_assignment_status", gene.getRiAssignmentStatus());
 
         parameterMap.put("conditional_allele_production_centre", gene.getConditionalAlleleProductionCentre());
         parameterMap.put("conditional_allele_production_status", gene.getConditionalAlleleProductionStatus());
-        parameterMap.put("conditional_allele_production_status_pk", gene.getConditionalAlleleProductionStatusPk());
+        parameterMap.put("ri_conditional_allele_production_status", gene.getRiConditionalAlleleProductionStatus());
         parameterMap.put("conditional_allele_production_status_date", gene.getConditionalAlleleProductionStatusDate());
         parameterMap.put("conditional_allele_production_start_date", gene.getConditionalAlleleProductionStartDate());
 
         parameterMap.put("null_allele_production_centre", gene.getNullAlleleProductionCentre());
         parameterMap.put("null_allele_production_status", gene.getNullAlleleProductionStatus());
-        parameterMap.put("null_allele_production_status_pk", gene.getNullAlleleProductionStatusPk());
+        parameterMap.put("ri_null_allele_production_status", gene.getRiNullAlleleProductionStatus());
         parameterMap.put("null_allele_production_status_date", gene.getNullAlleleProductionStatusDate());
         parameterMap.put("null_allele_production_start_date", gene.getNullAlleleProductionStartDate());
 
         parameterMap.put("phenotyping_centre", gene.getPhenotypingCentre());
         parameterMap.put("phenotyping_status", gene.getPhenotypingStatus());
         parameterMap.put("phenotyping_status_date", gene.getPhenotypingStatusDate());
-        parameterMap.put("phenotyping_status_pk", gene.getPhenotypingStatusPk());
+        parameterMap.put("ri_phenotyping_status", gene.getRiPhenotypingStatus());
 
         parameterMap.put("number_of_significant_phenotypes", gene.getNumberOfSignificantPhenotypes());
 
@@ -1295,12 +1276,13 @@ public class SqlUtils {
 
         parameterMap.put("subject", geneSent.getSubject());
         parameterMap.put("body", geneSent.getBody());
-        parameterMap.put("contact_gene_pk", geneSent.getContactGenePk());
+        parameterMap.put("address", geneSent.getAddress());
+        parameterMap.put("mgi_accession_id", geneSent.getMgiAccessionId());
 
-        parameterMap.put("assignment_status_pk", geneSent.getAssignmentStatusPk());
-        parameterMap.put("conditional_allele_production_status_pk", geneSent.getConditionalAlleleProductionStatusPk());
-        parameterMap.put("null_allele_production_status_pk", geneSent.getNullAlleleProductionStatusPk());
-        parameterMap.put("phenotyping_status_pk", geneSent.getPhenotypingStatusPk());
+        parameterMap.put("ri_assignment_status", geneSent.getAssignmentStatus());
+        parameterMap.put("ri_conditional_allele_production_status", geneSent.getConditionalAlleleProductionStatus());
+        parameterMap.put("ri_null_allele_production_status", geneSent.getNullAlleleProductionStatus());
+        parameterMap.put("ri_phenotyping_status", geneSent.getPhenotypingStatus());
 
         parameterMap.put("created_at", (geneSent.getCreatedAt() == null ? new Date() : geneSent.getCreatedAt()));
         parameterMap.put("sent_at", geneSent.getSentAt());
@@ -1317,24 +1299,24 @@ public class SqlUtils {
                 "assigned_to = :assigned_to, " + 
                 "assignment_status = :assignment_status, " + 
                 "assignment_status_date = :assignment_status_date, " +
-                "assignment_status_pk = :assignment_status_pk, " +
+                "ri_assignment_status = :ri_assignment_status, " +
 
                 "conditional_allele_production_centre = :conditional_allele_production_centre, " +
                 "conditional_allele_production_status = :conditional_allele_production_status, " +
-                "conditional_allele_production_status_pk = :conditional_allele_production_status_pk, " +
+                "ri_conditional_allele_production_status = :ri_conditional_allele_production_status, " +
                 "conditional_allele_production_status_date = :conditional_allele_production_status_date, " +
                 "conditional_allele_production_start_date = :conditional_allele_production_start_date, " +
 
                 "null_allele_production_centre = :null_allele_production_centre, " +
                 "null_allele_production_status = :null_allele_production_status, " +
-                "null_allele_production_status_pk = :null_allele_production_status_pk, " +
+                "ri_null_allele_production_status = :ri_null_allele_production_status, " +
                 "null_allele_production_status_date = :null_allele_production_status_date, " +
                 "null_allele_production_start_date = :null_allele_production_start_date, " +
 
                 "phenotyping_centre = :phenotyping_centre, " +
                 "phenotyping_status = :phenotyping_status, " +
                 "phenotyping_status_date = :phenotyping_status_date, " +
-                "phenotyping_status_pk = :phenotyping_status_pk, " +
+                "ri_phenotyping_status = :ri_phenotyping_status, " +
 
                 "number_of_significant_phenotypes = :number_of_significant_phenotypes";
 
@@ -1352,12 +1334,13 @@ public class SqlUtils {
 
                 "subject = :subject, " +
                 "body = :body, " +
-                "contact_gene_pk = :contact_gene_pk, " +
+                "address = :address, " +
+                "mgi_accession_id = :mgi_accession_id, " +
 
-                "assignment_status_pk = :assignment_status_pk, " +
-                "conditional_allele_production_status_pk = :conditional_allele_production_status_pk, " +
-                "null_allele_production_status_pk = :null_allele_production_status_pk, " +
-                "phenotyping_status_pk = :phenotyping_status_pk, " +
+                "ri_assignment_status = :ri_assignment_status, " +
+                "ri_conditional_allele_production_status = :ri_conditional_allele_production_status, " +
+                "ri_null_allele_production_status = :ri_null_allele_production_status, " +
+                "ri_phenotyping_status = :ri_phenotyping_status, " +
 
                 "sent_at = :sent_at";
 
@@ -1373,69 +1356,5 @@ public class SqlUtils {
         }
 
         return count;
-    }
-
-
-
-
-
-
-
-    // KNOWN DEPRECATED METHODS
-
-    /**
-     * Activate interest described by {@code gene} and {@code email}.
-     *
-     * @param invoker The authorised invoker of this request
-     * @param geneAccessionId The mgi accession id of the gene being registgered
-     * @param emailAddress The email address being registered
-     *
-     * @return The primary key of the newly inserted contact_gene row.
-     *
-     *         @throws InterestException if the gene does not exist
-     */
-    @Deprecated
-    public int insertOrUpdateInterestGene(String invoker, String geneAccessionId, String emailAddress) throws InterestException {
-
-        String message;
-        SecurityUtils securityUtils = new SecurityUtils();
-
-        // Check that the gene exists.
-        Gene gene = getGene(geneAccessionId);
-        if (gene == null) {
-            message = "Register contact " + emailAddress + " for gene " + geneAccessionId + " failed: No such gene";
-            logger.error(message);
-            throw new InterestException(message, HttpStatus.NOT_FOUND);
-        }
-
-        Contact contact = getContact(emailAddress);
-        if (contact == null) {
-
-            // Insert new contact
-            createAccount(emailAddress, securityUtils.generateSecureRandomPassword());
-            contact = getContact(emailAddress);
-        }
-
-        // Register the gene.
-        registerGene(emailAddress, gene.getMgiAccessionId());
-
-        return getContactGenePrimaryKey(emailAddress, geneAccessionId);
-    }
-
-    // FIXME Needed only for ApplicationMigrateContactGeneSent.
-    @Deprecated
-    public int getContactGenePrimaryKey(String emailAddress, String geneAccessionId) {
-        Contact contact = getContact(emailAddress);
-        Gene gene = getGene(geneAccessionId);
-
-        final String query = "SELECT pk FROM contact_gene WHERE contact_pk = :contactPk AND gene_pk = :genePk";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("contactPk", contact.getPk());
-        parameterMap.put("genePk", gene.getPk());
-
-        int pk  = jdbcInterest.queryForObject(query, parameterMap, Integer.class);
-
-        return pk;
     }
 }

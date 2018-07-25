@@ -26,8 +26,8 @@ INSERT INTO contact (address, created_at) VALUES
 ;
 
 INSERT INTO gene
-  (mgi_accession_id,   symbol,     assigned_to,  assignment_status, assignment_status_date, assignment_status_pk, ri_assignment_status, conditional_allele_production_centre,  conditional_allele_production_status, conditional_allele_production_status_date, conditional_allele_production_start_date, conditional_allele_production_status_pk,  ri_conditional_allele_production_status, null_allele_production_centre,  null_allele_production_status, null_allele_production_status_date, null_allele_production_start_date, null_allele_production_status_pk,  ri_null_allele_production_status, phenotyping_centre, phenotyping_status, phenotyping_status_date, phenotyping_status_pk, ri_phenotyping_status, number_of_significant_phenotypes, created_at) VALUES
-  ('MGI:0000010',      'gene-010', 'c-010',      @NP,               @now,                   @PK_NP,               @NP,                  'caps-010',                            @MP,                                  @nowplus1,                                @nowplus2,                                 @PK_MP,                                   @MP,                                     'naps-010',                     @MP,                           @nowplus3,                          @nowplus4,                          @PK_MP,                           @MP,                              'ps-01',             @PK_xx,             @nowplus5,               @PK_PDA,              @PDA,                  0,                                @now)
+  (mgi_accession_id,    symbol,     assigned_to,  assignment_status, assignment_status_date, ri_assignment_status, conditional_allele_production_centre,  conditional_allele_production_status, conditional_allele_production_status_date, conditional_allele_production_start_date, ri_conditional_allele_production_status, null_allele_production_centre,  null_allele_production_status, null_allele_production_status_date, null_allele_production_start_date, ri_null_allele_production_status, phenotyping_centre, phenotyping_status, phenotyping_status_date, ri_phenotyping_status, number_of_significant_phenotypes, created_at) VALUES
+  ('MGI:0000010',      'gene-010', 'c-010',       @NP,               @now,                   @NP,                  'caps-010',                            @MP,                                  @nowplus1,                                @nowplus2,                                 @MP,                                     'naps-010',                     @MP,                           @nowplus3,                          @nowplus4,                         @MP,                             'ps-01',             @PK_xx,             @nowplus5,               @PDA,                  0,                                @now)
 ;
 
 SET @gcUserPk = 1;
@@ -36,6 +36,6 @@ insert into contact_gene(contact_pk, gene_pk, created_at) VALUES
 ;
 
 INSERT INTO gene_sent
-  (subject,       body,      contact_gene_pk, assignment_status_pk, conditional_allele_production_status_pk, null_allele_production_status_pk, phenotyping_status_pk, created_at, sent_at) VALUES
-  ('my subject', 'my body',  1,               @PK_NP,               NULL,                                    NULL,                             NULL,                  @now,       NULL)
+  (subject,       body,       address,            mgi_accession_id,    created_at, sent_at) VALUES
+  ('my subject', 'my body',  'mrelac@ebi.ac.uk', 'MGI:0000010',        @now,       NULL)
 ;

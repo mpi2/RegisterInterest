@@ -27,11 +27,12 @@ public class GeneSent {
     private String subject;
     private String body;
 
-    private int contactGenePk;
-    private Integer assignmentStatusPk;
-    private Integer conditionalAlleleProductionStatusPk;
-    private Integer nullAlleleProductionStatusPk;
-    private Integer phenotypingStatusPk;
+    private String address;
+    private String mgiAccessionId;
+    private String assignmentStatus;
+    private String conditionalAlleleProductionStatus;
+    private String nullAlleleProductionStatus;
+    private String phenotypingStatus;
 
     private Date createdAt;
     private Date SentAt;
@@ -61,44 +62,52 @@ public class GeneSent {
         this.body = body;
     }
 
-    public int getContactGenePk() {
-        return contactGenePk;
+    public String getAddress() {
+        return address;
     }
 
-    public void setContactGenePk(int contactGenePk) {
-        this.contactGenePk = contactGenePk;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
-    public Integer getAssignmentStatusPk() {
-        return assignmentStatusPk;
+    public String getMgiAccessionId() {
+        return mgiAccessionId;
     }
 
-    public void setAssignmentStatusPk(Integer assignmentStatusPk) {
-        this.assignmentStatusPk = assignmentStatusPk;
+    public void setMgiAccessionId(String mgiAccessionId) {
+        this.mgiAccessionId = mgiAccessionId;
     }
 
-    public Integer getConditionalAlleleProductionStatusPk() {
-        return conditionalAlleleProductionStatusPk;
+    public String getAssignmentStatus() {
+        return assignmentStatus;
     }
 
-    public void setConditionalAlleleProductionStatusPk(Integer conditionalAlleleProductionStatusPk) {
-        this.conditionalAlleleProductionStatusPk = conditionalAlleleProductionStatusPk;
+    public void setAssignmentStatus(String assignmentStatus) {
+        this.assignmentStatus = assignmentStatus;
     }
 
-    public Integer getNullAlleleProductionStatusPk() {
-        return nullAlleleProductionStatusPk;
+    public String getConditionalAlleleProductionStatus() {
+        return conditionalAlleleProductionStatus;
     }
 
-    public void setNullAlleleProductionStatusPk(Integer nullAlleleProductionStatusPk) {
-        this.nullAlleleProductionStatusPk = nullAlleleProductionStatusPk;
+    public void setConditionalAlleleProductionStatus(String conditionalAlleleProductionStatus) {
+        this.conditionalAlleleProductionStatus = conditionalAlleleProductionStatus;
     }
 
-    public Integer getPhenotypingStatusPk() {
-        return phenotypingStatusPk;
+    public String getNullAlleleProductionStatus() {
+        return nullAlleleProductionStatus;
     }
 
-    public void setPhenotypingStatusPk(Integer phenotypingStatusPk) {
-        this.phenotypingStatusPk = phenotypingStatusPk;
+    public void setNullAlleleProductionStatus(String nullAlleleProductionStatus) {
+        this.nullAlleleProductionStatus = nullAlleleProductionStatus;
+    }
+
+    public String getPhenotypingStatus() {
+        return phenotypingStatus;
+    }
+
+    public void setPhenotypingStatus(String phenotypingStatus) {
+        this.phenotypingStatus = phenotypingStatus;
     }
 
     public Date getCreatedAt() {

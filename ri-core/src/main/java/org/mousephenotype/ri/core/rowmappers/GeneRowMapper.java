@@ -16,9 +16,9 @@
 
 package org.mousephenotype.ri.core.rowmappers;
 
+import org.mousephenotype.ri.core.entities.Gene;
 import org.springframework.jdbc.core.RowMapper;
 
-import org.mousephenotype.ri.core.entities.Gene;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -52,15 +52,11 @@ public class GeneRowMapper implements RowMapper<Gene> {
         gene.setAssignmentStatus(rs.getString("assignment_status"));
         Timestamp ts = rs.getTimestamp("assignment_status_date");
         gene.setAssignmentStatusDate(ts == null ? null : new Date(ts.getTime()));
-        Integer i = rs.getInt("assignment_status_pk");
-        gene.setAssignmentStatusPk((i == null) || (i == 0) ? null : i);
         String s = rs.getString("ri_assignment_status");
         gene.setRiAssignmentStatus((s == null ? "" : s));
 
         gene.setConditionalAlleleProductionCentre(rs.getString("conditional_allele_production_centre"));
         gene.setConditionalAlleleProductionStatus(rs.getString("conditional_allele_production_status"));
-        i = rs.getInt("conditional_allele_production_status_pk");
-        gene.setConditionalAlleleProductionStatusPk((i == null) || (i == 0) ? null : i);
         s = rs.getString("ri_conditional_allele_production_status");
         gene.setRiConditionalAlleleProductionStatus((s == null ? "" : s));
         ts = rs.getTimestamp("conditional_allele_production_status_date");
@@ -70,8 +66,6 @@ public class GeneRowMapper implements RowMapper<Gene> {
 
         gene.setNullAlleleProductionCentre(rs.getString("null_allele_production_centre"));
         gene.setNullAlleleProductionStatus(rs.getString("null_allele_production_status"));
-        i = rs.getInt("null_allele_production_status_pk");
-        gene.setNullAlleleProductionStatusPk((i == null) || (i == 0) ? null : i);
         s = rs.getString("ri_null_allele_production_status");
         gene.setRiNullAlleleProductionStatus((s == null ? "" : s));
         ts = rs.getTimestamp("null_allele_production_status_date");
@@ -83,8 +77,6 @@ public class GeneRowMapper implements RowMapper<Gene> {
         gene.setPhenotypingStatus(rs.getString("phenotyping_status"));
         ts = rs.getTimestamp("phenotyping_status_date");
         gene.setPhenotypingStatusDate(ts == null ? null : new Date(ts.getTime()));
-        i = rs.getInt("phenotyping_status_pk");
-        gene.setPhenotypingStatusPk((i == null) || (i == 0) ? null : i);
         s = rs.getString("ri_phenotyping_status");
         gene.setRiPhenotypingStatus((s == null ? "" : s));
 

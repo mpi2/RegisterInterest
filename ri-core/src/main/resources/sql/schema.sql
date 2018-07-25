@@ -63,19 +63,16 @@ CREATE TABLE gene (
     assigned_to                                                 VARCHAR(128) DEFAULT NULL,
     assignment_status                                           VARCHAR(128) DEFAULT NULL,
     assignment_status_date                                      DATETIME     DEFAULT NULL,
-    assignment_status_pk                                        INT          DEFAULT NULL,
     ri_assignment_status                                        VARCHAR(64)  DEFAULT NULL,
 
     conditional_allele_production_centre                        VARCHAR(128) DEFAULT NULL,
     conditional_allele_production_status                        VARCHAR(128) DEFAULT NULL,
-    conditional_allele_production_status_pk                     INT          DEFAULT NULL,
     ri_conditional_allele_production_status                     VARCHAR(64)  DEFAULT NULL,
     conditional_allele_production_status_date                   DATETIME     DEFAULT NULL,
     conditional_allele_production_start_date                    DATETIME     DEFAULT NULL,
 
     null_allele_production_centre                               VARCHAR(128) DEFAULT NULL,
     null_allele_production_status                               VARCHAR(128) DEFAULT NULL,
-    null_allele_production_status_pk                            INT          DEFAULT NULL,
     ri_null_allele_production_status                            VARCHAR(64)  DEFAULT NULL,
     null_allele_production_status_date                          DATETIME     DEFAULT NULL,
     null_allele_production_start_date                           DATETIME     DEFAULT NULL,
@@ -83,7 +80,6 @@ CREATE TABLE gene (
     phenotyping_centre                                          VARCHAR(128) DEFAULT NULL,
     phenotyping_status                                          VARCHAR(128) DEFAULT NULL,
     phenotyping_status_date                                     DATETIME     DEFAULT NULL,
-    phenotyping_status_pk                                       INT          DEFAULT NULL,
     ri_phenotyping_status                                       VARCHAR(64)  DEFAULT NULL,
 
     number_of_significant_phenotypes                            INT          DEFAULT 0,
@@ -92,10 +88,10 @@ CREATE TABLE gene (
     updated_at                                                  TIMESTAMP    NOT NULL   DEFAULT CURRENT_TIMESTAMP
     ON UPDATE CURRENT_TIMESTAMP,
 
-    FOREIGN KEY assignment_status_pk_fk                         (assignment_status_pk)                      REFERENCES gene_status(pk),
-    FOREIGN KEY conditional_allele_production_status_pk_fk      (conditional_allele_production_status_pk)   REFERENCES gene_status(pk),
-    FOREIGN KEY null_allele_production_status_pk_fk             (null_allele_production_status_pk)          REFERENCES gene_status(pk),
-    FOREIGN KEY phenotyping_status_pk_fk                        (phenotyping_status_pk)                     REFERENCES gene_status(pk)
+    FOREIGN KEY ri_assignment_status_fk                         (ri_assignment_status)                      REFERENCES gene_status(status),
+    FOREIGN KEY ri_conditional_allele_production_status_fk      (ri_conditional_allele_production_status)   REFERENCES gene_status(status),
+    FOREIGN KEY ri_null_allele_production_status_fk             (ri_null_allele_production_status)          REFERENCES gene_status(status),
+    FOREIGN KEY ri_phenotyping_status_fk                        (ri_phenotyping_status)                     REFERENCES gene_status(status)
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 
@@ -107,21 +103,21 @@ CREATE TABLE gene_sent (
     subject                                     VARCHAR(78)     NOT NULL,
     body                                        VARCHAR(2048)   NOT NULL,
     address                                     VARCHAR(255)    NOT NULL,
-    mgi_accession_id                            VARCHAR(32)    NOT NULL,
-    assignment_status_pk                        INT             DEFAULT NULL,
-    conditional_allele_production_status_pk     INT             DEFAULT NULL,
-    null_allele_production_status_pk            INT             DEFAULT NULL,
-    phenotyping_status_pk                       INT             DEFAULT NULL,
+    mgi_accession_id                            VARCHAR(32)     NOT NULL,
+    assignment_status                           VARCHAR(64)     DEFAULT NULL,
+    conditional_allele_production_status        VARCHAR(64)     DEFAULT NULL,
+    null_allele_production_status               VARCHAR(64)     DEFAULT NULL,
+    phenotyping_status                          VARCHAR(64)     DEFAULT NULL,
 
     created_at                                  DATETIME        NOT NULL,
     sent_at                                     DATETIME,                       -- a null value means 'generated but not geneSent yet'.
     updated_at                                  TIMESTAMP       NOT NULL        DEFAULT CURRENT_TIMESTAMP
     ON UPDATE CURRENT_TIMESTAMP,
 
-    FOREIGN KEY assignment_status_pk_fk                         (assignment_status_pk)                          REFERENCES gene_status(pk),
-    FOREIGN KEY conditional_allele_production_status_pk_fk      (conditional_allele_production_status_pk)       REFERENCES gene_status(pk),
-    FOREIGN KEY null_allele_production_status_pk_fk             (null_allele_production_status_pk)              REFERENCES gene_status(pk),
-    FOREIGN KEY phenotyping_status_pk_fk                        (phenotyping_status_pk)                         REFERENCES gene_status(pk)
+    FOREIGN KEY assignment_status_fk                         (assignment_status)                          REFERENCES gene_status(status),
+    FOREIGN KEY conditional_allele_production_status_fk      (conditional_allele_production_status)       REFERENCES gene_status(status),
+    FOREIGN KEY null_allele_production_status_fk             (null_allele_production_status)              REFERENCES gene_status(status),
+    FOREIGN KEY phenotyping_status_fk                        (phenotyping_status)                         REFERENCES gene_status(status)
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 

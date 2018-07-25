@@ -132,14 +132,16 @@ public class ApplicationSend implements CommandLineRunner {
         Message message;
 
         for (GeneSent geneSent : genesScheduledForSending) {
-            String email = emailAddressesByContactGenePk.get(geneSent.getContactGenePk());
-            ContactGene contactGene = contactGenes.get(geneSent.getContactGenePk());
-            boolean isHtml = false;
-            message = emailUtils.assembleEmail(smtpHost, smtpPort, smtpFrom, smtpReplyto, geneSent.getSubject(), geneSent.getBody(), email, isHtml);
-            built++;
 
-            sendEmail(contactGene, geneSent, message);
-            sent++;
+            // fixme fixme fixme
+//            String email = emailAddressesByContactGenePk.get(geneSent.getContactGenePk());
+//            ContactGene contactGene = contactGenes.get(geneSent.getContactGenePk());
+//            boolean isHtml = false;
+//            message = emailUtils.assembleEmail(smtpHost, smtpPort, smtpFrom, smtpReplyto, geneSent.getSubject(), geneSent.getBody(), email, isHtml);
+//            built++;
+//
+//            sendEmail(contactGene, geneSent, message);
+//            sent++;
 
             // Pause for 36 seconds so we don't exceed 100 e-mails per hour.
             try {

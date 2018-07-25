@@ -7,19 +7,16 @@ CREATE TABLE gene (
   assigned_to                                                 VARCHAR(128) DEFAULT NULL,
   assignment_status                                           VARCHAR(128) DEFAULT NULL,
   assignment_status_date                                      DATETIME     DEFAULT NULL,
-  assignment_status_pk                                        INT          DEFAULT NULL,
   ri_assignment_status                                        VARCHAR(64)  DEFAULT NULL,
 
   conditional_allele_production_centre                        VARCHAR(128) DEFAULT NULL,
   conditional_allele_production_status                        VARCHAR(128) DEFAULT NULL,
-  conditional_allele_production_status_pk                     INT          DEFAULT NULL,
   ri_conditional_allele_production_status                     VARCHAR(64)  DEFAULT NULL,
   conditional_allele_production_status_date                   DATETIME     DEFAULT NULL,
   conditional_allele_production_start_date                    DATETIME     DEFAULT NULL,
 
   null_allele_production_centre                               VARCHAR(128) DEFAULT NULL,
   null_allele_production_status                               VARCHAR(128) DEFAULT NULL,
-  null_allele_production_status_pk                            INT          DEFAULT NULL,
   ri_null_allele_production_status                            VARCHAR(64)  DEFAULT NULL,
   null_allele_production_status_date                          DATETIME     DEFAULT NULL,
   null_allele_production_start_date                           DATETIME     DEFAULT NULL,
@@ -27,7 +24,6 @@ CREATE TABLE gene (
   phenotyping_centre                                          VARCHAR(128) DEFAULT NULL,
   phenotyping_status                                          VARCHAR(128) DEFAULT NULL,
   phenotyping_status_date                                     DATETIME     DEFAULT NULL,
-  phenotyping_status_pk                                       INT          DEFAULT NULL,
   ri_phenotyping_status                                       VARCHAR(64)  DEFAULT NULL,
 
   number_of_significant_phenotypes                            INT          DEFAULT 0,
@@ -120,13 +116,15 @@ CREATE TABLE gene_status (
 DROP TABLE IF EXISTS gene_sent;
 CREATE TABLE gene_sent (
   pk                                          INT             NOT NULL        AUTO_INCREMENT PRIMARY KEY,
+
   subject                                     VARCHAR(78)     NOT NULL,
   body                                        VARCHAR(2048)   NOT NULL,
-  contact_gene_pk                             INT             NOT NULL,
-  assignment_status_pk                        INT             DEFAULT NULL,
-  conditional_allele_production_status_pk     INT             DEFAULT NULL,
-  null_allele_production_status_pk            INT             DEFAULT NULL,
-  phenotyping_status_pk                       INT             DEFAULT NULL,
+  address                                     VARCHAR(255)    NOT NULL,
+  mgi_accession_id                            VARCHAR(32)     NOT NULL,
+  assignment_status                           VARCHAR(64)     DEFAULT NULL,
+  conditional_allele_production_status        VARCHAR(64)     DEFAULT NULL,
+  null_allele_production_status               VARCHAR(64)     DEFAULT NULL,
+  phenotyping_status                          VARCHAR(64)     DEFAULT NULL,
 
   created_at                                  DATETIME        NOT NULL,
   sent_at                                     DATETIME,                       -- a null value means 'generated but not geneSent yet'.

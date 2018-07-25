@@ -37,10 +37,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class GeneProcessor implements ItemProcessor<Gene, Gene> {
 
-    private Map<String, Gene> genesMap;
-    private Map<String, ImitsStatus> imitsStatusMap;
-    private Set<String> accessionIds = new HashSet<>();
-    private int lineNumber = 0;
+    private Map<Integer, Gene>       genesByPk;
+    private Map<String, ImitsStatus> imitsStatusByStatus;
+    private Set<String>              accessionIds = new HashSet<>();
+    private int                      lineNumber = 0;
 
     private ParseUtils parseUtils = new ParseUtils();
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -69,9 +69,9 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
     };
 
 
-    public GeneProcessor(Map<String, ImitsStatus> imitsStatusMap, Map<String, Gene> genesMap) {
-        this.imitsStatusMap = imitsStatusMap;
-        this.genesMap = genesMap;
+    public GeneProcessor(Map<String, ImitsStatus> imitsStatusByStatus, Map<Integer, Gene> genesByPk) {
+        this.imitsStatusByStatus = imitsStatusByStatus;
+        this.genesByPk = genesByPk;
     }
 
 
@@ -137,7 +137,7 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
 
         // statuses
         if ((gene.getAssignmentStatus() != null) && ( ! gene.getAssignmentStatus().trim().isEmpty())) {
-            if ( ! imitsStatusMap.containsKey(gene.getAssignmentStatus())) {
+            if ( ! imitsStatusByStatus.containsKey(gene.getAssignmentStatus())) {
                 errMessages.add("Unknown gene assignment status '" + gene.getAssignmentStatus() + '"');
                 return null;
             }
@@ -145,19 +145,19 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
 
 
         if ((gene.getConditionalAlleleProductionStatus() != null) && ( ! gene.getConditionalAlleleProductionStatus().trim().isEmpty())) {
-            if ( ! imitsStatusMap.containsKey(gene.getConditionalAlleleProductionStatus())) {
+            if ( ! imitsStatusByStatus.containsKey(gene.getConditionalAlleleProductionStatus())) {
                 errMessages.add("Unknown conditional allele production status '" + gene.getConditionalAlleleProductionStatus() + "'");
                 return null;
             }
         }
         if ((gene.getNullAlleleProductionStatus() != null) && ( ! gene.getNullAlleleProductionStatus().trim().isEmpty())) {
-            if ( ! imitsStatusMap.containsKey(gene.getNullAlleleProductionStatus())) {
+            if ( ! imitsStatusByStatus.containsKey(gene.getNullAlleleProductionStatus())) {
                 errMessages.add("Unknown null allele production status '" + gene.getNullAlleleProductionStatus() + "'");
                 return null;
             }
         }
         if ((gene.getPhenotypingStatus() != null) && ( ! gene.getPhenotypingStatus().trim().isEmpty())) {
-            if (!imitsStatusMap.containsKey(gene.getPhenotypingStatus())) {
+            if (! imitsStatusByStatus.containsKey(gene.getPhenotypingStatus())) {
                 errMessages.add("Unknown phenotyping status '" + gene.getPhenotypingStatus() + "'");
                 return null;
             }
@@ -227,29 +227,45 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
         }
 
         // Populate the ri status fields based on imits status string.
+        int genePk;
         if ((gene.getAssignmentStatus() != null) && ( ! gene.getAssignmentStatus().trim().isEmpty())) {
-            gene.setAssignmentStatusPk(imitsStatusMap.get(gene.getAssignmentStatus()).getGeneStatusPk());
+
+            genePk = imitsStatusByStatus.get(gene.getAssignmentStatus()).getGeneStatusPk();
+            gene.setRiAssignmentStatus(genesByPk.get(genePk).getRiAssignmentStatus());
+
         } else {
-            gene.setAssignmentStatusPk(null);
+            gene.setRiAssignmentStatus(null);
         }
+
         if ((gene.getConditionalAlleleProductionStatus() != null) && ( ! gene.getConditionalAlleleProductionStatus().trim().isEmpty())) {
-            gene.setConditionalAlleleProductionStatusPk(imitsStatusMap.get(gene.getConditionalAlleleProductionStatus()).getGeneStatusPk());
+
+            genePk = imitsStatusByStatus.get(gene.getConditionalAlleleProductionStatus()).getGeneStatusPk();
+            gene.setRiConditionalAlleleProductionStatus(genesByPk.get(genePk).getRiConditionalAlleleProductionStatus());
+
         } else {
-            gene.setConditionalAlleleProductionStatusPk(null);
+            gene.setRiConditionalAlleleProductionStatus(null);
         }
+
         if ((gene.getNullAlleleProductionStatus() != null) && ( ! gene.getNullAlleleProductionStatus().trim().isEmpty())) {
-            gene.setNullAlleleProductionStatusPk(imitsStatusMap.get(gene.getNullAlleleProductionStatus()).getGeneStatusPk());
+
+            genePk = imitsStatusByStatus.get(gene.getNullAlleleProductionStatus()).getGeneStatusPk();
+            gene.setRiNullAlleleProductionStatus(genesByPk.get(genePk).getRiNullAlleleProductionStatus());
+
         } else {
-            gene.setNullAlleleProductionStatusPk(null);
+            gene.setRiNullAlleleProductionStatus(null);
         }
+
         if ((gene.getPhenotypingStatus() != null) && ( ! gene.getPhenotypingStatus().trim().isEmpty())) {
-            gene.setPhenotypingStatusPk(imitsStatusMap.get(gene.getPhenotypingStatus()).getGeneStatusPk());
+
+            genePk = imitsStatusByStatus.get(gene.getPhenotypingStatus()).getGeneStatusPk();
+            gene.setRiPhenotypingStatus(genesByPk.get(genePk).getRiPhenotypingStatus());
+
         } else {
-            gene.setPhenotypingStatusPk(null);
+            gene.setRiPhenotypingStatus(null);
         }
 
         // If the Gene record hasn't changed, skip it (i.e. return null)
-        Gene cachedGene = genesMap.get(gene.getMgiAccessionId());
+        Gene cachedGene = genesByPk.get(gene.getMgiAccessionId());
         if (cachedGene != null) {
             if (gene.equals(cachedGene)) {
                 return null;
