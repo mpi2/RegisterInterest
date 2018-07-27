@@ -16,8 +16,8 @@
 
 package org.mousephenotype.ri.send;
 
-import org.mousephenotype.ri.core.EmailUtils;
-import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.utils.EmailUtils;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.mousephenotype.ri.core.entities.Contact;
 import org.mousephenotype.ri.core.entities.ContactGene;
 import org.mousephenotype.ri.core.entities.GeneSent;

@@ -16,7 +16,7 @@
 
 package org.mousephenotype.ri.integrationtest.config;
 
-import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.mousephenotype.ri.generate.ApplicationGenerate;
 import org.mousephenotype.ri.generate.ApplicationGenerateSummary;
 import org.mousephenotype.ri.send.ApplicationSend;

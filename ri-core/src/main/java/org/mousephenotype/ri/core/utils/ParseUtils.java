@@ -14,7 +14,7 @@
  *  License.
  ******************************************************************************/
 
-package org.mousephenotype.ri.core;
+package org.mousephenotype.ri.core.utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

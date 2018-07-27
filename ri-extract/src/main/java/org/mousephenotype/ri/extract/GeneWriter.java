@@ -23,7 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import org.mousephenotype.ri.core.entities.Gene;
-import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import java.util.List;
 import java.util.Map;
 

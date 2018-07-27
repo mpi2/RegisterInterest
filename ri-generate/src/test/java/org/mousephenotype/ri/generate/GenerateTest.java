@@ -22,7 +22,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.mousephenotype.ri.core.entities.GeneSentSummary;
 import org.mousephenotype.ri.generate.config.TestConfig;
 import org.springframework.beans.factory.annotation.Autowired;

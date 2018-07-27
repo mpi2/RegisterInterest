@@ -16,7 +16,7 @@
 
 package org.mousephenotype.ri.extract;
 
-import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.mousephenotype.ri.core.exceptions.InterestException;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;

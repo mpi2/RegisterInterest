@@ -16,8 +16,8 @@
 
 package org.mousephenotype.ri.core.services;
 
-import org.mousephenotype.ri.core.EmailUtils;
-import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.utils.EmailUtils;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.mousephenotype.ri.core.entities.Summary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

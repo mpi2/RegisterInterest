@@ -16,9 +16,9 @@
 
 package org.mousephenotype.ri.extract;
 
-import org.mousephenotype.ri.core.DateUtils;
-import org.mousephenotype.ri.core.SecurityUtils;
-import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.utils.DateUtils;
+import org.mousephenotype.ri.core.utils.SecurityUtils;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.mousephenotype.ri.core.entities.Contact;
 import org.mousephenotype.ri.core.entities.ContactGene;
 import org.mousephenotype.ri.core.entities.Gene;

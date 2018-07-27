@@ -16,7 +16,7 @@
 
 package org.mousephenotype.ri.generate.config;
 
-import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

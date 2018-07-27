@@ -14,7 +14,7 @@
  *  License.
  ******************************************************************************/
 
-package org.mousephenotype.ri.core;
+package org.mousephenotype.ri.core.utils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;

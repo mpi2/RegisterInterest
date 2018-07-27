@@ -16,8 +16,8 @@
 
 package org.mousephenotype.ri.extract;
 
-import org.mousephenotype.ri.core.ParseUtils;
-import org.mousephenotype.ri.core.Validator;
+import org.mousephenotype.ri.core.utils.ParseUtils;
+import org.mousephenotype.ri.core.utils.Validator;
 import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.entities.ImitsStatus;
 import org.mousephenotype.ri.core.exceptions.InterestException;

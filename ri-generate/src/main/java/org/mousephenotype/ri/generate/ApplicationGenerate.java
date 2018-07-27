@@ -19,7 +19,7 @@ package org.mousephenotype.ri.generate;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.apache.commons.lang3.StringUtils;
-import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.mousephenotype.ri.core.entities.ContactGene;
 import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.entities.GeneSent;

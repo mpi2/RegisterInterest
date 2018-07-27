@@ -16,8 +16,8 @@
 
 package org.mousephenotype.ri.web.controller;
 
-import org.mousephenotype.ri.core.SecurityUtils;
-import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.utils.SecurityUtils;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.entities.Summary;
 import org.mousephenotype.ri.core.exceptions.InterestException;

@@ -16,7 +16,7 @@
 
 package org.mousephenotype.ri.extract.config;
 
-import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.entities.ImitsStatus;
 import org.mousephenotype.ri.core.exceptions.InterestException;

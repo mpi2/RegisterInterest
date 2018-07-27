@@ -18,11 +18,11 @@ package org.mousephenotype.ri.web.controller;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.mousephenotype.ri.core.*;
 import org.mousephenotype.ri.core.entities.Contact;
 import org.mousephenotype.ri.core.entities.ResetCredentials;
 import org.mousephenotype.ri.core.entities.Summary;
 import org.mousephenotype.ri.core.exceptions.InterestException;
+import org.mousephenotype.ri.core.utils.*;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;

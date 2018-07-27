@@ -18,8 +18,8 @@ package org.mousephenotype.ri.reports;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.mousephenotype.ri.core.DateUtils;
-import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.utils.DateUtils;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.mousephenotype.ri.core.entities.ContactGeneReportRow;
 import org.mousephenotype.ri.reports.support.MpCSVWriter;
 import org.mousephenotype.ri.reports.support.ReportException;

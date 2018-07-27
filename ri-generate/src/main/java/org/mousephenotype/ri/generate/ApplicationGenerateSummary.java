@@ -16,7 +16,7 @@
 
 package org.mousephenotype.ri.generate;
 
-import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.entities.GeneStatus;
 import org.slf4j.Logger;
@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
-import org.springframework.context.annotation.ComponentScan;
 
 import javax.inject.Inject;
 import java.util.Arrays;

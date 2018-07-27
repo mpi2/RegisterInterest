@@ -16,7 +16,7 @@
 
 package org.mousephenotype.ri.core.services;
 
-import org.mousephenotype.ri.core.SqlUtils;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.mousephenotype.ri.core.entities.Summary;
 import org.mousephenotype.ri.core.entities.SummaryHtmlTable;
 
