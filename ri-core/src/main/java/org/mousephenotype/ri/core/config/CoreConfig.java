@@ -14,13 +14,12 @@
  *  License.
  ******************************************************************************/
 
-package org.mousephenotype.ri.reports.support;
+package org.mousephenotype.ri.core.config;
 
 import org.mousephenotype.ri.core.SqlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -30,16 +29,24 @@ import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
 
 /**
- * ReportType bean configuration
+ * Created by mrelac on 02/05/2017.
  */
-
 @Configuration
-@EnableAutoConfiguration
 @PropertySource("file:${user.home}/configfiles/${profile}/application.properties")
-public class ReportsConfig {
+public class CoreConfig {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+
+    @Bean
+    public NamedParameterJdbcTemplate jdbc() {
+        return new NamedParameterJdbcTemplate(riDataSource());
+    }
+
+    @Bean
+    public SqlUtils sqlUtils() {
+        return new SqlUtils(jdbc());
+    }
 
     @NotNull
     @Value("${datasource.ri.url}")
@@ -53,20 +60,8 @@ public class ReportsConfig {
     @Value("${datasource.ri.password}")
     String password;
 
-
-
     @Bean
     public DataSource riDataSource() {
         return SqlUtils.getConfiguredDatasource(riUrl, username, password);
     }
-
-	@Bean
-	public NamedParameterJdbcTemplate jdbcRi() {
-		return new NamedParameterJdbcTemplate(riDataSource());
-	}
-
-    @Bean
-	public SqlUtils sqlUtils() {
-    	return new SqlUtils(jdbcRi());
-	}
 }

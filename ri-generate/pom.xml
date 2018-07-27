@@ -68,6 +68,12 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>net.sf.jopt-simple</groupId>
+            <artifactId>jopt-simple</artifactId>
+            <version>5.0.4</version>
+            <scope>compile</scope>
+        </dependency>
         <!--<dependency>-->
             <!--<groupId>javax.validation</groupId>-->
             <!--<artifactId>validation-api</artifactId>-->

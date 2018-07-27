@@ -49,6 +49,8 @@ import java.util.Map;
  * contacts registered for insterest in specific genes, diseases, or phenotypes whose status indicates the state has changed.
  */
 @SpringBootApplication
+@Deprecated
+// FIXME Use SendService instead.
 public class ApplicationSend implements CommandLineRunner {
 
     private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -195,7 +197,7 @@ public class ApplicationSend implements CommandLineRunner {
             // Update the contact's gene_sent.sent_at (for all registered genes) with the same sent_at as used for the summary.
             GeneSent geneSent = new GeneSent();
 
-            sqlUtils.updateGeneSentDates(email, now);
+//            sqlUtils.updateGeneSentDates(email, now);
 
             // Pause for 36 seconds so we don't exceed 100 e-mails per hour.
             try {
@@ -241,7 +243,7 @@ public class ApplicationSend implements CommandLineRunner {
             String invoker = (auth == null ? "Unknown" : auth.getName());
 
             Transport.send(message);
-            sqlUtils.updateGeneSentSummary(summary);
+//            sqlUtils.updateGeneSentSummary(summary);
 
         } catch (MessagingException e) {
 

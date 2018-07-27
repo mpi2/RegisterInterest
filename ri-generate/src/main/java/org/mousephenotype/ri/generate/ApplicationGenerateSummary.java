@@ -18,7 +18,6 @@ package org.mousephenotype.ri.generate;
 
 import org.mousephenotype.ri.core.SqlUtils;
 import org.mousephenotype.ri.core.entities.Gene;
-import org.mousephenotype.ri.core.entities.GeneSentSummary;
 import org.mousephenotype.ri.core.entities.GeneStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,11 +25,9 @@ import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.web.util.HtmlUtils;
 
 import javax.inject.Inject;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +38,8 @@ import java.util.Map;
  * This class is intended to be a command-line callable java main program that generates a single e-mail to each
  * contact with a list of genes for which they have registered interest, and the current status of each such gene.
  */
-@ComponentScan
+@Deprecated
+// FIXME
 public class ApplicationGenerateSummary implements CommandLineRunner {
 
     private Map<Integer, List<Gene>> genesByContactMap;
@@ -71,7 +69,17 @@ public class ApplicationGenerateSummary implements CommandLineRunner {
 
 
     @Override
+    /**
+     * Supported arguments:
+     *   -- welcome emailAddress        # Generates and sends a single welcome e-mail to the specified email address
+     *   -- summary emailAddress        # Generates and sends a single summary e-mail to the specified email address
+     *   -- summary                     # Generates and sends a summary to each registered user
+     */
     public void run(String... args) throws Exception {
+
+
+
+
 //
 //        int count = 0;
 //        String message;

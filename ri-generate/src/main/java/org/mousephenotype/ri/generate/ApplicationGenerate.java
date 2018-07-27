@@ -16,21 +16,22 @@
 
 package org.mousephenotype.ri.generate;
 
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+import org.apache.commons.lang3.StringUtils;
 import org.mousephenotype.ri.core.SqlUtils;
-import org.mousephenotype.ri.core.Validator;
 import org.mousephenotype.ri.core.entities.ContactGene;
 import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.entities.GeneSent;
-import org.mousephenotype.ri.core.entities.GeneStatus;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import javax.inject.Inject;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,10 +44,25 @@ import java.util.concurrent.ConcurrentHashMap;
  * This class is intended to be a command-line callable java main program that generates e-mails to contacts registered
  * for insterest in specific genes whose status indicates the gene state has changed.
  */
-@ComponentScan
+// FIXME
+@SpringBootApplication
+@Deprecated
 public class ApplicationGenerate implements CommandLineRunner {
 
-    private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final       Logger  logger      = LoggerFactory.getLogger(this.getClass());
+    public static final String  WELCOME_ARG = "welcome";
+    public static final String  SUMMARY_ARG = "summary";
+    private             boolean createWelcomeText;
+    private             boolean createSummaryText;
+    private             String  createSummaryTextFor;
+
+
+
+
+
+
+
+
 
     private SimpleDateFormat sdf = new SimpleDateFormat("dd MMMMM yyyy");
 
@@ -63,7 +79,6 @@ public class ApplicationGenerate implements CommandLineRunner {
         this.sqlUtils = sqlUtils;
     }
 
-
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(ApplicationGenerate.class);
         app.setBannerMode(Banner.Mode.OFF);
@@ -73,8 +88,25 @@ public class ApplicationGenerate implements CommandLineRunner {
     }
 
 
+    /**
+     * Additional supported arguments:
+     *   -- welcome emailAddress        # Generates and sends a single welcome e-mail to the specified email address
+     *   -- summary emailAddress        # Generates and sends a single summary e-mail to the specified email address
+     *   -- summary                     # Generates and sends a summary to each registered user
+     */
     @Override
     public void run(String... args) throws Exception {
+
+        OptionSet options = parseOptions(args);
+
+        logger.info("Program Arguments: " + StringUtils.join(args, ", "));
+
+        if (createWelcomeText) {
+            logger.info("createWelcomeText!");
+        }
+        if (createSummaryText) {
+            logger.info("createSummaryText for {}", createSummaryTextFor == null ? "Everyone" : createSummaryTextFor);
+        }
 //
 //        int count = 0;
 //        String message;
@@ -361,5 +393,30 @@ public class ApplicationGenerate implements CommandLineRunner {
 //                .append("The MPI2 (KOMP2) informatics consortium");
 //
 //        return body.toString();
+    }
+
+
+    // PROTECTED METHODS
+
+
+    protected OptionSet parseOptions(String[] args) {
+
+        OptionParser parser = new OptionParser();
+        OptionSet options;
+
+        parser.allowsUnrecognizedOptions();
+        parser.accepts(WELCOME_ARG);
+        parser.accepts(SUMMARY_ARG).withOptionalArg();
+
+        options = parser.parse(args);
+        if (options.has(WELCOME_ARG)) {
+            createWelcomeText = true;
+        }
+        if (options.has(SUMMARY_ARG)) {
+            createSummaryTextFor = (String) options.valueOf(SUMMARY_ARG);
+            createSummaryText = true;
+        }
+
+        return options;
     }
 }

@@ -46,8 +46,9 @@ public class GeneSentRowMapper implements RowMapper<GeneSent> {
 
         geneSent.setPk(rs.getInt("pk"));
 
-        geneSent.setSubject((rs.getString("subject")));
-        geneSent.setBody((rs.getString("body")));
+        // FIXME
+//        geneSent.setSubject((rs.getString("subject")));
+//        geneSent.setBody((rs.getString("body")));
 
         geneSent.setAddress(rs.getString("address"));
         geneSent.setMgiAccessionId(rs.getString("mgi_accession_id"));

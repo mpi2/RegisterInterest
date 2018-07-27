@@ -156,7 +156,7 @@ public class SendSummaryTest {
         GeneSentSummary summary = sqlUtils.getGeneSentSummaryForContact(contact);
         Assert.assertNotNull("Expected GeneSentSummary value but was null", summary);
 
-        List<GeneSent> genesSent = sqlUtils.getGeneSentForContact(contact);
+        List<GeneSent> genesSent = sqlUtils.getGeneSentByEmailAddress(contact);
         Assert.assertTrue(genesSent.size() > 0);
 
         for (GeneSent geneSent : genesSent) {
