@@ -129,9 +129,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <mainClass>org.springframework.boot.loader.PropertiesLauncher</mainClass>
-                </configuration>
+                <!--<configuration>-->
+                    <!--<mainClass>org.springframework.boot.loader.PropertiesLauncher</mainClass>-->
+                <!--</configuration>-->
                 <executions>
                     <execution>
                         <goals>

@@ -19,10 +19,12 @@ package org.mousephenotype.ri.core.services;
 import org.mousephenotype.ri.core.entities.Summary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.util.Map;
 
+@Service
 public class CoreService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

@@ -19,6 +19,7 @@ package org.mousephenotype.ri.core.services;
 import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.mousephenotype.ri.core.entities.Summary;
 import org.mousephenotype.ri.core.entities.SummaryHtmlTable;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.util.Map;
@@ -26,6 +27,7 @@ import java.util.Map;
 /**
  * This class exports the services offered by the generate module.
  */
+@Service
 public class GenerateService {
 
     public static final String PRIVACY_POLICY_LINK = "https://www.ebi.ac.uk/data-protection/privacy-notice/impc-mailservices";

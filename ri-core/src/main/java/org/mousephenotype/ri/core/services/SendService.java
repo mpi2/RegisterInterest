@@ -22,6 +22,7 @@ import org.mousephenotype.ri.core.entities.Summary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.mail.Message;
@@ -29,6 +30,7 @@ import javax.mail.MessagingException;
 import javax.mail.Transport;
 import javax.validation.constraints.NotNull;
 
+@Service
 public class SendService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
