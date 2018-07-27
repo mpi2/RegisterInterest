@@ -67,6 +67,7 @@ public class ApplicationSend implements CommandLineRunner {
 
 
     public static final String USAGE = "Usage: [--help/-h] | [--all/-a] | [--changed/-c] | [--summary/-s email1 [email2 ...]] | [[--welcome/-w email1 [email2 ...]]]";
+
     /**
      * @param args
      * @throws Exception
@@ -87,6 +88,7 @@ public class ApplicationSend implements CommandLineRunner {
         } else if (welcome) {
             for (String emailAddress : emailAddresses) {
                 logger.info("Generate and send WELCOME e-mail to {}", emailAddress);
+                coreService.generateAndSendWelcome(emailAddress);
             }
         }
     }
