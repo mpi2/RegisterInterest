@@ -17,19 +17,15 @@
 package org.mousephenotype.ri.integrationtest;
 
 
-import org.junit.Ignore;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mousephenotype.ri.generate.ApplicationGenerate;
 import org.mousephenotype.ri.integrationtest.config.TestConfig;
-import org.mousephenotype.ri.send.ApplicationSend;
 import org.mousephenotype.ri.web.controller.InterestController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -69,12 +65,6 @@ public class RegisterUnregisterTest {
 
 
     @Autowired
-    private ApplicationGenerate applicationGenerate;
-
-    @Autowired
-    private ApplicationSend applicationSend;
-
-    @Autowired
     private ApplicationContext context;
 
     @Autowired
@@ -86,7 +76,7 @@ public class RegisterUnregisterTest {
 
     /**
      * This is an end-to-end integration test creates, loads, and uses an embedded in-memory h2 database and a local
-     * ri-ws web service instance. It tests the following use case:
+     * web web service instance. It tests the following use case:
      *     register interest
      *     unregister interest
      *     generate
@@ -97,26 +87,27 @@ public class RegisterUnregisterTest {
      *
      * @throws Exception
      */
+    // FIXME replace with coreService calls.
 @Ignore
     @Test
     public void testRegisterUnregister() throws Exception {
-
-        String[] contacts         = new String[]{"mrelac@ebi.ac.uk", "mike@foxhill.com"};
-        String[] geneAccessionIds = new String[]{"MGI:1919199", "MGI:102851"};
-
-        // Load the data
-        Resource r = context.getResource("classpath:sql/h2/schema.sql");
-        ScriptUtils.executeSqlScript(riDataSource.getConnection(), r);
-        r = context.getResource("classpath:sql/h2/registerUnregister-data.sql");
-        ScriptUtils.executeSqlScript(riDataSource.getConnection(), r);
-
-        for (int i = 0; i < contacts.length; i++) {
-            register(contacts[i], geneAccessionIds[i]);
-            unregister(contacts[i], geneAccessionIds[i]);
-        }
-        String[] args = new String[0];
-        applicationGenerate.run(args);
-        applicationSend.run(args);
+//
+//        String[] contacts         = new String[]{"mrelac@ebi.ac.uk", "mike@foxhill.com"};
+//        String[] geneAccessionIds = new String[]{"MGI:1919199", "MGI:102851"};
+//
+//        // Load the data
+//        Resource r = context.getResource("classpath:sql/h2/schema.sql");
+//        ScriptUtils.executeSqlScript(riDataSource.getConnection(), r);
+//        r = context.getResource("classpath:sql/h2/registerUnregister-data.sql");
+//        ScriptUtils.executeSqlScript(riDataSource.getConnection(), r);
+//
+//        for (int i = 0; i < contacts.length; i++) {
+//            register(contacts[i], geneAccessionIds[i]);
+//            unregister(contacts[i], geneAccessionIds[i]);
+//        }
+//        String[] args = new String[0];
+//        applicationGenerate.run(args);
+//        applicationSend.run(args);
     }
 
 

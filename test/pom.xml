@@ -64,18 +64,6 @@
 
         <dependency>
             <groupId>org.mousephenotype.ri</groupId>
-            <artifactId>ri-generate</artifactId>
-            <version>1.0.0-RELEASE</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mousephenotype.ri</groupId>
-            <artifactId>ri-send</artifactId>
-            <version>1.0.0-RELEASE</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mousephenotype.ri</groupId>
             <artifactId>ri-ws</artifactId>
             <version>1.0.0-RELEASE</version>
             <classifier>classes</classifier>
