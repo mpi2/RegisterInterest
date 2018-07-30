@@ -52,13 +52,11 @@ public class GeneRowMapper implements RowMapper<Gene> {
         gene.setAssignmentStatus(rs.getString("assignment_status"));
         Timestamp ts = rs.getTimestamp("assignment_status_date");
         gene.setAssignmentStatusDate(ts == null ? null : new Date(ts.getTime()));
-        String s = rs.getString("ri_assignment_status");
-        gene.setRiAssignmentStatus((s == null ? "" : s));
+        gene.setRiAssignmentStatus(rs.getString("ri_assignment_status"));   // Store null ri status values if they are are null (i.e. don't remap them to "")
 
         gene.setConditionalAlleleProductionCentre(rs.getString("conditional_allele_production_centre"));
         gene.setConditionalAlleleProductionStatus(rs.getString("conditional_allele_production_status"));
-        s = rs.getString("ri_conditional_allele_production_status");
-        gene.setRiConditionalAlleleProductionStatus((s == null ? "" : s));
+        gene.setRiConditionalAlleleProductionStatus(rs.getString("ri_conditional_allele_production_status"));   // Store null ri status values if they are are null (i.e. don't remap them to "")
         ts = rs.getTimestamp("conditional_allele_production_status_date");
         gene.setConditionalAlleleProductionStatusDate(ts == null ? null : new Date(ts.getTime()));
         ts = rs.getTimestamp("conditional_allele_production_start_date");
@@ -66,8 +64,7 @@ public class GeneRowMapper implements RowMapper<Gene> {
 
         gene.setNullAlleleProductionCentre(rs.getString("null_allele_production_centre"));
         gene.setNullAlleleProductionStatus(rs.getString("null_allele_production_status"));
-        s = rs.getString("ri_null_allele_production_status");
-        gene.setRiNullAlleleProductionStatus((s == null ? "" : s));
+        gene.setRiNullAlleleProductionStatus(rs.getString("ri_null_allele_production_status"));   // Store null ri status values if they are are null (i.e. don't remap them to "")
         ts = rs.getTimestamp("null_allele_production_status_date");
         gene.setNullAlleleProductionStatusDate(ts == null ? null : new Date(ts.getTime()));
         ts = rs.getTimestamp("null_allele_production_start_date");
@@ -77,9 +74,7 @@ public class GeneRowMapper implements RowMapper<Gene> {
         gene.setPhenotypingStatus(rs.getString("phenotyping_status"));
         ts = rs.getTimestamp("phenotyping_status_date");
         gene.setPhenotypingStatusDate(ts == null ? null : new Date(ts.getTime()));
-        s = rs.getString("ri_phenotyping_status");
-        gene.setRiPhenotypingStatus((s == null ? "" : s));
-
+        gene.setRiPhenotypingStatus(rs.getString("ri_phenotyping_status"));   // Store null ri status values if they are are null (i.e. don't remap them to "")
         gene.setNumberOfSignificantPhenotypes(rs.getInt("number_of_significant_phenotypes"));
 
         gene.setCreatedAt(new Date(rs.getDate("created_at").getTime()));

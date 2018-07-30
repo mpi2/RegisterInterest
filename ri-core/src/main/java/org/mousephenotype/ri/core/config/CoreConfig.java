@@ -38,6 +38,25 @@ public class CoreConfig {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 
+    @NotNull
+    @Value("${paBaseUrl}")
+    private String paBaseUrl;
+
+    @NotNull
+    @Value("${riBaseUrl}")
+    private String riBaseUrl;
+
+    @Bean
+    public String paBaseUrl() {
+        return paBaseUrl;
+    }
+
+    @Bean
+    public String getRiBaseUrl() {
+        return riBaseUrl;
+    }
+
+
     @Bean
     public NamedParameterJdbcTemplate jdbc() {
         return new NamedParameterJdbcTemplate(riDataSource());

@@ -36,6 +36,6 @@ insert into contact_gene(contact_pk, gene_pk, created_at) VALUES
 ;
 
 INSERT INTO gene_sent
-  (subject,       body,       address,            mgi_accession_id,    created_at, sent_at) VALUES
-  ('my subject', 'my body',  'mrelac@ebi.ac.uk', 'MGI:0000010',        @now,       NULL)
+  (address,            mgi_accession_id,    created_at, sent_at) VALUES
+  ('mrelac@ebi.ac.uk', 'MGI:0000010',        @now,       NULL)
 ;

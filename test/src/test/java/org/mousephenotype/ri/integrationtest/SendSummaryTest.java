@@ -21,9 +21,9 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.mousephenotype.ri.core.entities.GeneSent;
 import org.mousephenotype.ri.core.entities.GeneSentSummary;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.mousephenotype.ri.generate.ApplicationGenerate;
 import org.mousephenotype.ri.generate.ApplicationGenerateSummary;
 import org.mousephenotype.ri.integrationtest.config.TestConfig;
@@ -41,6 +41,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by mrelac on 16-02-2018.
@@ -156,10 +157,10 @@ public class SendSummaryTest {
         GeneSentSummary summary = sqlUtils.getGeneSentSummaryForContact(contact);
         Assert.assertNotNull("Expected GeneSentSummary value but was null", summary);
 
-        List<GeneSent> genesSent = sqlUtils.getGeneSentByEmailAddress(contact);
+        Map<String, GeneSent> genesSent = sqlUtils.getGeneSentStatusByEmailAddress(contact);
         Assert.assertTrue(genesSent.size() > 0);
 
-        for (GeneSent geneSent : genesSent) {
+        for (GeneSent geneSent : genesSent.values()) {
             Assert.assertEquals(summary.getSentAt(), (geneSent.getSentAt()));
         }
     }

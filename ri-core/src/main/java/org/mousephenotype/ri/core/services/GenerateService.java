@@ -16,9 +16,9 @@
 
 package org.mousephenotype.ri.core.services;
 
-import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.mousephenotype.ri.core.entities.Summary;
 import org.mousephenotype.ri.core.entities.SummaryHtmlTable;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -33,10 +33,13 @@ public class GenerateService {
     public static final String PRIVACY_POLICY_LINK = "https://www.ebi.ac.uk/data-protection/privacy-notice/impc-mailservices";
     public static final String MOUSEINFORMATICS_EMAIL = "mouse-helpdesk@ebi.ac.uk";
 
+
+    private String   paBaseUrl;
     private SqlUtils sqlUtils;
 
     @Inject
-    public GenerateService(SqlUtils sqlUtils) {
+    public GenerateService(String paBaseUrl, SqlUtils sqlUtils) {
+        this.paBaseUrl = paBaseUrl;
         this.sqlUtils = sqlUtils;
     }
 
@@ -59,9 +62,17 @@ public class GenerateService {
         return sqlUtils.getChangedSummariesByEmailAddress();
     }
 
-
     /**
      *
+     * @return A map of all registered contact summaries, indexed by contact email address
+     */
+    public Summary getsummaryByEmailAddress(String emailAddress) {
+
+        return sqlUtils.getSummary(emailAddress);
+    }
+
+
+    /**
      * @param summary The {@link Summary} source instance
      * @param inHtml Boolean indicating whether or not the output should be in html
      * @param showChangedGenes Boolean indicating whether or not to include decoration that shows if the gene has changed
@@ -73,16 +84,17 @@ public class GenerateService {
 
         sb
                 .append(getSummaryPreface(inHtml))
-                .append(getSummaryHtmlTableText(summary, showChangedGenes))
+                .append(getSummaryHtmlTableText(paBaseUrl, summary, showChangedGenes))
                 .append(inHtml ? "<br />" : "\n");
 
         if (showChangedGenes) {
             sb
                 .append("* Gene assignment status has changed since the last e-mail sent to you.")
-                .append(inHtml ? "<br />" : "\n");
+                .append(inHtml ? "<br /><br />" : "\n\n");
         }
 
-        sb.append(getEpilogue());
+        sb.append(getEpilogue(inHtml));
+
 
         return sb.toString();
     }
@@ -97,9 +109,9 @@ public class GenerateService {
         StringBuilder sb = new StringBuilder();
 
         sb
-                .append("Dear colleague,\n")
+                .append("Dear colleague,")
 
-                .append("\n")
+                .append(inHtml ? "<br /><br />" : "\n\n")
 
                 .append("Thank you for registering your interest in genes with the IMPC. As a benefit of having registered, ")
                 .append("you will receive an e-mail notification whenever the status of the gene(s) for which you have registered ")
@@ -112,7 +124,7 @@ public class GenerateService {
                 .append(inHtml ? "<ul>" : "")
 
                 .append(inHtml ? "<li>" : "\t* ")
-                .append("clicking on the link in the ")
+                .append("clicking the link in the ")
                 .append(inHtml ? "<b>" : "")
                 .append("Search")
                 .append(inHtml ? "</b>" : "")
@@ -126,18 +138,23 @@ public class GenerateService {
                 .append(inHtml ? "</li>" : "\n")
 
                 .append(inHtml ? "<li>" : "\t* ")
-                .append("clicking on the button on the Gene page just below the gene name")
+                .append("clicking on the button on the ")
+                .append(inHtml ? "<b>" : "")
+                .append("Gene")
+                .append(inHtml ? "</b>" : "")
+                .append(" ")
+                .append("page just below the gene name")
                 .append(inHtml ? "</li>" : "\n")
 
                 .append(inHtml ? "</ul>" : "")
 
                 .append("\n")
 
-                .append("Clicking on the ")
+                .append("Clicking the ")
                 .append(inHtml ? "<i>" : "")
                 .append("My genes")
-                .append(" ")
                 .append(inHtml ? "</i>" : "")
+                .append(" ")
                 .append("link on the ")
                 .append(inHtml ? "<b>" : "")
                 .append("Search")
@@ -148,7 +165,7 @@ public class GenerateService {
                 .append(inHtml ? "<ul>" : "")
 
                 .append(inHtml ? "<li>" : "\t* ")
-                .append("•unregister by clicking on the ")
+                .append("unregister by clicking the ")
                 .append(inHtml ? "<i>" : "")
                 .append("Unregister")
                 .append(inHtml ? "</i>" : "")
@@ -157,7 +174,7 @@ public class GenerateService {
                 .append(inHtml ? "</li>" : "\n")
 
                 .append(inHtml ? "<li>" : "\t* ")
-                .append("reset your password by clicking on the ")
+                .append("reset your password by clicking the ")
                 .append(inHtml ? "<i>" : "")
                 .append("Reset password")
                 .append(inHtml ? "</i>" : "")
@@ -166,21 +183,21 @@ public class GenerateService {
                 .append(inHtml ? "</li>" : "\n")
 
                 .append(inHtml ? "<li>" : "\t* ")
-                .append("delete your account by clicking on the")
+                .append("delete your account by clicking the")
                 .append(inHtml ? "<i>" : "")
                 .append("Delete account")
                 .append(inHtml ? "</i>" : "")
                 .append(" ")
                 .append("button ")
                 .append(inHtml ? "<b><i>" : "")
-                .append("(Warning: deleting your account will delete all genes for which you have registered interest, as well ")
-                .append("as any history. This action is permanent and cannot be undone, so please use with caution.)")
+                .append("Warning: deleting your account will delete all genes for which you have registered interest, as well ")
+                .append("as any history. This action is permanent and cannot be undone, so please use with caution.")
                 .append(inHtml ? "</i></b>" : "")
 
                 .append(inHtml ? "</ul>\n" : "\n")
                 .append("\n")
 
-                .append(getEpilogue())
+                .append(getEpilogue(inHtml))
         ;
 
         return sb.toString();
@@ -190,19 +207,20 @@ public class GenerateService {
     // PROTECTED METHODS
 
 
-    protected static String getEpilogue() {
+    protected static String getEpilogue(boolean inHtml) {
 
         StringBuilder body = new StringBuilder();
 
         body
-                .append("You may review our e-mail list privacy policy here")
-                .append(PRIVACY_POLICY_LINK)
-                .append("\n")
+                .append("You may review our e-mail list privacy policy at:")
+                .append(inHtml ? "<br /><br />" : "\n\n")
+                .append(SummaryHtmlTable.buildHtmlCell("div", PRIVACY_POLICY_LINK, PRIVACY_POLICY_LINK))
+                .append(inHtml ? "<br />" : "\n")
                 .append("For further information / enquiries please write to ")
-                .append(MOUSEINFORMATICS_EMAIL)
-                .append("\n")
+                .append("<a href=\"mailto: " + MOUSEINFORMATICS_EMAIL + "\">" + MOUSEINFORMATICS_EMAIL + "</a>.")
+                .append(inHtml ? "<br /><br />" : "\n\n")
                 .append("Best Regards,\n")
-                .append("\n")
+                .append(inHtml ? "<br /><br />" : "\n\n")
                 .append("The IMPC team");
 
         return body.toString();
@@ -215,8 +233,8 @@ public class GenerateService {
      *                         the last e-mail went out
      * @return An HTML string containing this contact's summary information, in HTML table format
      */
-    protected String getSummaryHtmlTableText(Summary summary, boolean showChangedGenes) {
-        return SummaryHtmlTable.buildTableContent(sqlUtils, summary, showChangedGenes);
+    protected String getSummaryHtmlTableText(String paBaseUrl, Summary summary, boolean showChangedGenes) {
+        return SummaryHtmlTable.buildTableContent(paBaseUrl, sqlUtils, summary, showChangedGenes);
     }
 
     protected String getSummaryPreface(boolean inHtml) {
@@ -225,22 +243,22 @@ public class GenerateService {
         sb
                 .append("Dear colleague,\n")
 
-                .append("\n")
+                .append(inHtml ? "<br /><br />" : "\n\n")
 
                 .append("Below please find a summary of the IMPC genes for which you have registered interest.\n")
 
-                .append("\n")
+                .append(inHtml ? "<br /><br />" : "\n\n")
 
-                .append("You have previously joined the IMPC")
+                .append("You have previously joined the IMPC ")
                 .append(inHtml ? "<i>" : "'")
                 .append("Register Interest")
                 .append(inHtml ? "</i>" : "'")
                 .append(" ")
                 .append("list, which records your email address and genes for which you would like updates on mouse knockout, production, and phenotyping.\n")
 
-                .append("\n")
+                .append(inHtml ? "<br /><br />" : "\n\n")
 
-                .append("You can unsubscribe from any gene for which you have registered interest by clicking on its corresponding")
+                .append("You can unsubscribe from any gene for which you have registered interest by clicking on its corresponding ")
                 .append(inHtml ? "<i>" : "'")
                 .append("Unregister")
                 .append(inHtml ? "</i>" : "'")
@@ -251,6 +269,9 @@ public class GenerateService {
                 .append(inHtml ? "</b>" : "'")
                 .append(" ")
                 .append("column below.\n")
+
+                .append(inHtml ? "<br /><br />" : "\n\n")
+
         ;
 
         return sb.toString();

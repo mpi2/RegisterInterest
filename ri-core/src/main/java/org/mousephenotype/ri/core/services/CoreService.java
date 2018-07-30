@@ -107,6 +107,22 @@ public class CoreService {
     /**
      * Generate and send a single summary e-mail
      *
+     * @param emailAddress The email address of the recipient of the summary e-mail
+     */
+    public void generateAndSendSummary(String emailAddress) {
+
+        boolean inHtml = true;
+        boolean showChangedGenes = true;
+
+        Summary summary = generateService.getsummaryByEmailAddress(emailAddress);
+        String content = generateService.getSummaryContent(summary, inHtml, showChangedGenes);
+        sendService.sendSummary(summary, SendService.DEFAULT_SUMMARY_SUBJECT, content, inHtml);
+    }
+
+
+    /**
+     * Generate and send a single summary e-mail
+     *
      * @param summary Input instance
      * @param inHtml if true, generate output with html
      * @param showChangedGenes if true, include the 'changed gene' decoration (i.e. an asterisk next to each changed gene)

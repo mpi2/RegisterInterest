@@ -117,8 +117,6 @@ DROP TABLE IF EXISTS gene_sent;
 CREATE TABLE gene_sent (
   pk                                          INT             NOT NULL        AUTO_INCREMENT PRIMARY KEY,
 
-  subject                                     VARCHAR(78)     NOT NULL,
-  body                                        VARCHAR(2048)   NOT NULL,
   address                                     VARCHAR(255)    NOT NULL,
   mgi_accession_id                            VARCHAR(32)     NOT NULL,
   assignment_status                           VARCHAR(64)     DEFAULT NULL,

@@ -39,10 +39,10 @@ INSERT INTO gene
 ;
 
 INSERT INTO gene_sent
-  (pk, subject,         body,         address,           mgi_accession_id, created_at, sent_at) VALUES
-  (1, 'Test Subject1', 'Test Body1', 'user1@ebi.ac.uk', 'MGI:103576',      NOW(),      NOW()),
-  (2, 'Test Subject2', 'Test Body2', 'user1@ebi.ac.uk', 'MGI:1919199',     NOW(),      NOW()),
-  (3, 'Test Subject3', 'Test Body3', 'user1@ebi.ac.uk', 'MGI:2443658',     NOW(),      NOW()),
-  (4, 'Test Subject4', 'Test Body4', 'user1@ebi.ac.uk', 'MGI:2444824',     NOW(),      NOW()),
-  (5, 'Test Subject5', 'Test Body5', 'user1@ebi.ac.uk', 'MGI:3576659',     NOW(),      NOW())
+  (pk, address,           mgi_accession_id, created_at, sent_at) VALUES
+  (1,  'user1@ebi.ac.uk', 'MGI:103576',      NOW(),      NOW()),
+  (2,  'user1@ebi.ac.uk', 'MGI:1919199',     NOW(),      NOW()),
+  (3,  'user1@ebi.ac.uk', 'MGI:2443658',     NOW(),      NOW()),
+  (4,  'user1@ebi.ac.uk', 'MGI:2444824',     NOW(),      NOW()),
+  (5,  'user1@ebi.ac.uk', 'MGI:3576659',     NOW(),      NOW())
 ;

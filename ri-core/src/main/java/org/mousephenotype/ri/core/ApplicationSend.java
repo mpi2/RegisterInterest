@@ -84,6 +84,7 @@ public class ApplicationSend implements CommandLineRunner {
         } else if (summary) {
             for (String emailAddress : emailAddresses) {
                 logger.info("Generate and send GENE STATUS e-mail to {}", emailAddress);
+                coreService.generateAndSendSummary(emailAddress);
             }
         } else if (welcome) {
             for (String emailAddress : emailAddresses) {

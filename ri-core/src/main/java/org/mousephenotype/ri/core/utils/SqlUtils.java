@@ -16,7 +16,6 @@
 
 package org.mousephenotype.ri.core.utils;
 
-import org.apache.catalina.util.ParameterMap;
 import org.mousephenotype.ri.core.entities.*;
 import org.mousephenotype.ri.core.entities.report.GenesOfInterestByPopularity;
 import org.mousephenotype.ri.core.exceptions.InterestException;
@@ -712,25 +711,54 @@ public class SqlUtils {
     }
 
     /**
-     * Return a list of {@link GeneSent} matching the given {@code address}
+     * Return a map of {@link GeneSent} statuses, indexed by mgi_accession_id, matching the given {@code address}
      * @param emailAddress the contact e-mail address
-     * @return the list of {@link GeneSent}
+     * @return A map, indexed by mgi_accession_id, containing the {@link GeneSent} statuses ONLY, any or all of which
+     * may be null:
+     * <ul>
+     *     <li>assignment_status</li>
+     *     <li>conditional_allele_production_status</li>
+     *     <li>null_allele_production_status</li>
+     *     <li>phenotyping_status</li>
+     * </ul>
      */
-    public List<GeneSent> getGeneSentByEmailAddress(String emailAddress) {
+    public Map<String, GeneSent> getGeneSentStatusByEmailAddress(String emailAddress) {
+
+        HashMap<String, GeneSent> results = new HashMap<>();
 
         final String query =
-                "SELECT * FROM gene_sent gs\n" +
-                        "JOIN contact_gene cg ON cg.pk = gs.contact_gene_pk\n" +
-                        "JOIN contact c ON c.pk = cg.contact_pk\n" +
-                        "WHERE c.address = :address";
+                "SELECT\n" +
+                        "  g.symbol,\n" +
+                        "  g.mgi_accession_id,\n" +
+                        "  gs.assignment_status,\n" +
+                        "  gs.null_allele_production_status,\n" +
+                        "  gs.conditional_allele_production_status,\n" +
+                        "  gs.phenotyping_status\n" +
+                        "FROM contact c\n" +
+                        "JOIN contact_gene cg ON cg.contact_pk = c.pk\n" +
+                        "JOIN gene g ON g.pk = cg.gene_pk\n" +
+                        "JOIN gene_sent gs ON gs.address = c.address and gs.mgi_accession_id = g.mgi_accession_id\n" +
+                        "WHERE c.address = :address\n" +
+                        "ORDER BY symbol";
 
 
         Map<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("address", emailAddress);
 
-        List<GeneSent> summaryList = jdbcInterest.query(query, parameterMap, new GeneSentRowMapper());
 
-        return summaryList;
+        List<Map<String, Object>> resultsMap = jdbcInterest.queryForList(query, parameterMap);
+        for (Map<String, Object> result : resultsMap) {
+            GeneSent geneSent = new GeneSent();
+            geneSent.setMgiAccessionId(result.get("mgi_accession_id").toString());
+
+            geneSent.setAssignmentStatus((String) result.get("assignment_status"));
+            geneSent.setConditionalAlleleProductionStatus((String) result.get("conditional_allele_production_status"));
+            geneSent.setNullAlleleProductionStatus((String) result.get("null_allele_production_status"));
+            geneSent.setPhenotypingStatus((String) result.get("phenotyping_status"));
+            results.put(geneSent.getMgiAccessionId(), geneSent);
+        }
+
+        return results;
     }
 
     /**
@@ -924,7 +952,8 @@ public class SqlUtils {
                 "SELECT g.* FROM gene g\n" +
                         "LEFT OUTER JOIN contact_gene cg ON cg.gene_pk = g.pk\n" +
                         "JOIN contact      c  ON c. pk      = cg.contact_pk\n" +
-                        "WHERE c.address = :emailAddress\n";
+                        "WHERE c.address = :emailAddress\n" +
+                        "ORDER BY g.symbol";
 
         Map<String, Object> parameterMap = new HashMap<>();
         parameterMap.put("emailAddress", emailAddress);
@@ -1133,7 +1162,7 @@ public class SqlUtils {
 
         String insert = "INSERT INTO gene_sent (address, mgi_accession_id, assignment_status, conditional_allele_production_status, null_allele_production_status, phenotyping_status, created_at, sent_at) " +
                         "VALUES (:address, :mgiAccessionId, :assignmentStatus, :conditionalAlleleProductionStatus, :nullAlleleProductionStatus, :phenotypingStatus, :createdAt, :sentAt)";
-        Map<String, Object> parameterMap = new ParameterMap<>();
+        Map<String, Object> parameterMap = new HashMap<>();
         for (Gene gene : summary.getGenes()) {
             parameterMap.put("address", emailAddress);
             parameterMap.put("mgiAccessionId", gene.getMgiAccessionId());
@@ -1367,9 +1396,6 @@ public class SqlUtils {
 
         Map<String, Object> parameterMap = new HashMap<>();
 
-        // FIXME
-//        parameterMap.put("subject", geneSent.getSubject());
-//        parameterMap.put("body", geneSent.getBody());
         parameterMap.put("address", geneSent.getAddress());
         parameterMap.put("mgi_accession_id", geneSent.getMgiAccessionId());
 

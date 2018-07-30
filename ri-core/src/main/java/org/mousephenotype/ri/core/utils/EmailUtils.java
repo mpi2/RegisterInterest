@@ -46,13 +46,13 @@ public class EmailUtils {
      * @param subject
      * @param body
      * @param emailAddress
-     * @param isHtml
+     * @param inHtml
      * @return {@link Message} the assembled email message, ready for sending
      */
     public Message assembleEmail(
 
             String smtpHost, Integer smtpPort, String smtpFrom, String smtpReplyto,
-            String subject, String body, String emailAddress, boolean isHtml) {
+            String subject, String body, String emailAddress, boolean inHtml) {
 
         Properties smtpProperties = new Properties();
 
@@ -70,7 +70,7 @@ public class EmailUtils {
             message.setRecipients(Message.RecipientType.TO,
                                   InternetAddress.parse(emailAddress));
             message.setSubject(subject);
-            if (isHtml) {
+            if (inHtml) {
                 message.setContent(body, "text/html; charset=utf-8");
             } else {
                 message.setText(body);

@@ -152,3 +152,8 @@ FOREIGN KEY (`ri_phenotyping_status`)
 REFERENCES `ri`.`gene_status` (`status`)
   ON DELETE RESTRICT
   ON UPDATE RESTRICT;
+
+-- Delete subject and body fields from gene_sent.
+ALTER TABLE gene_sent
+  DROP COLUMN `body`,
+  DROP COLUMN `subject`;
