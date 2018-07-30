@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.mousephenotype.ri</groupId>
-    <artifactId>ri-dependencies</artifactId>
+    <artifactId>dependencies</artifactId>
     <version>1.0.0-RELEASE</version>
 
     <packaging>pom</packaging>

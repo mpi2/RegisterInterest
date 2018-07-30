@@ -12,12 +12,12 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>ri-dependencies</module>
-        <module>ri-parent</module>
+        <module>dependencies</module>
+        <module>parent</module>
         <module>ri-core</module>
-        <module>ri-extract</module>
+        <module>extract</module>
         <module>ri-ws</module>
-        <module>ri-reports</module>
+        <module>reports</module>
         <module>test</module>
     </modules>
 
