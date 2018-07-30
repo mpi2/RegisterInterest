@@ -92,7 +92,7 @@
 
             <dependency>
                 <groupId>org.mousephenotype.ri</groupId>
-                <artifactId>ri-extract</artifactId>
+                <artifactId>extract</artifactId>
                 <version>${ri-version}</version>
             </dependency>
 

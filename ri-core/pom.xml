@@ -13,9 +13,9 @@
 
     <parent>
         <groupId>org.mousephenotype.ri</groupId>
-        <artifactId>ri-parent</artifactId>
+        <artifactId>parent</artifactId>
         <version>1.0.0-RELEASE</version>
-        <relativePath>../ri-parent/pom.xml</relativePath>
+        <relativePath>../parent/pom.xml</relativePath>
     </parent>
 
 
