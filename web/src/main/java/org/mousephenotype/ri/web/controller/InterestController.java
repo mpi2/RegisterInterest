@@ -181,34 +181,34 @@ public class InterestController implements ErrorController {
     }
 
 
-    @RequestMapping(method = GET, value = "/api/admin/reports/ContactGene")
-    public void getContactGeneReport(HttpServletResponse response) throws IOException, ReportException {
-
-        response.setContentType("text/csv; charset=utf-8");
-        PrintWriter writer = response.getWriter();
-        MpCSVWriter csvWriter = new MpCSVWriter(writer);
-        ContactGeneReport report = new ContactGeneReport(sqlUtils);
-        report.run(new String[0], csvWriter);
-
-        csvWriter.close();
-    }
-
-
-    @RequestMapping(value = "/api/roles", method = RequestMethod.GET)
-    public List<String> rolesUrl(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            ModelMap model
-    ) {
-        List<String> roles = new ArrayList<>();
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null) {
-            roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
-        }
-
-        return roles;
-    }
+//    @RequestMapping(method = GET, value = "/api/admin/reports/ContactGene")
+//    public void getContactGeneReport(HttpServletResponse response) throws IOException, ReportException {
+//
+//        response.setContentType("text/csv; charset=utf-8");
+//        PrintWriter writer = response.getWriter();
+//        MpCSVWriter csvWriter = new MpCSVWriter(writer);
+//        ContactGeneReport report = new ContactGeneReport(sqlUtils);
+//        report.run(new String[0], csvWriter);
+//
+//        csvWriter.close();
+//    }
+//
+//
+//    @RequestMapping(value = "/api/roles", method = RequestMethod.GET)
+//    public List<String> rolesUrl(
+//            HttpServletRequest request,
+//            HttpServletResponse response,
+//            ModelMap model
+//    ) {
+//        List<String> roles = new ArrayList<>();
+//
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        if (auth != null) {
+//            roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+//        }
+//
+//        return roles;
+//    }
 
     @Override
     public String getErrorPath() {

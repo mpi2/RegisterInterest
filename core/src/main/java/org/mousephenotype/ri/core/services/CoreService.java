@@ -54,46 +54,22 @@ public class CoreService {
 
 
     /**
-     * Generate and send e-mails for all contacts who are registered for interest in any gene
-     * @param showChangedGenes if true, include the 'changed gene' decoration (i.e. an asterisk next to each changed gene)
-     *
-     */
-    public void generateAndSendAllSumaries(boolean showChangedGenes) {
-
-        int count = 0;
-
-        Map<String, Summary> summaries = generateService.getAllSummariesByEmailAddress();
-        logger.info("BEGIN generateAndSendAllSummaries");
-
-        for (Summary summary : summaries.values()) {
-
-            generateAndSendSummary(summary, true, showChangedGenes);
-            count++;
-
-            // Pause for 36 seconds so we don't exceed 100 e-mails per hour.
-            sleep(36);
-        }
-
-        logger.info("END generateAndSendAllSummaries. Processed {} summaries.", count);
-    }
-
-
-    /**
      * Generate and send e-mails for all contacts who have at least one gene of interest that has changed status since
      * the last e-mail was sent
-     *
+     * @param suppress A boolean that, when true, Suppresses the decoration indicating whether or not a gene's status
+     *                 has changed since the last e-mail sent. When false, decoration is displayed
      */
-    public void generateAndSendChangedSummaries() {
+    public void generateAndSendSummary(boolean suppress) {
 
         int count = 0;
 
         Map<String, Summary> summaries = generateService.getChangedSummariesByEmailAddress();
 
-        logger.info("BEGIN generateAndSendChangedSummaries");
+        logger.info("BEGIN generateAndSendsummary");
 
         for (Summary summary : summaries.values()) {
 
-            generateAndSendSummary(summary, true, true);
+            generateAndSendSummary(summary, true, suppress);
             count++;
 
             // Pause for 36 seconds so we don't exceed 100 e-mails per hour.
@@ -125,11 +101,12 @@ public class CoreService {
      *
      * @param summary Input instance
      * @param inHtml if true, generate output with html
-     * @param showChangedGenes if true, include the 'changed gene' decoration (i.e. an asterisk next to each changed gene)
+     * @param suppress A boolean that, when true, Suppresses the decoration indicating whether or not a gene's status
+     *                 has changed since the last e-mail sent. When false, decoration is displayed
      */
-    public void generateAndSendSummary(Summary summary, boolean inHtml, boolean showChangedGenes) {
+    public void generateAndSendSummary(Summary summary, boolean inHtml, boolean suppress) {
 
-        String content = generateService.getSummaryContent(summary, inHtml, showChangedGenes);
+        String content = generateService.getSummaryContent(summary, inHtml, suppress);
         sendService.sendSummary(summary, SendService.DEFAULT_SUMMARY_SUBJECT, content, inHtml);
     }
 }

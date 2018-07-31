@@ -48,7 +48,7 @@ public class SummaryHtmlTable {
             "    background-color: #dddddd;"+
             "}";
 
-    public static String buildTableContent(String paBaseUrl, SqlUtils sqlUtils, Summary summary, boolean showChangedGenes) {
+    public static String buildTableContent(String paBaseUrl, SqlUtils sqlUtils, Summary summary, boolean suppress) {
 
         Map<String, GeneSent> genesSentByGeneAccessionid = sqlUtils.getGeneSentStatusByEmailAddress(summary.getEmailAddress());
         StringBuilder body = new StringBuilder();
@@ -59,7 +59,7 @@ public class SummaryHtmlTable {
                 .append(buildRow("th", headings));
 
         for (Gene gene : summary.getGenes()) {
-            body.append(buildRow(paBaseUrl, gene, genesSentByGeneAccessionid.get(gene.getMgiAccessionId()), showChangedGenes));
+            body.append(buildRow(paBaseUrl, gene, genesSentByGeneAccessionid.get(gene.getMgiAccessionId()), suppress));
         }
 
         body.append("</table>");
@@ -72,11 +72,11 @@ public class SummaryHtmlTable {
      * Builds an html data row for the specified gene and optional {@link GeneSent} instance. {@code} may be null.
      * @param gene This contact's {@link Gene} instance. Never null.
      * @param geneSent This contact's {@link GeneSent} instance. May be null.
-     * @param showChangedGenes Boolean indicating whether or not to indicate the gene(s) whose status has changed since
-     *                         the last e-mail went out
+     * @param suppress A boolean that, when true, Suppresses the decoration indicating whether or not a gene's status
+     *                 has changed since the last e-mail sent. When false, decoration is displayed
      * @return html tr text, wrapped in tr tag.
      */
-    public static String buildRow(String paBaseUrl, Gene gene, GeneSent geneSent, boolean showChangedGenes) {
+    public static String buildRow(String paBaseUrl, Gene gene, GeneSent geneSent, boolean suppress) {
 
         StringBuilder row = new StringBuilder();
         String anchor;
@@ -104,7 +104,7 @@ public class SummaryHtmlTable {
         currentValue = gene.getRiAssignmentStatus() == null ? "Not planned" : gene.getRiAssignmentStatus();
         lastSentValue = (geneSent.getAssignmentStatus() == null ? "Not planned" : geneSent.getAssignmentStatus());
 
-        if (showChangedGenes) {
+        if ( ! suppress) {
             // Indicate if status has changed since last e-mail was sent.
             if ( ! currentValue.equals(lastSentValue)) {
                 currentValue += " *";
@@ -125,7 +125,7 @@ public class SummaryHtmlTable {
         } else {
             anchor = null;
         }
-        if (showChangedGenes) {
+        if ( ! suppress) {
             // Indicate if status has changed since last e-mail was sent.
             if ( ! currentValue.equals(lastSentValue)) {
                 currentValue += " *";
@@ -146,7 +146,7 @@ public class SummaryHtmlTable {
         } else {
             anchor = null;
         }
-        if (showChangedGenes) {
+        if ( ! suppress) {
             if ( ! currentValue.equals(lastSentValue)) {
                 currentValue += " *";
             }
@@ -171,7 +171,7 @@ public class SummaryHtmlTable {
         } else {
             lastSentValue = "No";
         }
-        if (showChangedGenes) {
+        if ( ! suppress) {
             if ( ! currentValue.equals(lastSentValue)) {
                 currentValue += " *";
             }

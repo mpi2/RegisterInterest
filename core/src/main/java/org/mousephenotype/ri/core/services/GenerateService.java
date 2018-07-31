@@ -75,19 +75,19 @@ public class GenerateService {
     /**
      * @param summary The {@link Summary} source instance
      * @param inHtml Boolean indicating whether or not the output should be in html
-     * @param showChangedGenes Boolean indicating whether or not to include decoration that shows if the gene has changed
-     *                        status since the last e-mail was sent
+     * @param suppress A boolean that, when true, Suppresses the decoration indicating whether or not a gene's status
+     *                 has changed since the last e-mail sent. When false, decoration is displayed
      * @return A string containing the contact (named in the summary) e-mail content
      */
-    public String getSummaryContent(Summary summary, boolean inHtml, boolean showChangedGenes) {
+    public String getSummaryContent(Summary summary, boolean inHtml, boolean suppress) {
         StringBuilder sb = new StringBuilder();
 
         sb
                 .append(getSummaryPreface(inHtml))
-                .append(getSummaryHtmlTableText(paBaseUrl, summary, showChangedGenes))
+                .append(getSummaryHtmlTableText(paBaseUrl, summary, suppress))
                 .append(inHtml ? "<br />" : "\n");
 
-        if (showChangedGenes) {
+        if ( ! suppress) {
             sb
                 .append("* Gene assignment status has changed since the last e-mail sent to you.")
                 .append(inHtml ? "<br /><br />" : "\n\n");
@@ -229,12 +229,12 @@ public class GenerateService {
     /**
      *
      * @param summary The {@link Summary} instance containing the summary information (emailAddress and genes of interest)
-     * @param showChangedGenes Boolean indicating whether or not to indicate the gene(s) whose status has changed since
-     *                         the last e-mail went out
+     * @param suppress A boolean that, when true, Suppresses the decoration indicating whether or not a gene's status
+     *                 has changed since the last e-mail sent. When false, decoration is displayed
      * @return An HTML string containing this contact's summary information, in HTML table format
      */
-    protected String getSummaryHtmlTableText(String paBaseUrl, Summary summary, boolean showChangedGenes) {
-        return SummaryHtmlTable.buildTableContent(paBaseUrl, sqlUtils, summary, showChangedGenes);
+    protected String getSummaryHtmlTableText(String paBaseUrl, Summary summary, boolean suppress) {
+        return SummaryHtmlTable.buildTableContent(paBaseUrl, sqlUtils, summary, suppress);
     }
 
     protected String getSummaryPreface(boolean inHtml) {
