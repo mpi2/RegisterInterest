@@ -53,7 +53,8 @@ use of HTTP status codes.
 
 [[resources-api]]
 == API
-The api endpoint provides the entry point into the service.
+The api endpoint provides the entry point into the service. The `JSESSIONID` token referred to below is a
+token unique to your session. It is required in order to access secure services.
 
 
 [[resources-discover-contacts]]
