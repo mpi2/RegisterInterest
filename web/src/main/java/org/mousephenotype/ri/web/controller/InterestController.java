@@ -177,7 +177,7 @@ public class InterestController implements ErrorController {
     }
 
 
-    @RequestMapping(method = GET, value = "/admin/reports/ContactGene")
+    @RequestMapping(method = GET, value = "/api/admin/reports/ContactGene")
     public void getContactGeneReport(HttpServletResponse response) throws IOException, ReportException {
 
         response.setContentType("text/csv; charset=utf-8");
