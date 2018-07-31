@@ -1,0 +1,12 @@
+|===
+|Path|Type|Description
+
+|`emailAddress`
+|`String`
+|The contact's e-mail address
+
+|`genes`
+|`Array`
+|The complete list of genes for which the contact has registered interest
+
+|===

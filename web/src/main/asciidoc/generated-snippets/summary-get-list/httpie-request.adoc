@@ -1,0 +1,4 @@
+[source,bash]
+----
+$ http GET 'http://localhost:8080/mi/impc/interest/api/summary/list' 'Accept:application/json'
+----

@@ -433,25 +433,33 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel1">
 <li><a href="#resources-api">API</a>
 <ul class="sectlevel2">
-<li><a href="#resources-discover-contacts">Querying the API for contacts</a>
+<li><a href="#resources-discover-contacts">Querying the API for a contact and their list of genes</a>
 <ul class="sectlevel3">
 <li><a href="#_example_request">Example request</a></li>
 <li><a href="#_request_parameters">Request parameters</a></li>
+<li><a href="#__code_summary_code_response_structure"><code>Summary</code> Response structure</a></li>
+<li><a href="#_example_code_summary_code_response">Example <code>Summary</code> response</a></li>
+</ul>
+</li>
+<li><a href="#_querying_the_api_for_a_contact_s_list_of_genes">Querying the API for a contact&#8217;s list of genes</a>
+<ul class="sectlevel3">
+<li><a href="#_example_request_2">Example request</a></li>
+<li><a href="#_request_parameters_2">Request parameters</a></li>
 <li><a href="#_response_structure">Response structure</a></li>
 <li><a href="#_example_response">Example response</a></li>
 </ul>
 </li>
 <li><a href="#resources-register">Registering a user and gene</a>
 <ul class="sectlevel3">
-<li><a href="#_example_request_2">Example request</a></li>
-<li><a href="#_request_parameters_2">Request parameters</a></li>
+<li><a href="#_example_request_3">Example request</a></li>
+<li><a href="#_request_parameters_3">Request parameters</a></li>
 <li><a href="#_example_response_2">Example response</a></li>
 </ul>
 </li>
 <li><a href="#resources-unregister">Unregistering a user and gene</a>
 <ul class="sectlevel3">
-<li><a href="#_example_request_3">Example request</a></li>
-<li><a href="#_request_parameters_3">Request parameters</a></li>
+<li><a href="#_example_request_4">Example request</a></li>
+<li><a href="#_request_parameters_4">Request parameters</a></li>
 <li><a href="#_example_response_3">Example response</a></li>
 </ul>
 </li>
@@ -484,16 +492,15 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>GET</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Used to retrieve contacts. May be filtered by: type (gene, disease, phenotype), email (email address),
-and/or gene (MGI accession id)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Used to retrieve a contact and the list of genes to which they have subscribed</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>POST</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Used to register a user&#8217;s interest in a specific gene, phenotype, or disease</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Used to register a contact&#8217;s interest in a gene</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>DELETE</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Used to unregister a user&#8217;s interest in a specific gene, phenotype, or disease</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Used to unregister a contact&#8217;s interest in a gene</p></td>
 </tr>
 </tbody>
 </table>
@@ -543,15 +550,17 @@ use of HTTP status codes.</p>
 <p>The api endpoint provides the entry point into the service.</p>
 </div>
 <div class="sect2">
-<h3 id="resources-discover-contacts"><a class="anchor" href="#resources-discover-contacts"></a>Querying the API for contacts</h3>
+<h3 id="resources-discover-contacts"><a class="anchor" href="#resources-discover-contacts"></a>Querying the API for a contact and their list of genes</h3>
 <div class="paragraph">
-<p>A <code>GET</code> request is used to query the resource for contacts</p>
+<p>This <code>GET</code> request is used to query the resource for the calling contact&#8217;s <code>Summary</code> instance containing the contact&#8217;s
+email address and the list of genes for which they have registered interest. The authenticated calling contact is
+identified by the provided JSESSIONID token.</p>
 </div>
 <div class="sect3">
 <h4 id="_example_request"><a class="anchor" href="#_example_request"></a>Example request</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl -u 'admin' 'https://www.ebi.ac.uk/mi/impc/interest/contacts?type=gene&amp;email=user1@ebi.ac.uk&amp;gene=MGI:103309' -i -H 'Accept: application/json'</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl https://www.ebi.ac.uk/mi/impc/interest/api/summary -i -H 'Accept: application/json' -b JSESSIONID=3B69233B6B4A062DFBE4C892D684631C</code></pre>
 </div>
 </div>
 </div>
@@ -568,24 +577,10 @@ use of HTTP status codes.</p>
 <th class="tableblock halign-left valign-top">Description</th>
 </tr>
 </thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>type</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The type of register interest (e.g. gene, disease, phenotype) to further filter by (optional)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>gene</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The MGI gene accession id to further filter by (optional)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>email</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The email address to further filter by (optional)</p></td>
-</tr>
-</tbody>
 </table>
 </div>
 <div class="sect3">
-<h4 id="_response_structure"><a class="anchor" href="#_response_structure"></a>Response structure</h4>
+<h4 id="__code_summary_code_response_structure"><a class="anchor" href="#__code_summary_code_response_structure"></a><code>Summary</code> Response structure</h4>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
 <col style="width: 33%;">
@@ -601,138 +596,68 @@ use of HTTP status codes.</p>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[*].contact.pk</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The primary key of the contact instance</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[*].contact.emailAddress</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>emailAddress</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The contact&#8217;s email address</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The contact&#8217;s e-mail address</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[*].contact.password</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Null</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The contact&#8217;s password</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[*].contact.roles</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Null</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">A list of the contact&#8217;s roles</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[*].contact.createdAt</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The time and date the contact was created</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[*].contact.updatedAt</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The time and date the contact was last updated</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[*].contact.accountLocked</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Boolean</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">A flag indicating whether or not the account is locked</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[*].contact.passwordExpired</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Boolean</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">A flag indicating whether or not the password has expired</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[<strong>].genes[</strong>].pk</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The primary key of the gene instance</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[<strong>].genes[</strong>].mgiAccessionId</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The gene&#8217;s MGI gene accession id</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[<strong>].genes[</strong>].symbol</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The gene&#8217;s symbol</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[<strong>].genes[</strong>].riAssignmentStatus</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The gene&#8217;s register interest Assignment status</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[<strong>].genes[</strong>].riConditionalAlleleProductionStatus</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The gene&#8217;s register interest Conditional Allele Production status</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[<strong>].genes[</strong>].riNullAlleleProductionStatus</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The gene&#8217;s register interest Null Allele Production status</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[<strong>].genes[</strong>].riPhenotypingStatus</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The gene&#8217;s register interest Phenotyping status</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[<strong>].genes[</strong>].createdAt</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The time and date the gene was created</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>[<strong>].genes[</strong>].updatedAt</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The time and date the gene was last updated</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>genes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Array</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The complete list of genes for which the contact has registered interest</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="sect3">
-<h4 id="_example_response"><a class="anchor" href="#_example_response"></a>Example response</h4>
+<h4 id="_example_code_summary_code_response"><a class="anchor" href="#_example_code_summary_code_response"></a>Example <code>Summary</code> response</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 200 OK
 Content-Type: application/json;charset=UTF-8
 Content-Length: 360
 
-[
-  {
-    "contact": {
-      "pk": 220,
-      "address": "user1@ebi.ac.uk",
-      "createdAt": "2017-06-30 15:10:43",
-      "updatedAt": "2018-05-24 15:03:51"
+{
+  "emailAddress": "user1@ebi.ac.uk",
+  "genes": [
+    {
+      "pk": 8243,
+      "mgiAccessionId": "MGI:3576659",
+      "symbol": "Ano5",
+      "riAssignmentStatus": "Selected for production and phenotyping",
+      "riConditionalAlleleProductionStatus": "Started",
+      "riNullAlleleProductionStatus": "Started",
+      "riPhenotypingStatus": null,
+      "createdAt": "2018-05-23 23:00:00",
+      "updatedAt": "2018-06-07 23:00:00"
     },
-    "genes": [
-      {
-        "pk": 171242,
-        "mgiAccessionId": "MGI:103309",
-        "symbol": "Flot2",
-        "riAssignmentStatus": "Selected for production and phenotyping",
-        "riConditionalAlleleProductionStatus": "Genotype confirmed mice",
-        "riNullAlleleProductionStatus": "",
-        "riPhenotypingStatus": "Phenotyping data available",
-        "createdAt": "2018-05-23 23:00:00",
-        "updatedAt": "2018-06-07 23:00:00"
-      }
-    ]
-  }
-]</code></pre>
+    {
+      "pk": 815,
+      "mgiAccessionId": "MGI:1345643",
+      "symbol": "Sufu",
+      "riAssignmentStatus": "Selected for production and phenotyping",
+      "riConditionalAlleleProductionStatus": "Genotype confirmed mice",
+      "riNullAlleleProductionStatus": "Genotype confirmed mice",
+      "riPhenotypingStatus": "Phenotyping data available",
+      "createdAt": "2018-05-23 23:00:00",
+      "updatedAt": "2018-06-07 23:00:00"
+    }
+  ]
+}</code></pre>
 </div>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="resources-register"><a class="anchor" href="#resources-register"></a>Registering a user and gene</h3>
+<h3 id="_querying_the_api_for_a_contact_s_list_of_genes"><a class="anchor" href="#_querying_the_api_for_a_contact_s_list_of_genes"></a>Querying the API for a contact&#8217;s list of genes</h3>
 <div class="paragraph">
-<p>A <code>POST</code> request is used to register interest by a user in a gene</p>
+<p>This <code>GET</code> request is similar to the one above, except that it returns only the list of genes for the contact
+matching the JSESSIONID token.</p>
 </div>
 <div class="sect3">
 <h4 id="_example_request_2"><a class="anchor" href="#_example_request_2"></a>Example request</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">curl -u 'admin' 'https://www.ebi.ac.uk/mi/impc/interest/contacts?type=gene&amp;email=user1@ebi.ac.uk&amp;gene=MGI:1196326' -i -X POST -H 'Accept: application/json'</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl https://www.ebi.ac.uk/mi/impc/interest/api/summary/list -i -H 'Accept: application/json' -b JSESSIONID=3B69233B6B4A062DFBE4C892D684631C</code></pre>
 </div>
 </div>
 </div>
@@ -749,45 +674,40 @@ Content-Length: 360
 <th class="tableblock halign-left valign-top">Description</th>
 </tr>
 </thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>type</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The type of interest (e.g. gene, disease, phenotype) to register (required)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>gene</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The MGI gene accession id to register (required)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>email</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The email address to register (required)</p></td>
-</tr>
-</tbody>
 </table>
 </div>
 <div class="sect3">
-<h4 id="_example_response_2"><a class="anchor" href="#_example_response_2"></a>Example response</h4>
+<h4 id="_response_structure"><a class="anchor" href="#_response_structure"></a>Response structure</h4>
+<div class="paragraph">
+<p>Unresolved directive in api.adoc - include::static-snippets/summary-get-list/response-fields.adoc[]</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_example_response"><a class="anchor" href="#_example_response"></a>Example response</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 200 OK
 Content-Type: application/json;charset=UTF-8
-Content-Length: 57
+Content-Length: 360
 
-Register contact user1@ebi.ac.uk for gene MGI:1196326: OK</code></pre>
+[
+  "MGI:3576659",
+  "MGI:1345643"
+]</code></pre>
 </div>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="resources-unregister"><a class="anchor" href="#resources-unregister"></a>Unregistering a user and gene</h3>
+<h3 id="resources-register"><a class="anchor" href="#resources-register"></a>Registering a user and gene</h3>
 <div class="paragraph">
-<p>A <code>DELETE</code> request is used to unregister interest by a user in a gene</p>
+<p>A <code>POST</code> request is used to register interest by a user in a gene</p>
 </div>
 <div class="sect3">
 <h4 id="_example_request_3"><a class="anchor" href="#_example_request_3"></a>Example request</h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl -u 'admin' 'https://www.ebi.ac.uk/mi/impc/interest/contacts?type=gene&amp;email=user1@ebi.ac.uk&amp;gene=MGI:1196326' -i -X DELETE -H 'Accept: application/json'</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash"> curl https://www.ebi.ac.uk/mi/impc/interest/api/registration/gene?geneAccessionId=MGI:109490 -i -X POST -H 'Accept: application/json' -b JSESSIONID=3B69233B6B4A062DFBE4C892D684631C</code></pre>
 </div>
 </div>
 </div>
@@ -806,30 +726,57 @@ Register contact user1@ebi.ac.uk for gene MGI:1196326: OK</code></pre>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>type</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The type of interest (e.g. gene, disease, phenotype) to unregister (required)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>geneAccessionId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The gene&#8217;s MGI gene accession id</p></td>
 </tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_example_response_2"><a class="anchor" href="#_example_response_2"></a>Example response</h4>
+<div class="paragraph">
+<p>Unresolved directive in api.adoc - include::static-snippets/register/http-response.adoc[]</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="resources-unregister"><a class="anchor" href="#resources-unregister"></a>Unregistering a user and gene</h3>
+<div class="paragraph">
+<p>A <code>DELETE</code> request is used to unregister interest by a user in a gene</p>
+</div>
+<div class="sect3">
+<h4 id="_example_request_4"><a class="anchor" href="#_example_request_4"></a>Example request</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl https://www.ebi.ac.uk/mi/impc/interest/api/unregistration/gene?geneAccessionId=MGI:109490 -i -X DELETE -H 'Accept: application/json' -b JSESSIONID=3B69233B6B4A062DFBE4C892D684631C</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_request_parameters_4"><a class="anchor" href="#_request_parameters_4"></a>Request parameters</h4>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>gene</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The MGI gene accession id to unregister (required)</p></td>
+<th class="tableblock halign-left valign-top">Parameter</th>
+<th class="tableblock halign-left valign-top">Description</th>
 </tr>
+</thead>
+<tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>email</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The email address to unregister (required)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>geneAccessionId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The gene&#8217;s MGI gene accession id</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="sect3">
 <h4 id="_example_response_3"><a class="anchor" href="#_example_response_3"></a>Example response</h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight nowrap"><code class="language-http" data-lang="http">HTTP/1.1 200 OK
-Content-Type: application/json;charset=UTF-8
-Content-Length: 59
-
-Unregister contact user1@ebi.ac.uk for gene MGI:1196326: OK</code></pre>
-</div>
+<div class="paragraph">
+<p>Unresolved directive in api.adoc - include::static-snippets/unregister/http-response.adoc[]</p>
 </div>
 </div>
 </div>
@@ -838,7 +785,7 @@ Unregister contact user1@ebi.ac.uk for gene MGI:1196326: OK</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-07-30 18:52:38 BST
+Last updated 2018-07-31 14:04:19 BST
 </div>
 </div>
 </body>

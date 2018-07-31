@@ -1,4 +1,4 @@
 [source,bash]
 ----
-$ curl 'http://localhost:8080/mi/impc/interest/contacts?type=gene&email=user10@ebi.ac.uk&gene=MGI:0000010' -i -X POST -H 'Accept: application/json'
+$ curl 'http://localhost:8080/mi/impc/interest/api/registration/gene?geneAccessionId=MGI:0000020' -i -X POST -H 'Accept: application/json'
 ----

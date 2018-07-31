@@ -21,6 +21,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.ws.config.TestConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,6 +37,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
@@ -102,10 +105,15 @@ public class ApiDocumentationTest {
             fieldWithPath("updatedAt").description("The time and date the gene was last updated")
     };
 
+    FieldDescriptor [] geneAccessionIds = new FieldDescriptor[] {
+            fieldWithPath("geneAccessionIds").description("The MGI gene accession ids of the genes for which the contact has registered interest")
+    };
+
 
     @Test
     @WithMockUser
     public void summaryGet() throws Exception {
+
         this.mockMvc.perform(get("https://www.ebi.ac.uk/mi/impc/interest/api/summary")
                                      .contextPath("/mi/impc/interest")
                                      .accept(MediaType.APPLICATION_JSON))
@@ -120,7 +128,8 @@ public class ApiDocumentationTest {
 
     @Test
     @WithMockUser
-    public void summaryListGet() throws Exception {
+    public void summaryGetList() throws Exception {
+
         this.mockMvc.perform(get("https://www.ebi.ac.uk/mi/impc/interest/api/summary/list")
                                      .contextPath("/mi/impc/interest")
                                      .accept(MediaType.APPLICATION_JSON))
@@ -128,37 +137,37 @@ public class ApiDocumentationTest {
                 .andDo(this.restDocumentationResultHandler.document(
                         requestParameters(),
                         responseFields(
-                                new ArrayList<>()
+                            geneAccessionIds
                         )))
         ;
     }
 
-@Ignore
+
     @Test
+    @WithMockUser("user2@ebi.ac.uk")
     public void register() throws Exception {
-        this.mockMvc.perform(post("https://www.ebi.ac.uk/mi/impc/interest/contacts?type=gene&email=user10@ebi.ac.uk&gene=MGI:0000010")
+        this.mockMvc.perform(post("https://www.ebi.ac.uk/mi/impc/interest/api/registration/gene?geneAccessionId=MGI:0000020")
                 .contextPath("/mi/impc/interest")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(document("register",
                         requestParameters(
-                                parameterWithName("type").description("The type of interest (e.g. gene, disease, phenotype) to register (required)"),
-                                parameterWithName("gene").description("The MGI gene accession id to register (required)"),
-                                parameterWithName("email").description("The email address to register (required)"))))
+                                parameterWithName("geneAccessionId").description("The gene's MGI gene accession id")
+                        )))
         ;
     }
-@Ignore
+
     @Test
+    @WithMockUser("user1@ebi.ac.uk")
     public void unregister() throws Exception {
-        this.mockMvc.perform(delete("https://www.ebi.ac.uk/mi/impc/interest/contacts?type=gene&email=user10@ebi.ac.uk&gene=MGI:0000010")
-                .contextPath("/mi/impc/interest")
-                .accept(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(delete("https://www.ebi.ac.uk/mi/impc/interest/api/unregistration/gene?geneAccessionId=MGI:0000010")
+                                     .contextPath("/mi/impc/interest")
+                                     .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(document("unregister",
-                        requestParameters(
-                                parameterWithName("type").description("The type of interest (e.g. gene, disease, phenotype) to unregister (required)"),
-                                parameterWithName("gene").description("The MGI gene accession id to unregister (required)"),
-                                parameterWithName("email").description("The email address to unregister (required)"))))
+                                requestParameters(
+                                        parameterWithName("geneAccessionId").description("The gene's MGI gene accession id")
+                                )))
         ;
     }
 }

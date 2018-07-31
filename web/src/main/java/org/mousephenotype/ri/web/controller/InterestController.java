@@ -45,7 +45,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.web.bind.annotation.RequestMethod.*;
@@ -90,7 +92,7 @@ public class InterestController implements ErrorController {
      * @return A {@link List<String>} of genes for which the currently authenticated user has subscribed
      */
     @RequestMapping(method = GET, value = "/api/summary/list")
-    public ResponseEntity<List<String>> summaryListUrl() {
+    public ResponseEntity<Map<String, List<String>>> summaryListUrl() {
 
         HttpHeaders responseHeaders = new HttpHeaders();
         HttpStatus  status          = HttpStatus.OK;
@@ -105,7 +107,9 @@ public class InterestController implements ErrorController {
             geneAccessionIds.add(gene.getMgiAccessionId());
         }
 
-        return new ResponseEntity<>(geneAccessionIds, responseHeaders, status);
+        Map<String, List<String>> genesMap = new HashMap<>();
+        genesMap.put("geneAccessionIds", geneAccessionIds);
+        return new ResponseEntity<>(genesMap, responseHeaders, status);
     }
 
 

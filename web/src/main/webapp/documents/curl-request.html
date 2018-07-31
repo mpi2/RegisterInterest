@@ -425,7 +425,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sectionbody">
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl -u 'admin' 'https://www.ebi.ac.uk/mi/impc/interest/contacts?type=gene&amp;email=user1@ebi.ac.uk&amp;gene=MGI:1196326' -i -X DELETE -H 'Accept: application/json'</code></pre>
+<pre class="highlight"><code class="language-bash" data-lang="bash">$ curl https://www.ebi.ac.uk/mi/impc/interest/api/unregistration/gene?geneAccessionId=MGI:109490 -i -X DELETE -H 'Accept: application/json' -b JSESSIONID=3B69233B6B4A062DFBE4C892D684631C</code></pre>
 </div>
 </div>
 </div>
@@ -433,7 +433,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-07-31 07:27:10 BST
+Last updated 2018-07-31 10:24:43 BST
 </div>
 </div>
 </body>

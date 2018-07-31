@@ -67,9 +67,9 @@ identified by the provided JSESSIONID token.
 include::static-snippets/summary-get/curl-request.adoc[]
 
 ==== Request parameters
-include::generated-snippets/summary-get/request-parameters.adoc[]
+None
 
-==== Response structure
+==== Response structure (java object of type `Summmary`)
 include::generated-snippets/summary-get/response-fields.adoc[]
 
 ==== Example response
@@ -79,13 +79,13 @@ include::static-snippets/summary-get/http-response.adoc[]
 === Querying the API for a contact's list of genes
 
 This `GET` request is similar to the one above, except that it returns only the list of genes for the contact
-matching the JSESSIONID cookie.
+matching the JSESSIONID token.
 
 ==== Example request
 include::static-snippets/summary-get-list/curl-request.adoc[]
 
 ==== Request parameters
-include::generated-snippets/summary-get-list/request-parameters.adoc[]
+None
 
 ==== Response structure
 include::generated-snippets/summary-get-list/response-fields.adoc[]
@@ -95,7 +95,7 @@ include::static-snippets/summary-get-list/http-response.adoc[]
 
 [[resources-register]]
 === Registering a user and gene
-A `POST` request is used to register interest by a user in a gene
+A `POST` request is used to register a contact's interest in a gene
 
 ==== Example request
 include::static-snippets/register/curl-request.adoc[]
@@ -104,12 +104,12 @@ include::static-snippets/register/curl-request.adoc[]
 include::generated-snippets/register/request-parameters.adoc[]
 
 ==== Example response
-include::static-snippets/register/http-response.adoc[]
+include::generated-snippets/register/http-response.adoc[]
 
 
 [[resources-unregister]]
 === Unregistering a user and gene
-A `DELETE` request is used to unregister interest by a user in a gene
+A `DELETE` request is used to unregister a contact's interest in a gene
 
 ==== Example request
 include::static-snippets/unregister/curl-request.adoc[]
@@ -118,4 +118,4 @@ include::static-snippets/unregister/curl-request.adoc[]
 include::generated-snippets/unregister/request-parameters.adoc[]
 
 ==== Example response
-include::static-snippets/unregister/http-response.adoc[]
+include::generated-snippets/unregister/http-response.adoc[]
