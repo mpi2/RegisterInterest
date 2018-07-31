@@ -27,7 +27,7 @@
     <!--<url>http://www.ebi.ac.uk/gwas</url>-->
 
     <properties>
-        <ri-version>1.0.0-RELEASE</ri-version>
+        <version>1.0.0-RELEASE</version>
         <asciidoctor.version>1.5.3</asciidoctor.version>
         <commons-cli.version>1.2</commons-cli.version>
         <commons-net.version>2.0</commons-net.version>
@@ -93,19 +93,19 @@
             <dependency>
                 <groupId>org.mousephenotype.ri</groupId>
                 <artifactId>extract</artifactId>
-                <version>${ri-version}</version>
+                <version>${version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.mousephenotype.ri</groupId>
-                <artifactId>ri-ws</artifactId>
-                <version>${ri-version}</version>
+                <artifactId>web</artifactId>
+                <version>${version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.mousephenotype.ri</groupId>
-                <artifactId>ri-core</artifactId>
-                <version>${ri-version}</version>
+                <artifactId>core</artifactId>
+                <version>${version}</version>
             </dependency>
 
             <!-- Other -->

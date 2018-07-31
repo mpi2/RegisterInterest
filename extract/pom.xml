@@ -50,7 +50,7 @@
 
         <dependency>
             <groupId>org.mousephenotype.ri</groupId>
-            <artifactId>ri-core</artifactId>
+            <artifactId>core</artifactId>
         </dependency>
 
 

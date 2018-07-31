@@ -58,13 +58,13 @@
 
         <dependency>
             <groupId>org.mousephenotype.ri</groupId>
-            <artifactId>ri-core</artifactId>
+            <artifactId>core</artifactId>
             <version>1.0.0-RELEASE</version>
         </dependency>
 
         <dependency>
             <groupId>org.mousephenotype.ri</groupId>
-            <artifactId>ri-ws</artifactId>
+            <artifactId>web</artifactId>
             <version>1.0.0-RELEASE</version>
             <classifier>classes</classifier>
             <scope>test</scope>

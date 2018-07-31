@@ -128,4 +128,4 @@ datasources-config.xml
 *testConfig.properties
 *test.properties
 
-/ri-ws/src/main/resources/static/documents
+/web/src/main/resources/static/documents

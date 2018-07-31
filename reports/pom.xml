@@ -45,8 +45,8 @@
 
         <dependency>
             <groupId>org.mousephenotype.ri</groupId>
-            <artifactId>ri-core</artifactId>
-            <version>${ri-version}</version>
+            <artifactId>core</artifactId>
+            <version>${version}</version>
         </dependency>
 
 

@@ -14,9 +14,9 @@
     <modules>
         <module>dependencies</module>
         <module>parent</module>
-        <module>ri-core</module>
+        <module>core</module>
         <module>extract</module>
-        <module>ri-ws</module>
+        <module>web</module>
         <module>reports</module>
         <module>test</module>
     </modules>
