@@ -102,10 +102,6 @@ public class ApiDocumentationTest {
             fieldWithPath("updatedAt").description("The time and date the gene was last updated")
     };
 
-//    FieldDescriptor[] geneAccessionIds = new FieldDescriptor[] {
-//            fieldWithPath("")
-//    }
-
 
     @Test
     @WithMockUser
@@ -122,7 +118,6 @@ public class ApiDocumentationTest {
         ;
     }
 
-@Ignore
     @Test
     @WithMockUser
     public void summaryListGet() throws Exception {
