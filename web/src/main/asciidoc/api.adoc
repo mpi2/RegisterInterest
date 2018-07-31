@@ -19,14 +19,13 @@ This API supports the following HTTP verbs.
 | Verb | Usage
 
 | `GET`
-| Used to retrieve contacts. May be filtered by: type (gene, disease, phenotype), email (email address),
-and/or gene (MGI accession id)
+| Used to retrieve a contact and the list of genes to which they have subscribed
 
 | `POST`
-| Used to register a user's interest in a specific gene, phenotype, or disease
+| Used to register a contact's interest in a gene
 
 | `DELETE`
-| Used to unregister a user's interest in a specific gene, phenotype, or disease
+| Used to unregister a contact's interest in a gene
 |===
 
 [[overview-http-status-codes]]
@@ -58,23 +57,41 @@ The api endpoint provides the entry point into the service.
 
 
 [[resources-discover-contacts]]
-=== Querying the API for contacts
+=== Querying the API for a contact and their list of genes
 
-A `GET` request is used to query the resource for contacts
+This `GET` request is used to query the resource for the calling contact's `Summary` instance containing the contact's
+email address and the list of genes for which they have registered interest. The authenticated calling contact is
+identified by the provided JSESSIONID token.
 
 ==== Example request
-include::static-snippets/filtered-contact-get/curl-request.adoc[]
+include::static-snippets/summary-get/curl-request.adoc[]
 
 ==== Request parameters
-include::generated-snippets/filtered-contact-get/request-parameters.adoc[]
+include::generated-snippets/summary-get/request-parameters.adoc[]
 
 ==== Response structure
-include::generated-snippets/filtered-contact-get/response-fields.adoc[]
+include::generated-snippets/summary-get/response-fields.adoc[]
 
 ==== Example response
-include::static-snippets/filtered-contact-get/http-response.adoc[]
+include::static-snippets/summary-get/http-response.adoc[]
 
 
+=== Querying the API for a contact's list of genes
+
+This `GET` request is similar to the one above, except that it returns only the list of genes for the contact
+matching the JSESSIONID cookie.
+
+==== Example request
+include::static-snippets/summary-get-list/curl-request.adoc[]
+
+==== Request parameters
+include::generated-snippets/summary-get-list/request-parameters.adoc[]
+
+==== Response structure
+include::generated-snippets/summary-get-list/response-fields.adoc[]
+
+==== Example response
+include::static-snippets/summary-get-list/http-response.adoc[]
 
 [[resources-register]]
 === Registering a user and gene

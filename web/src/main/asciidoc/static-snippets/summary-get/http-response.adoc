@@ -1,0 +1,34 @@
+[source,http,options="nowrap"]
+----
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+Content-Length: 360
+
+{
+  "emailAddress": "user1@ebi.ac.uk",
+  "genes": [
+    {
+      "pk": 8243,
+      "mgiAccessionId": "MGI:3576659",
+      "symbol": "Ano5",
+      "riAssignmentStatus": "Selected for production and phenotyping",
+      "riConditionalAlleleProductionStatus": "Started",
+      "riNullAlleleProductionStatus": "Started",
+      "riPhenotypingStatus": null,
+      "createdAt": "2018-05-23 23:00:00",
+      "updatedAt": "2018-06-07 23:00:00"
+    },
+    {
+      "pk": 815,
+      "mgiAccessionId": "MGI:1345643",
+      "symbol": "Sufu",
+      "riAssignmentStatus": "Selected for production and phenotyping",
+      "riConditionalAlleleProductionStatus": "Genotype confirmed mice",
+      "riNullAlleleProductionStatus": "Genotype confirmed mice",
+      "riPhenotypingStatus": "Phenotyping data available",
+      "createdAt": "2018-05-23 23:00:00",
+      "updatedAt": "2018-06-07 23:00:00"
+    }
+  ]
+}
+----

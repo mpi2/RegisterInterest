@@ -67,6 +67,11 @@ public class InterestController implements ErrorController {
     }
 
 
+    /**
+     *
+     * @return A {@link Summary} instance for the currently authenticated contact containing the contact email address
+     * and the list of genes to which they have subscribed.
+     */
     @RequestMapping(method = GET, value = "/api/summary")
     public ResponseEntity<Summary> summaryUrl() {
 
@@ -80,6 +85,10 @@ public class InterestController implements ErrorController {
     }
 
 
+    /**
+     *
+     * @return A {@link List<String>} of genes for which the currently authenticated user has subscribed
+     */
     @RequestMapping(method = GET, value = "/api/summary/list")
     public ResponseEntity<List<String>> summaryListUrl() {
 

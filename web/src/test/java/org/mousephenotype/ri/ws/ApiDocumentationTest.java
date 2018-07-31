@@ -28,11 +28,14 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
 import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.util.ArrayList;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
@@ -82,59 +85,59 @@ public class ApiDocumentationTest {
         ;
     }
 
-    FieldDescriptor[] contact = new FieldDescriptor[] {
-            fieldWithPath("pk").description("The primary key of the contact instance"),
-            fieldWithPath("address").description("The contact's email address"),
-            fieldWithPath("createdAt").description("The time and date the contact was created"),
-            fieldWithPath("updatedAt").description("The time and date the contact was last updated")
+    FieldDescriptor[] summary = new FieldDescriptor[] {
+            fieldWithPath("emailAddress").description("The contact's e-mail address"),
+            fieldWithPath("genes").description("The complete list of genes for which the contact has registered interest")
     };
 
     FieldDescriptor[] gene = new FieldDescriptor[] {
             fieldWithPath("pk").description("The primary key of the gene instance"),
             fieldWithPath("mgiAccessionId").description("The gene's MGI gene accession id"),
             fieldWithPath("symbol").description("The gene's symbol"),
+            fieldWithPath("riAssignmentStatus").description("The gene's assignment status"),
+            fieldWithPath("riConditionalAlleleProductionStatus").description("The gene's conditional allele production status"),
+            fieldWithPath("riNullAlleleProductionStatus").description("The gene's null allele production status"),
+            fieldWithPath("riPhenotypingStatus").description("The gene's phenotyping status"),
             fieldWithPath("createdAt").description("The time and date the gene was created"),
             fieldWithPath("updatedAt").description("The time and date the gene was last updated")
     };
 
-    // FIXME FIXME FIXME
-    // Replace this test (and the /interest/contacts endpoint) with a test for the Summary object.
-    // FIXME FIXME FIXME
-@Ignore
+//    FieldDescriptor[] geneAccessionIds = new FieldDescriptor[] {
+//            fieldWithPath("")
+//    }
+
+
     @Test
-    public void filteredContactGet() throws Exception {
-        this.mockMvc.perform(get("https://www.ebi.ac.uk/mi/impc/interest/contacts?type=gene&email=user1@ebi.ac.uk&gene=MGI:0000010")
-                .contextPath("/mi/impc/interest")
-                .accept(MediaType.APPLICATION_JSON))
+    @WithMockUser
+    public void summaryGet() throws Exception {
+        this.mockMvc.perform(get("https://www.ebi.ac.uk/mi/impc/interest/api/summary")
+                                     .contextPath("/mi/impc/interest")
+                                     .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(this.restDocumentationResultHandler.document(
-                        requestParameters(
-                                parameterWithName("type").description("The type of register interest (e.g. gene, disease, phenotype) to further filter by (optional)").optional(),
-                                parameterWithName("gene").description("The MGI gene accession id to further filter by (optional)").optional(),
-                                parameterWithName("email").description("The email address to further filter by (optional)").optional()),
-
+                        requestParameters(),
                         responseFields(
-                                fieldWithPath("[*].contact.pk").description("The primary key of the contact instance"),
-                                fieldWithPath("[*].contact.emailAddress").description("The contact's email address"),
-                                fieldWithPath("[*].contact.password").description("The contact's password"),
-                                fieldWithPath("[*].contact.roles").description("A list of the contact's roles"),
-                                fieldWithPath("[*].contact.createdAt").description("The time and date the contact was created"),
-                                fieldWithPath("[*].contact.updatedAt").description("The time and date the contact was last updated"),
-                                fieldWithPath("[*].contact.accountLocked").description("A flag indicating whether or not the account is locked"),
-                                fieldWithPath("[*].contact.passwordExpired").description("A flag indicating whether or not the password has expired"),
-
-                                fieldWithPath("[*].genes[*].pk").description("The primary key of the gene instance"),
-                                fieldWithPath("[*].genes[*].mgiAccessionId").description("The gene's MGI gene accession id"),
-                                fieldWithPath("[*].genes[*].symbol").description("The gene's symbol"),
-                                fieldWithPath("[*].genes[*].riAssignmentStatus").description("The gene's register interest Assignment status"),
-                                fieldWithPath("[*].genes[*].riConditionalAlleleProductionStatus").description("The gene's register interest Conditional Allele Production status"),
-                                fieldWithPath("[*].genes[*].riNullAlleleProductionStatus").description("The gene's register interest Null Allele Production status"),
-                                fieldWithPath("[*].genes[*].riPhenotypingStatus").description("The gene's register interest Phenotyping status"),
-                                fieldWithPath("[*].genes[*].createdAt").description("The time and date the gene was created"),
-                                fieldWithPath("[*].genes[*].updatedAt").description("The time and date the gene was last updated")
+                                summary
                         )))
-                ;
+        ;
     }
+
+@Ignore
+    @Test
+    @WithMockUser
+    public void summaryListGet() throws Exception {
+        this.mockMvc.perform(get("https://www.ebi.ac.uk/mi/impc/interest/api/summary/list")
+                                     .contextPath("/mi/impc/interest")
+                                     .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(this.restDocumentationResultHandler.document(
+                        requestParameters(),
+                        responseFields(
+                                new ArrayList<>()
+                        )))
+        ;
+    }
+
 @Ignore
     @Test
     public void register() throws Exception {

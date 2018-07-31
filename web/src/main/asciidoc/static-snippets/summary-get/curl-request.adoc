@@ -1,0 +1,4 @@
+[source,bash]
+----
+$ curl https://www.ebi.ac.uk/mi/impc/interest/api/summary -i -H 'Accept: application/json' -b JSESSIONID=3B69233B6B4A062DFBE4C892D684631C
+----

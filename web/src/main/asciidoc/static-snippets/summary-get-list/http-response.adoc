@@ -2,4 +2,10 @@
 ----
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=UTF-8
+Content-Length: 360
+
+[
+  "MGI:3576659",
+  "MGI:1345643"
+]
 ----

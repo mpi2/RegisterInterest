@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@SpringBootApplication
+//@SpringBootApplication
 public class ApplicationSend implements CommandLineRunner {
 
     private final Logger       logger        = LoggerFactory.getLogger(this.getClass());
