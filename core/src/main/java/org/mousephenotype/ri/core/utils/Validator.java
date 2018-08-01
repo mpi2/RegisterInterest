@@ -66,13 +66,6 @@ public class Validator {
                     return null;
                 }
             }
-
-            // mrelac (2017-07-07)
-            // TEMPORARY RULE: DO NOT SEND EMAILS FOR WITHDRAWN GENES
-            if (gene.getAssignmentStatus().equals(GeneStatus.WITHDRAWN)) {
-                errMessages.add("TEMPORARY RULE: Skipping gene " + gene.toString() + " because its assignment status is Withdrawn");
-                return null;
-            }
         }
 
         return gene;
