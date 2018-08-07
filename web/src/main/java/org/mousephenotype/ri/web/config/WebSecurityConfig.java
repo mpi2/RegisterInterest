@@ -85,12 +85,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/unregistration/**").access("hasRole('USER') or hasRole('ADMIN')")
                 .antMatchers(HttpMethod.GET, "/account").access("hasRole('USER') or hasRole('ADMIN')")
                 .antMatchers(HttpMethod.POST, "/account").access("hasRole('USER') or hasRole('ADMIN')")
-// FIXME
+
                 .and()
                     .csrf()
-                        .disable()
-                        .authorizeRequests()
-//                        .ignoringAntMatchers("/api/**")
+                        .ignoringAntMatchers("/api/**")
 
                 .and().exceptionHandling()
                     .accessDeniedPage("/Access_Denied")
