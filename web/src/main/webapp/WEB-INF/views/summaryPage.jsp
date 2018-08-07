@@ -91,6 +91,9 @@
                                                     <td>${gene.riAssignmentStatus}</td>
                                                     <td>
                                                         <c:choose>
+                                                            <c:when test="${empty gene.riNullAlleleProductionStatus}">
+                                                                None
+                                                            </c:when>
                                                             <c:when test="${gene.riNullAlleleProductionStatus == 'Genotype confirmed mice'}">
                                                                 <a href='${paBaseUrl}/search/allele2?kw="${gene.mgiAccessionId}"'>${gene.riNullAlleleProductionStatus}</a>
                                                             </c:when>
@@ -101,6 +104,9 @@
                                                     </td>
                                                     <td>
                                                         <c:choose>
+                                                            <c:when test="${empty gene.riConditionalAlleleProductionStatus}">
+                                                                None
+                                                            </c:when>
                                                             <c:when test="${gene.riConditionalAlleleProductionStatus == 'Genotype confirmed mice'}">
                                                                 <a href='${paBaseUrl}/search/allele2?kw="${gene.mgiAccessionId}"'>${gene.riConditionalAlleleProductionStatus}</a>
                                                             </c:when>
