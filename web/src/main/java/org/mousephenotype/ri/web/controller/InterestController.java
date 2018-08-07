@@ -16,14 +16,12 @@
 
 package org.mousephenotype.ri.web.controller;
 
-import org.mousephenotype.ri.core.utils.SecurityUtils;
-import org.mousephenotype.ri.core.utils.SqlUtils;
+import org.mousephenotype.ri.core.entities.ContactGene;
 import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.entities.Summary;
 import org.mousephenotype.ri.core.exceptions.InterestException;
-import org.mousephenotype.ri.reports.ContactGeneReport;
-import org.mousephenotype.ri.reports.support.MpCSVWriter;
-import org.mousephenotype.ri.reports.support.ReportException;
+import org.mousephenotype.ri.core.utils.SecurityUtils;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.web.ErrorController;
@@ -42,8 +40,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -92,7 +88,7 @@ public class InterestController implements ErrorController {
      * @return A {@link List<String>} of genes for which the currently authenticated user has subscribed
      */
     @RequestMapping(method = GET, value = "/api/summary/list")
-    public ResponseEntity<Map<String, List<String>>> summaryListUrl() {
+    public ResponseEntity<Map<String, List<String>>> apiSummaryList() {
 
         HttpHeaders responseHeaders = new HttpHeaders();
         HttpStatus  status          = HttpStatus.OK;
@@ -110,6 +106,36 @@ public class InterestController implements ErrorController {
         Map<String, List<String>> genesMap = new HashMap<>();
         genesMap.put("geneAccessionIds", geneAccessionIds);
         return new ResponseEntity<>(genesMap, responseHeaders, status);
+    }
+
+
+    /**
+     * Test if contact has registered interest in gene endpoint. We use a POST which will return a 3xx if not authenticated.
+     * Using GET returns 200 and the login form as text.
+     *
+     * @param geneAccessionId
+     * @return message if an error or warning occurred; an empty string otherwise
+     */
+    @RequestMapping(method = POST, value = "/api/registration/gene/info")
+    public ResponseEntity<String> apiRegistrationGeneGet(
+            @RequestParam("geneAccessionId") String geneAccessionId
+    ) {
+        String      contactIsRegistered;
+        String      message;
+        HttpHeaders responseHeaders     = new HttpHeaders();
+
+        Gene gene = sqlUtils.getGene(geneAccessionId);
+        if (gene == null) {
+            message = "gene " + geneAccessionId + " does not exist.";
+            logger.warn(message);
+            return new ResponseEntity<>("false", responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        // Return true if contact is registered
+        ContactGene contactGene = sqlUtils.getContactGene(securityUtils.getPrincipal(), geneAccessionId);
+        contactIsRegistered = (contactGene != null ? "true" : "false");
+
+        return new ResponseEntity<>(contactIsRegistered, responseHeaders, HttpStatus.OK);
     }
 
 
@@ -144,6 +170,19 @@ public class InterestController implements ErrorController {
         }
 
         return new ResponseEntity<>("", responseHeaders, HttpStatus.OK);
+    }
+
+
+    @RequestMapping(value = "/api/roles", method = RequestMethod.GET)
+    public List<String> apiRoles() {
+        List<String> roles = new ArrayList<>();
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+        }
+
+        return roles;
     }
 
 
@@ -192,23 +231,7 @@ public class InterestController implements ErrorController {
 //
 //        csvWriter.close();
 //    }
-//
-//
-//    @RequestMapping(value = "/api/roles", method = RequestMethod.GET)
-//    public List<String> rolesUrl(
-//            HttpServletRequest request,
-//            HttpServletResponse response,
-//            ModelMap model
-//    ) {
-//        List<String> roles = new ArrayList<>();
-//
-//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//        if (auth != null) {
-//            roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
-//        }
-//
-//        return roles;
-//    }
+
 
     @Override
     public String getErrorPath() {

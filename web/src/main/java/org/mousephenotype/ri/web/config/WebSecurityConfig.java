@@ -16,6 +16,7 @@
 
 package org.mousephenotype.ri.web.config;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,10 +26,21 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
+import org.springframework.util.StringUtils;
 
+import javax.inject.Inject;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
+import java.io.IOException;
 
 /**
  * Created by mrelac on 12/06/2017.
@@ -40,9 +52,16 @@ import javax.sql.DataSource;
 @PropertySource("file:${user.home}/configfiles/${profile}/application.properties")
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Autowired
-    public DataSource riDataSource;
+    private DataSource riDataSource;
+    private String     paBaseUrl;
+    private String     riBaseUrl;
 
+    @Inject
+    public WebSecurityConfig(String paBaseUrl, String riBaseUrl, DataSource riDataSource) {
+        this.paBaseUrl = paBaseUrl;
+        this.paBaseUrl = paBaseUrl;
+        this.riDataSource = riDataSource;
+    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -56,6 +75,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE, "/api/admin/**").access("hasRole('ADMIN')")
 
                 .antMatchers(HttpMethod.GET, "/api/summary/**").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers(HttpMethod.GET, "/api/registration/**").access("hasRole('USER') or hasRole('ADMIN')")
                 .antMatchers(HttpMethod.POST, "/api/registration/**").access("hasRole('USER') or hasRole('ADMIN')")
                 .antMatchers(HttpMethod.DELETE, "/api/unregistration/**").access("hasRole('USER') or hasRole('ADMIN')")
 
@@ -65,18 +85,21 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/unregistration/**").access("hasRole('USER') or hasRole('ADMIN')")
                 .antMatchers(HttpMethod.GET, "/account").access("hasRole('USER') or hasRole('ADMIN')")
                 .antMatchers(HttpMethod.POST, "/account").access("hasRole('USER') or hasRole('ADMIN')")
-
+// FIXME
                 .and()
                     .csrf()
-                        .ignoringAntMatchers("/api/**")
+                        .disable()
+                        .authorizeRequests()
+//                        .ignoringAntMatchers("/api/**")
 
-                .and().exceptionHandling().accessDeniedPage("/Access_Denied")
+                .and().exceptionHandling()
+                    .accessDeniedPage("/Access_Denied")
 
                 .and()
                     .formLogin()
                         .loginPage("/login")
                         .failureUrl("/failedLogin")
-                        .defaultSuccessUrl("/successHandler", true)
+                        .successHandler(new RiSavedRequestAwareAuthenticationSuccessHandler())
                         .usernameParameter("ssoId")
                         .passwordParameter("password")
 
@@ -107,5 +130,65 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public PasswordEncoder bcryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    public class RiSavedRequestAwareAuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
+        private final org.slf4j.Logger logger        = LoggerFactory.getLogger(this.getClass());
+
+        public RiSavedRequestAwareAuthenticationSuccessHandler() {
+            super();
+        }
+
+        private RequestCache requestCache = new HttpSessionRequestCache();
+
+        @Override
+        public void onAuthenticationSuccess(HttpServletRequest request,
+                                            HttpServletResponse response, Authentication authentication)
+                throws ServletException, IOException
+        {
+            SavedRequest savedRequest = requestCache.getRequest(request, response);
+
+            if (savedRequest == null) {
+
+                String target = (String) request.getSession().getAttribute("target");
+                if ((target != null) && (target.startsWith(paBaseUrl))) {
+
+                    String riToken = request.getRequestedSessionId();
+
+                    StringBuilder paSuccessHandlerTarget = new StringBuilder()
+                            .append(paBaseUrl).append("/riSuccessHandler")
+                            .append("?target=" + target)
+                            .append("&riToken=" + riToken);
+
+
+                    clearAuthenticationAttributes(request);
+                    logger.info("target: {}", target);
+                    getRedirectStrategy().sendRedirect(request, response, paSuccessHandlerTarget.toString());
+
+                    // Remove target from the session attributes.
+                    request.getSession().removeAttribute("target");
+                }
+
+                super.onAuthenticationSuccess(request, response, authentication);
+
+                return;
+            }
+            String targetUrlParameter = getTargetUrlParameter();
+            if (isAlwaysUseDefaultTargetUrl()
+                    || (targetUrlParameter != null && StringUtils.hasText(request
+                                                                                  .getParameter(targetUrlParameter)))) {
+                requestCache.removeRequest(request, response);
+                super.onAuthenticationSuccess(request, response, authentication);
+
+                return;
+            }
+
+            clearAuthenticationAttributes(request);
+
+            // Use the DefaultSavedRequest URL
+            String targetUrl = savedRequest.getRedirectUrl();
+            logger.debug("Redirecting to DefaultSavedRequest Url: " + targetUrl);
+            getRedirectStrategy().sendRedirect(request, response, targetUrl);
+        }
     }
 }

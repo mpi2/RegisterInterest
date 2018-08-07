@@ -16,12 +16,16 @@
 
 package org.mousephenotype.ri.core.utils;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import java.security.SecureRandom;
 
 public class SecurityUtils {
@@ -44,7 +48,7 @@ public class SecurityUtils {
         return userName;
     }
 
-    public String generateSecureRandomPassword() {
+    public static String generateSecureRandomPassword() {
         final Integer PASSWORD_LENGTH = 12;
         SecureRandom  secureRandom    = new SecureRandom();
         byte          bytes[]         = new byte[PASSWORD_LENGTH];
@@ -54,5 +58,58 @@ public class SecurityUtils {
         String encryptedPassword = passwordEncoder.encode(bytes.toString());
 
         return encryptedPassword;
+    }
+
+    /**
+     * @return cookie string as <i>cookieName=cookieValue</i>
+     */
+    public static String getCookieNameValuePair(HttpServletRequest request, String cookieName) {
+
+        Cookie cookie = getCookie(request, cookieName);
+
+        if (cookie != null) {
+            return cookie.getName() + "=" + cookie.getValue();
+        }
+
+        return "";
+    }
+
+    /**
+     * @return {@code cookieName} cookie
+     */
+    public static Cookie getCookie(HttpServletRequest request, String cookieName) {
+
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals(cookieName)) {
+                    return cookie;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static String getTokenFromQueryString(String queryString) {
+
+        if ((queryString == null) || (queryString.isEmpty())) {
+            return "";
+        }
+
+        String[] pieces = StringUtils.split(queryString, "=");
+        if ((pieces.length != 2) && (!pieces[0].equals("token"))) {
+            return "";
+        }
+
+        return pieces[1];
+    }
+
+    public static HttpHeaders buildHeadersFromJsessionId(HttpServletRequest request) {
+        String      cookieNameValuePair  = getCookieNameValuePair(request, "JSESSIONID");
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cookie", cookieNameValuePair);
+
+        return headers;
     }
 }

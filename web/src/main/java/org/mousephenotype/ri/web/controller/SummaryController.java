@@ -22,7 +22,10 @@ import org.mousephenotype.ri.core.entities.Contact;
 import org.mousephenotype.ri.core.entities.ResetCredentials;
 import org.mousephenotype.ri.core.entities.Summary;
 import org.mousephenotype.ri.core.exceptions.InterestException;
-import org.mousephenotype.ri.core.utils.*;
+import org.mousephenotype.ri.core.utils.DateUtils;
+import org.mousephenotype.ri.core.utils.EmailUtils;
+import org.mousephenotype.ri.core.utils.SecurityUtils;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -43,7 +46,6 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
 import javax.mail.Message;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -144,10 +146,20 @@ public class SummaryController {
     }
 
 
+    /**
+     * @param request
+     * @param target The target to return to, if supplied. If omitted, we return to the url defined in the loginPage.
+     * @return
+     */
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String loginUrl(
-            HttpServletRequest request
+            HttpServletRequest request,
+            @RequestParam(value = "target", required = false) String target
     ) {
+        // target is supplied by phenotypeArchive to indicate that we need to redirect back to PA after authentication.
+        if (target != null) {
+            request.getSession().setAttribute("target", target);
+        }
 
         String error = request.getParameter("error");
 
@@ -164,7 +176,7 @@ public class SummaryController {
 
 
     @RequestMapping(value = "/failedLogin", method = RequestMethod.GET)
-    public String failedLoginUrl(HttpServletRequest request) {
+    public String failedLogin(HttpServletRequest request) {
 
         String error = request.getQueryString();
         if (error != null) {
@@ -176,7 +188,7 @@ public class SummaryController {
 
 
     @RequestMapping(value = "/Access_Denied", method = RequestMethod.GET)
-    public String accessDeniedUrl(ModelMap model) {
+    public String accessDenied(ModelMap model) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -194,7 +206,7 @@ public class SummaryController {
 
 
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
-    public String logoutUrl(HttpServletRequest request, HttpServletResponse response) {
+    public String logout(HttpServletRequest request, HttpServletResponse response) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
             logger.info("/logout: User {} logged out.", securityUtils.getPrincipal());
@@ -206,7 +218,7 @@ public class SummaryController {
 
 
     @RequestMapping(value = "/registration/gene", method = RequestMethod.POST)
-    public String registerGeneUrl(
+    public String registrationGene(
             HttpServletRequest request,
             ModelMap model,
             @RequestParam("geneAccessionId") String geneAccessionId
@@ -215,9 +227,7 @@ public class SummaryController {
         model.put("riBaseUrl", riBaseUrl);
 
         // Use the web service to register
-        String      cookie  = getMyRiSessionId(request);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Cookie", cookie);
+        HttpHeaders headers = SecurityUtils.buildHeadersFromJsessionId(request);
         ResponseEntity<String> response = new RestTemplate().exchange(riBaseUrl + "/api/registration/gene?geneAccessionId=" + geneAccessionId, HttpMethod.POST, new HttpEntity<String>(headers), String.class);
         String body = response.getBody();
         if ((body != null) && (body.isEmpty())) {
@@ -238,9 +248,7 @@ public class SummaryController {
         model.put("riBaseUrl", riBaseUrl);
 
         // Use the web service to unregister
-        String      cookie  = getMyRiSessionId(request);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Cookie", cookie);
+        HttpHeaders headers = SecurityUtils.buildHeadersFromJsessionId(request);
         ResponseEntity<String> response = new RestTemplate().exchange(riBaseUrl + "/api/unregistration/gene?geneAccessionId=" + geneAccessionId, HttpMethod.DELETE, new HttpEntity<String>(headers), String.class);
         String body = response.getBody();
         if ((body != null) && (body.isEmpty())) {
@@ -248,106 +256,6 @@ public class SummaryController {
         }
 
         return "redirect:" + riBaseUrl + "/summary";
-    }
-
-
-    @RequestMapping(value = "/successHandler", method = RequestMethod.GET)
-    public String successHandlerUrl(
-            ModelMap model,
-            HttpServletRequest request,
-            HttpServletResponse response
-    ) {
-        Contact contact = sqlUtils.getContact(securityUtils.getPrincipal());
-
-        if (contact == null) {
-            model.addAttribute("title", TITLE_INVALID_CREDENTIALS);
-            model.addAttribute("error", ERR_INVALID_CREDENTIALS);
-
-            // contact is null. Get roles from authentication.
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            List<String>   roles          = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
-            logger.info("summaryUrl: Unable to get principal for user {} with role {}", securityUtils.getPrincipal(), StringUtils.join(roles, ", "));
-
-            sleep(SHORT_SLEEP_SECONDS);
-
-            logoutUrl(request, response);
-
-            return "errorPage";
-        }
-
-        // show error page if account is locked.
-        if (contact.isAccountLocked()) {
-            model.addAttribute("title", TITLE_ACCOUNT_LOCKED);
-            model.addAttribute("error", ERR_ACCOUNT_LOCKED);
-
-            logoutUrl(request, response);
-
-            return "errorPage";
-        }
-
-        // Display changePasswordRequestPage if password is expired.
-        if (contact.isPasswordExpired()) {
-            model.addAttribute("title", TITLE_PASSWORD_EXPIRED);
-            model.addAttribute("status", INFO_PASSWORD_EXPIRED);
-            model.addAttribute("showWhen", true);
-
-            logoutUrl(request, response);
-
-            return "changePasswordRequestPage";
-        }
-
-        // Get the token.
-        String id = getMyRiSessionId(request);
-        String[] parts = id.split("=");
-        String token = parts[1];
-
-
-        /**
-         * Compute the return url.
-         *
-         * All referer values are from ri /login, regardless where they came from. If they came from pa, we must first
-         * authenticate via ri /login, then redirect as directed by referer and Http params 'target'. We must include
-         * the token in all cases except when redirecting to ri /summary.
-         *
-         * referer:         target:             Destination:                    Pass token?
-         *   ri /summary    /search?kw=*        paBaseUrl + /riSuccessHandler   Yes
-         *   ri /login      /search?kw=*        paBaseUrl + /riSuccessHandler   Yes
-         *   ri /login      /genes/{acc}        paBaseUrl + /riSuccessHandler   Yes
-         *   <any other>    <ignored>           riBaseUrl + /summary            No
-         *
-         */
-        final String SEARCH_TARGET = "search?kw=*";
-        final String GENES_TARGET_PREFIX = "genes";
-
-        String returnUrl = "";
-        String referer = UrlUtils.getReferer(request);
-        logger.info("referer = " + UrlUtils.getReferer(request));
-
-        Map<String, String> parms = UrlUtils.getParams(referer);
-        String target = parms.get("target");
-        String geneAccessionId = parms.get("acc");
-
-        // Special case. Referer from ri /summary doesn't include any parameters, so set target using request.getParameter.
-        if (referer.equals(riBaseUrl + "/summary")) {
-            target = request.getParameter("target");
-        }
-
-        if (target != null) {
-            if (target.equals(SEARCH_TARGET)) {
-
-                returnUrl = "redirect:" + paBaseUrl + "/riSuccessHandler?token=" + token + "&target=" + target;
-
-            } else if (target.startsWith(GENES_TARGET_PREFIX)) {
-                returnUrl = "redirect:" + paBaseUrl + "/riSuccessHandler?token=" + token + "&target=" + target;
-            }
-        } else {
-
-            returnUrl = "redirect:" + riBaseUrl + "/summary";
-        }
-
-        logger.info(returnUrl);
-
-        return returnUrl;
     }
 
 
@@ -462,7 +370,7 @@ public class SummaryController {
     public String changePasswordResponseGetUrl(ModelMap model, HttpServletRequest request) {
 
         // Parse out query string for token value.
-        String token = getTokenFromQueryString(request.getQueryString());
+        String token = SecurityUtils.getTokenFromQueryString(request.getQueryString());
 
         // Look up email address from reset_credentials table
         ResetCredentials resetCredentials = sqlUtils.getResetCredentials(token);
@@ -714,51 +622,6 @@ public class SummaryController {
                 .append("</html>");
 
         return body.toString();
-    }
-
-    /**
-     * @return my JSESSIONID cookie string
-     */
-    private String getMyRiSessionId(HttpServletRequest request) {
-
-        Cookie cookie = getMyRiSessionCookie(request);
-
-        if (cookie != null) {
-            return cookie.getName() + "=" + cookie.getValue();
-        }
-
-        return "";
-    }
-
-    /**
-     * @return my JSESSIONID cookie string
-     */
-    private Cookie getMyRiSessionCookie(HttpServletRequest request) {
-
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("JSESSIONID")) {
-                    return cookie;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private String getTokenFromQueryString(String queryString) {
-
-        if ((queryString == null) || (queryString.isEmpty())) {
-            return "";
-        }
-
-        String[] pieces = StringUtils.split(queryString, "=");
-        if ((pieces.length != 2) && (!pieces[0].equals("token"))) {
-            return "";
-        }
-
-        return pieces[1];
     }
 
     private void sleep(int numSeconds) {

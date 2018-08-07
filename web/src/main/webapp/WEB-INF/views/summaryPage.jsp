@@ -138,7 +138,7 @@
 
                         <br />
 
-                        <a href='${riBaseUrl}/successHandler?target=search&quest;kw=*'>Search for more genes to register</a>
+                        <a href='${paBaseUrl}/riSuccessHandler?riToken=${pageContext.session.id}'>Search for more genes to register</a>
 
                     </div>
                 </div>
