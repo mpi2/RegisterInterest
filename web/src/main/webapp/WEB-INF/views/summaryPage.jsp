@@ -85,7 +85,7 @@
 
                                                 <tr>
                                                     <td>
-                                                        <a href='${paBaseUrl}/genes/${gene.mgiAccessionId}'>${gene.symbol}</a>
+                                                        <a href='${paBaseUrl}/riSuccessHandler?riToken=${pageContext.session.id}&target=${paBaseUrl}/genes/${gene.mgiAccessionId}'>${gene.symbol}</a>
                                                     </td>
                                                     <td><a href="//www.informatics.jax.org/marker/${gene.mgiAccessionId}">${gene.mgiAccessionId}</a></td>
                                                     <td>${gene.riAssignmentStatus}</td>
@@ -117,11 +117,12 @@
                                                     </td>
                                                     <td>
                                                         <c:choose>
-                                                            <c:when test="${gene.riPhenotypingStatus == 'Yes'}">
-                                                                <a href='${paBaseUrl}/genes/${gene.mgiAccessionId}#section-associations'>${gene.riPhenotypingStatus}</a>
+                                                            <c:when test="${gene.riPhenotypingStatus == 'Phenotyping data available'}">
+
+                                                                <a href='${paBaseUrl}/riSuccessHandler?riToken=${pageContext.session.id}&target=${paBaseUrl}/genes/${gene.mgiAccessionId}#section-associations'>Yes</a>
                                                             </c:when>
                                                             <c:otherwise>
-                                                                ${gene.riPhenotypingStatus}
+                                                                No
                                                             </c:otherwise>
                                                         </c:choose>
                                                     </td>
