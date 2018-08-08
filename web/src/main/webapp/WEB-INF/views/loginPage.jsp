@@ -70,7 +70,7 @@
                         <br />
                         <a href='http://www.mousephenotype.org/user/login' title="Login to Forum">Login</a>
                         &nbsp;&nbsp;&nbsp;&nbsp;
-                        <a href='http://www.mousephenotype.org/user/register' title="Register for Forum">Register</a>
+                        <a href='http://dev.mousephenotype.org/user/login?/user/register' title="Register for Forum">Register</a>
                     </div>
 
                 </form>
