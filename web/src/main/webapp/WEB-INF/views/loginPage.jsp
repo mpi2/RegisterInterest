@@ -62,6 +62,17 @@
                     &nbsp;&nbsp;&nbsp;&nbsp;
                     <a href="${riBaseUrl}/changePasswordRequest">Forgot password?</a>
 
+                    <br />
+                    <br />
+
+                    <div>
+                        Forum
+                        <br />
+                        <a href='http://www.mousephenotype.org/user/login' title="Login to Forum">Login</a>
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <a href='http://www.mousephenotype.org/user/register' title="Register for Forum">Register</a>
+                    </div>
+
                 </form>
             </div>
         </div>
