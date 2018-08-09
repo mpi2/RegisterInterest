@@ -52,7 +52,6 @@ import javax.servlet.http.HttpSession;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -111,38 +110,42 @@ public class SummaryController {
     private       SecurityUtils    securityUtils = new SecurityUtils();
 
     // Properties
-    private Map<String, String> config;
-    private String              paBaseUrl;
-    private String              riBaseUrl;
-    private PasswordEncoder     passwordEncoder;
-    private SqlUtils            sqlUtils;
-    private String              smtpFrom;
-    private String              smtpHost;
-    private int                 smtpPort;
-    private String              smtpReplyto;
+    private String          drupalBaseUrl;
+    private String          paBaseUrl;
+    private String          riBaseUrl;
+    private PasswordEncoder passwordEncoder;
+    private SqlUtils        sqlUtils;
+    private String          smtpFrom;
+    private String          smtpHost;
+    private int             smtpPort;
+    private String          smtpReplyto;
+
+//    // Global properties
+//    @Resource(name = "globalConfiguration")
+//    private Map<String, String> config;
 
 
     @Inject
     public SummaryController(
             String paBaseUrl,
             String riBaseUrl,
+            String drupalBaseUrl,
             PasswordEncoder passwordEncoder,
             SqlUtils sqlUtils,
             String smtpFrom,
             String smtpHost,
             int smtpPort,
-            String smtpReplyto,
-            Map<String, String> config
+            String smtpReplyto
     ) {
         this.paBaseUrl = paBaseUrl;
         this.riBaseUrl = riBaseUrl;
+        this.drupalBaseUrl = drupalBaseUrl;
         this.passwordEncoder = passwordEncoder;
         this.sqlUtils = sqlUtils;
         this.smtpFrom = smtpFrom;
         this.smtpHost = smtpHost;
         this.smtpPort = smtpPort;
         this.smtpReplyto = smtpReplyto;
-        this.config = config;
     }
 
 
@@ -170,6 +173,7 @@ public class SummaryController {
         HttpSession session = request.getSession();
         session.setAttribute("riBaseUrl", riBaseUrl);
         session.setAttribute("paBaseUrl", paBaseUrl);
+        session.setAttribute("drupalBaseUrl", drupalBaseUrl);
 
         return "loginPage";
     }

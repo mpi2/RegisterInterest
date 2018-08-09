@@ -32,11 +32,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import javax.annotation.Resource;
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by mrelac on 02/05/2017.
@@ -104,6 +101,7 @@ public class AppConfig {
     @Value("${mail.smtp.replyto}")
     private String smtpReplyto;
 
+
     @Bean
     public String smtpFrom() {
         return smtpFrom;
@@ -136,6 +134,11 @@ public class AppConfig {
     @Value("${paBaseUrl}")
     String paBaseUrl;
 
+    @NotNull
+    @Value("${drupal_base_url}")
+    private String drupalBaseUrl;
+
+
     @Bean
     public String paBaseUrl() {
         return paBaseUrl;
@@ -146,23 +149,8 @@ public class AppConfig {
         return riBaseUrl;
     }
 
-
-    // Environment properties
-
-    @NotNull
-    @Resource(name = "globalConfiguration")
-    private Map<String, String> config;
-
-    @Bean(name = "globalConfiguration")
-    public Map<String, String> getGlobalConfig() {
-        Map<String, String> map = new HashMap<>();
-        map.put("riBaseUrl", riBaseUrl);
-        map.put("paBaseUrl", paBaseUrl);
-        return map;
-    }
-
     @Bean
-    public Map<String, String> config() {
-        return config;
+    public String drupalBaseUrl() {
+        return drupalBaseUrl;
     }
 }

@@ -68,9 +68,9 @@
                     <div>
                         Forum
                         <br />
-                        <a href='http://dev.mousephenotype.org/user/login' title="Login to Forum">Login</a>
+                        <a href='${drupalBaseUrl}/user/login' title="Login to Forum">Login</a>
                         &nbsp;&nbsp;&nbsp;&nbsp;
-                        <a href='http://dev.mousephenotype.org/user/login?/user/register' title="Register for Forum">Register</a>
+                        <a href='${drupalBaseUrl}/user/login?/user/register' title="Register for Forum">Register</a>
                     </div>
 
                 </form>

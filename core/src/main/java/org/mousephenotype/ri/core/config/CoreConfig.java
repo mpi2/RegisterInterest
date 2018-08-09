@@ -52,7 +52,7 @@ public class CoreConfig {
     }
 
     @Bean
-    public String getRiBaseUrl() {
+    public String riBaseUrl() {
         return riBaseUrl;
     }
 
