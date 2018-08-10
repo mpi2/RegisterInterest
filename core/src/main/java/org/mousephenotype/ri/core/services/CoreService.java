@@ -65,7 +65,7 @@ public class CoreService {
 
         Map<String, Summary> summaries = generateService.getChangedSummariesByEmailAddress();
 
-        logger.info("BEGIN generateAndSendsummary");
+        logger.info("BEGIN generateAndSendSummary");
 
         for (Summary summary : summaries.values()) {
 
@@ -76,7 +76,7 @@ public class CoreService {
             sleep(36);
         }
 
-        logger.info("END generateAndSendChangedSummaries. Processed {} summaries.", count);
+        logger.info("END generateAndSendSummary. Processed {} summaries.", count);
     }
 
 

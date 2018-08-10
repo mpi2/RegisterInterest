@@ -226,47 +226,43 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
             gene.setNumberOfSignificantPhenotypes(number);
         }
 
-        // Populate the ri status fields based on imits status string.
+        // Populate the ri status fields based on imits status string. NOTE: genePk can be null.
+
         Integer genePk;
+        String status = null;
         if ((gene.getAssignmentStatus() != null) && ( ! gene.getAssignmentStatus().trim().isEmpty())) {
-
             genePk = imitsStatusByStatus.get(gene.getAssignmentStatus()).getGeneStatusPk();
-            gene.setRiAssignmentStatus(genesByPk.get(genePk).getRiAssignmentStatus());
-
-        } else {
-            gene.setRiAssignmentStatus(null);
+            if (genePk != null) {
+                status = genesByPk.get(genePk).getRiAssignmentStatus();
+            }
         }
+        gene.setRiAssignmentStatus(status);
 
+        status = null;
         if ((gene.getConditionalAlleleProductionStatus() != null) && ( ! gene.getConditionalAlleleProductionStatus().trim().isEmpty())) {
-
             genePk = imitsStatusByStatus.get(gene.getConditionalAlleleProductionStatus()).getGeneStatusPk();
-            gene.setRiConditionalAlleleProductionStatus(genesByPk.get(genePk).getRiConditionalAlleleProductionStatus());
-
-        } else {
-            gene.setRiConditionalAlleleProductionStatus(null);
+            if (genePk != null) {
+                status = genesByPk.get(genePk).getRiConditionalAlleleProductionStatus();
+            }
         }
+        gene.setRiConditionalAlleleProductionStatus(status);
 
+        status = null;
         if ((gene.getNullAlleleProductionStatus() != null) && ( ! gene.getNullAlleleProductionStatus().trim().isEmpty())) {
-
             genePk = imitsStatusByStatus.get(gene.getNullAlleleProductionStatus()).getGeneStatusPk();
-            gene.setRiNullAlleleProductionStatus(genesByPk.get(genePk).getRiNullAlleleProductionStatus());
-
-        } else {
-            gene.setRiNullAlleleProductionStatus(null);
+            if (genePk != null) {
+                status = genesByPk.get(genePk).getRiNullAlleleProductionStatus();
+            }
         }
+        gene.setRiNullAlleleProductionStatus(status);
 
         if ((gene.getPhenotypingStatus() != null) && ( ! gene.getPhenotypingStatus().trim().isEmpty())) {
-            // Phenotyping gene_status_pk can be null.
-
             genePk = imitsStatusByStatus.get(gene.getPhenotypingStatus()).getGeneStatusPk();
             if (genePk != null) {
-                gene.setRiPhenotypingStatus(genesByPk.get(genePk).getRiPhenotypingStatus());
+                status = genesByPk.get(genePk).getRiPhenotypingStatus();
             }
-
-        } else {
-
-            gene.setRiPhenotypingStatus(null);
         }
+        gene.setRiPhenotypingStatus(status);
 
         // If the Gene record hasn't changed, skip it (i.e. return null)
         Gene cachedGene = genesByPk.get(gene.getMgiAccessionId());
