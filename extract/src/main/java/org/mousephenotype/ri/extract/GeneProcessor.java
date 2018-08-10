@@ -227,7 +227,7 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
         }
 
         // Populate the ri status fields based on imits status string.
-        int genePk;
+        Integer genePk;
         if ((gene.getAssignmentStatus() != null) && ( ! gene.getAssignmentStatus().trim().isEmpty())) {
 
             genePk = imitsStatusByStatus.get(gene.getAssignmentStatus()).getGeneStatusPk();
@@ -256,11 +256,15 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
         }
 
         if ((gene.getPhenotypingStatus() != null) && ( ! gene.getPhenotypingStatus().trim().isEmpty())) {
+            // Phenotyping gene_status_pk can be null.
 
             genePk = imitsStatusByStatus.get(gene.getPhenotypingStatus()).getGeneStatusPk();
-            gene.setRiPhenotypingStatus(genesByPk.get(genePk).getRiPhenotypingStatus());
+            if (genePk != null) {
+                gene.setRiPhenotypingStatus(genesByPk.get(genePk).getRiPhenotypingStatus());
+            }
 
         } else {
+
             gene.setRiPhenotypingStatus(null);
         }
 
