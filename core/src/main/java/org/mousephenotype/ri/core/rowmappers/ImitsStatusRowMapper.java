@@ -44,8 +44,7 @@ public class ImitsStatusRowMapper implements RowMapper<ImitsStatus> {
         ImitsStatus imitsStatus = new ImitsStatus();
 
         imitsStatus.setPk(rs.getInt("pk"));
-        Integer i = rs.getInt("gene_status_pk");
-        imitsStatus.setGeneStatusPk((i == null) || (i == 0) ? null : i);
+        imitsStatus.setGeneStatus(rs.getString("gene_status"));
         imitsStatus.setStatus(rs.getString("status"));
 
         imitsStatus.setCreatedAt(new Date(rs.getTimestamp("created_at").getTime()));

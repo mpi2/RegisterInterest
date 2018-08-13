@@ -322,11 +322,6 @@ public class SqlUtils {
         }
     }
 
-
-
-
-    // FIXME - tidy me up.
-
     public Map<String, Summary> getChangedSummariesByEmailAddress() {
 
         Map<String, Summary> changedSummaries = new HashMap<>();
@@ -334,15 +329,17 @@ public class SqlUtils {
         // Get all contacts with one or more gene statuses different than the last e-mail sent.
         final String selectContact =
                 "SELECT DISTINCT\n" +
-                "   c.address\n" +
-                "FROM contact c\n" +
-                "LEFT OUTER JOIN contact_gene cg ON cg.contact_pk = c.pk\n" +
-                "LEFT OUTER JOIN gene         g  ON g.pk          = cg.gene_pk\n" +
-                "LEFT OUTER JOIN gene_sent    gs ON gs.address    = c.address\n" +
-                "WHERE ((g.ri_assignment_status != gs.assignment_status)\n" +
-                "   OR (g.ri_conditional_allele_production_status != gs.conditional_allele_production_status)\n" +
-                "   OR (g.ri_null_allele_production_status != gs.null_allele_production_status)\n" +
-                "   OR (g.ri_phenotyping_status != gs.phenotyping_status))";
+                        "   c.address\n" +
+                        "FROM contact c\n" +
+                        "LEFT OUTER JOIN contact_gene cg ON cg.contact_pk = c.pk\n" +
+                        "LEFT OUTER JOIN gene         g  ON g.pk          = cg.gene_pk\n" +
+                        "LEFT OUTER JOIN gene_sent    gs ON gs.address    = c.address\n" +
+                        "WHERE (\n" +
+                        "      (sent_at IS NULL)\n" +
+                        "   OR (g.ri_assignment_status != gs.assignment_status)\n" +
+                        "   OR (g.ri_conditional_allele_production_status != gs.conditional_allele_production_status)\n" +
+                        "   OR (g.ri_null_allele_production_status != gs.null_allele_production_status)\n" +
+                        "   OR (g.ri_phenotyping_status != gs.phenotyping_status))";
 
         Map<String, Object> parameterMap = new HashMap<>();
 

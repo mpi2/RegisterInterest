@@ -16,9 +16,9 @@
 
 package org.mousephenotype.ri.extract;
 
-import org.mousephenotype.ri.core.utils.DateUtils;
 import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.exceptions.InterestException;
+import org.mousephenotype.ri.core.utils.DateUtils;
 import org.mousephenotype.ri.extract.support.BlankLineRecordSeparatorPolicy;
 import org.mousephenotype.ri.extract.support.LogStatusStepListener;
 import org.slf4j.Logger;

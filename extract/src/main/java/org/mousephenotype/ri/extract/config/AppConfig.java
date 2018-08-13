@@ -16,10 +16,10 @@
 
 package org.mousephenotype.ri.extract.config;
 
-import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.entities.ImitsStatus;
 import org.mousephenotype.ri.core.exceptions.InterestException;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.mousephenotype.ri.extract.Downloader;
 import org.mousephenotype.ri.extract.GeneLoader;
 import org.mousephenotype.ri.extract.GeneProcessor;
@@ -172,9 +172,9 @@ public class AppConfig {
     public GeneProcessor geneProcessor() throws InterestException {
 
         Map<Integer, Gene>        genesByPk = sqlUtils().getGenesByPk();
-        Map<String, ImitsStatus> imitsStatusMap         = sqlUtils().getImitsStatusByStatus();
+        Map<String, ImitsStatus> imitsStatusByStatus = sqlUtils().getImitsStatusByStatus();
 
-        return new GeneProcessor(imitsStatusMap, genesByPk);
+        return new GeneProcessor(imitsStatusByStatus, genesByPk);
     }
 
     @Bean(name = "geneWriter")

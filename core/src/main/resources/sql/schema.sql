@@ -153,14 +153,14 @@ DROP TABLE IF EXISTS imits_status;
 CREATE TABLE imits_status (
     pk              INT          NOT NULL           AUTO_INCREMENT PRIMARY KEY,
 
-    gene_status_pk  INT                             DEFAULT NULL,
+    gene_status     VARCHAR(64)                     DEFAULT NULL,
     status          VARCHAR(64)  NOT NULL UNIQUE,
 
     created_at      DATETIME     NOT NULL,
     updated_at      TIMESTAMP    NOT NULL           DEFAULT CURRENT_TIMESTAMP
                       ON UPDATE CURRENT_TIMESTAMP,
 
-    FOREIGN KEY gene_status_pk_fk   (gene_status_pk) REFERENCES gene_status(pk)
+    FOREIGN KEY gene_status_fk   (gene_status) REFERENCES gene_status(status)
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 
@@ -192,35 +192,35 @@ INSERT INTO gene_status (status, created_at) VALUES
     ('unregister', @now),
     ('Withdrawn', @now);
 
-INSERT INTO imits_status (status, gene_status_pk, created_at) VALUES
-    ('Aborted - ES Cell QC Failed', (SELECT pk FROM gene_status WHERE status = 'Selected for production and phenotyping'), @now),
-    ('Assigned - ES Cell QC Complete', (SELECT pk FROM gene_status WHERE status = 'Selected for production and phenotyping'), @now),
-    ('Assigned - ES Cell QC In Progress', (SELECT pk FROM gene_status WHERE status = 'Selected for production and phenotyping'), @now),
-    ('Assigned', (SELECT pk FROM gene_status WHERE status = 'Selected for production and phenotyping'), @now),
-    ('Assigned for phenotyping', (SELECT pk FROM gene_status WHERE status = 'Selected for production and phenotyping'), @now),
-    ('Chimeras obtained', (SELECT pk FROM gene_status WHERE status = 'Started'), @now),
-    ('Chimeras/Founder obtained', (SELECT pk FROM gene_status WHERE status = 'Started'), @now),
-    ('Conflict', (SELECT pk FROM gene_status WHERE status = 'Selected for production and phenotyping'), @now),
-    ('Cre Excision Complete', (SELECT pk FROM gene_status WHERE status = 'Genotype confirmed mice'), @now),
-    ('Cre Excision Started', (SELECT pk FROM gene_status WHERE status = 'Started'), @now),
-    ('Founder obtained', (SELECT pk FROM gene_status WHERE status = 'Started'), @now),
-    ('Genotype confirmed', (SELECT pk FROM gene_status WHERE status = 'Genotype confirmed mice'), @now),
-    ('Inactive', (SELECT pk FROM gene_status WHERE status = 'Withdrawn'), @now),
-    ('Inspect - Conflict', (SELECT pk FROM gene_status WHERE status = 'Selected for production and phenotyping'), @now),
-    ('Inspect - GLT Mouse', (SELECT pk FROM gene_status WHERE status = 'Selected for production and phenotyping'), @now),
-    ('Inspect - MI Attempt', (SELECT pk FROM gene_status WHERE status = 'Selected for production and phenotyping'), @now),
-    ('Interest', (SELECT pk FROM gene_status WHERE status = 'Selected for production and phenotyping'), @now),
-    ('Micro-injection aborted', (SELECT pk FROM gene_status WHERE status = 'Started'), @now),
-    ('Micro-injection in progress', (SELECT pk FROM gene_status WHERE status = 'Started'), @now),
-    ('Mouse Allele Modification Registered', (SELECT pk FROM gene_status WHERE status = 'Started'), @now),
+INSERT INTO imits_status (status, gene_status, created_at) VALUES
+    ('Aborted - ES Cell QC Failed', 'Selected for production and phenotyping', @now),
+    ('Assigned - ES Cell QC Complete', 'Selected for production and phenotyping', @now),
+    ('Assigned - ES Cell QC In Progress', 'Selected for production and phenotyping', @now),
+    ('Assigned', 'Selected for production and phenotyping', @now),
+    ('Assigned for phenotyping', 'Selected for production and phenotyping', @now),
+    ('Chimeras obtained', 'Started', @now),
+    ('Chimeras/Founder obtained', 'Started', @now),
+    ('Conflict', 'Selected for production and phenotyping', @now),
+    ('Cre Excision Complete', 'Genotype confirmed mice', @now),
+    ('Cre Excision Started', 'Started', @now),
+    ('Founder obtained', 'Started', @now),
+    ('Genotype confirmed', 'Genotype confirmed mice', @now),
+    ('Inactive', 'Withdrawn', @now),
+    ('Inspect - Conflict', 'Selected for production and phenotyping', @now),
+    ('Inspect - GLT Mouse', 'Selected for production and phenotyping', @now),
+    ('Inspect - MI Attempt', 'Selected for production and phenotyping', @now),
+    ('Interest', 'Selected for production and phenotyping', @now),
+    ('Micro-injection aborted', 'Started', @now),
+    ('Micro-injection in progress', 'Started', @now),
+    ('Mouse Allele Modification Registered', 'Started', @now),
     ('Phenotype Attempt Registered', NULL, @now),
     ('Phenotype Production Aborted', NULL, @now),
-    ('Phenotyping Complete', (SELECT pk FROM gene_status WHERE status = 'Phenotyping data available'), @now),
+    ('Phenotyping Complete', 'Phenotyping data available', @now),
     ('Phenotyping Production Registered', NULL, @now),
     ('Phenotyping Started', NULL, @now),
-    ('Rederivation Complete', (SELECT pk FROM gene_status WHERE status = 'Started'), @now),
-    ('Rederivation Started', (SELECT pk FROM gene_status WHERE status = 'Started'), @now),
-    ('Withdrawn', (SELECT pk FROM gene_status WHERE status = 'Withdrawn'), @now);
+    ('Rederivation Complete', 'Started', @now),
+    ('Rederivation Started', 'Started', @now),
+    ('Withdrawn', 'Withdrawn', @now);
 
 SET AUTOCOMMIT = 1;
 SET FOREIGN_KEY_CHECKS = 1;

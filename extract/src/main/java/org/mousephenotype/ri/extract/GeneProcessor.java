@@ -16,11 +16,11 @@
 
 package org.mousephenotype.ri.extract;
 
-import org.mousephenotype.ri.core.utils.ParseUtils;
-import org.mousephenotype.ri.core.utils.Validator;
 import org.mousephenotype.ri.core.entities.Gene;
 import org.mousephenotype.ri.core.entities.ImitsStatus;
 import org.mousephenotype.ri.core.exceptions.InterestException;
+import org.mousephenotype.ri.core.utils.ParseUtils;
+import org.mousephenotype.ri.core.utils.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
@@ -40,7 +40,7 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
     private Map<Integer, Gene>       genesByPk;
     private Map<String, ImitsStatus> imitsStatusByStatus;
     private Set<String>              accessionIds = new HashSet<>();
-    private int                      lineNumber = 0;
+    private int                      lineNumber   = 0;
 
     private ParseUtils parseUtils = new ParseUtils();
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -226,43 +226,31 @@ public class GeneProcessor implements ItemProcessor<Gene, Gene> {
             gene.setNumberOfSignificantPhenotypes(number);
         }
 
-        // Populate the ri status fields based on imits status string. NOTE: genePk can be null.
+        // Populate the ri status fields based on imits status string. NOTE: geneStatus can be null.
+        ImitsStatus imitsStatus = null;
 
-        Integer genePk;
-        String status = null;
         if ((gene.getAssignmentStatus() != null) && ( ! gene.getAssignmentStatus().trim().isEmpty())) {
-            genePk = imitsStatusByStatus.get(gene.getAssignmentStatus()).getGeneStatusPk();
-            if (genePk != null) {
-                status = genesByPk.get(genePk).getRiAssignmentStatus();
-            }
+             imitsStatus = imitsStatusByStatus.get(gene.getAssignmentStatus());
         }
-        gene.setRiAssignmentStatus(status);
+        gene.setRiAssignmentStatus(imitsStatus == null ? null : imitsStatus.getGeneStatus());
 
-        status = null;
+        imitsStatus = null;
         if ((gene.getConditionalAlleleProductionStatus() != null) && ( ! gene.getConditionalAlleleProductionStatus().trim().isEmpty())) {
-            genePk = imitsStatusByStatus.get(gene.getConditionalAlleleProductionStatus()).getGeneStatusPk();
-            if (genePk != null) {
-                status = genesByPk.get(genePk).getRiConditionalAlleleProductionStatus();
-            }
+            imitsStatus = imitsStatusByStatus.get(gene.getConditionalAlleleProductionStatus());
         }
-        gene.setRiConditionalAlleleProductionStatus(status);
+        gene.setRiConditionalAlleleProductionStatus(imitsStatus == null ? null : imitsStatus.getGeneStatus());
 
-        status = null;
+        imitsStatus = null;
         if ((gene.getNullAlleleProductionStatus() != null) && ( ! gene.getNullAlleleProductionStatus().trim().isEmpty())) {
-            genePk = imitsStatusByStatus.get(gene.getNullAlleleProductionStatus()).getGeneStatusPk();
-            if (genePk != null) {
-                status = genesByPk.get(genePk).getRiNullAlleleProductionStatus();
-            }
+            imitsStatus = imitsStatusByStatus.get(gene.getNullAlleleProductionStatus());
         }
-        gene.setRiNullAlleleProductionStatus(status);
+        gene.setRiNullAlleleProductionStatus(imitsStatus == null ? null : imitsStatus.getGeneStatus());
 
+        imitsStatus = null;
         if ((gene.getPhenotypingStatus() != null) && ( ! gene.getPhenotypingStatus().trim().isEmpty())) {
-            genePk = imitsStatusByStatus.get(gene.getPhenotypingStatus()).getGeneStatusPk();
-            if (genePk != null) {
-                status = genesByPk.get(genePk).getRiPhenotypingStatus();
-            }
+            imitsStatus = imitsStatusByStatus.get(gene.getPhenotypingStatus());
         }
-        gene.setRiPhenotypingStatus(status);
+        gene.setRiPhenotypingStatus(imitsStatus == null ? null : imitsStatus.getGeneStatus());
 
         // If the Gene record hasn't changed, skip it (i.e. return null)
         Gene cachedGene = genesByPk.get(gene.getMgiAccessionId());
