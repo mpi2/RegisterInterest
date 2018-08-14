@@ -16,14 +16,12 @@
 
 package org.mousephenotype.ri.core.entities;
 
-import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.util.HtmlUtils;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class SummaryHtmlTable {
 
@@ -48,9 +46,8 @@ public class SummaryHtmlTable {
             "    background-color: #dddddd;"+
             "}";
 
-    public static String buildTableContent(String paBaseUrl, SqlUtils sqlUtils, Summary summary, boolean suppress) {
+    public static String buildTableContent(String paBaseUrl, String riBaseUrl, Summary summary) {
 
-        Map<String, GeneSent> genesSentByGeneAccessionid = sqlUtils.getGeneSentStatusByEmailAddress(summary.getEmailAddress());
         StringBuilder body = new StringBuilder();
 
         body
@@ -59,7 +56,7 @@ public class SummaryHtmlTable {
                 .append(buildRow("th", headings));
 
         for (Gene gene : summary.getGenes()) {
-            body.append(buildRow(paBaseUrl, gene, genesSentByGeneAccessionid.get(gene.getMgiAccessionId()), suppress));
+            body.append(buildRow(paBaseUrl, riBaseUrl, gene));
         }
 
         body.append("</table>");
@@ -71,117 +68,100 @@ public class SummaryHtmlTable {
     /**
      * Builds an html data row for the specified gene and optional {@link GeneSent} instance. {@code} may be null.
      * @param gene This contact's {@link Gene} instance. Never null.
-     * @param geneSent This contact's {@link GeneSent} instance. May be null.
-     * @param suppress A boolean that, when true, Suppresses the decoration indicating whether or not a gene's status
-     *                 has changed since the last e-mail sent. When false, decoration is displayed
      * @return html tr text, wrapped in tr tag.
      */
-    public static String buildRow(String paBaseUrl, Gene gene, GeneSent geneSent, boolean suppress) {
+    public static String buildRow(String paBaseUrl, String riBaseUrl, Gene gene) {
 
         StringBuilder row = new StringBuilder();
         String anchor;
         String cell;
         String currentValue;
-        String lastSentValue;
+        GeneWithDecoration geneWithDecoration;
 
-        GeneStatus geneStatus;
+        if (gene instanceof  GeneWithDecoration) {
+            geneWithDecoration = (GeneWithDecoration) gene;
+        } else {
+            geneWithDecoration = new GeneWithDecoration(gene, null);
+            geneWithDecoration.setAssignmentStatusDecorated(false);
+            geneWithDecoration.setConditionalAlleleProductionStatusDecorated(false);
+            geneWithDecoration.setNullAlleleProductionStatusDecorated(false);
+            geneWithDecoration.setPhenotypingStatusDecorated(false);
+            geneWithDecoration.setDecorated(false);
+        }
 
         row.append("<tr>");
 
         // Gene symbol
-        anchor = paBaseUrl + "/genes/" + gene.getMgiAccessionId();
-        cell = buildHtmlCell("td", gene.getSymbol(), anchor);
+        anchor = paBaseUrl + "/genes/" + geneWithDecoration.getMgiAccessionId();
+        cell = buildHtmlCell("td", geneWithDecoration.getSymbol(), anchor);
         row.append(cell);
 
 
         // Gene MGI accession id
-        anchor = "http://www.informatics.jax.org/marker/" + gene.getMgiAccessionId();
-        cell = buildHtmlCell("td", gene.getMgiAccessionId(), anchor);
+        anchor = "http://www.informatics.jax.org/marker/" + geneWithDecoration.getMgiAccessionId();
+        cell = buildHtmlCell("td", geneWithDecoration.getMgiAccessionId(), anchor);
         row.append(cell);
 
 
         // Assignment status
-        currentValue = gene.getRiAssignmentStatus() == null ? "Not planned" : gene.getRiAssignmentStatus();
-        lastSentValue = (geneSent.getAssignmentStatus() == null ? "Not planned" : geneSent.getAssignmentStatus());
-
-        if ( ! suppress) {
-            // Indicate if status has changed since last e-mail was sent.
-            if ( ! currentValue.equals(lastSentValue)) {
-                currentValue += " *";
-            }
+        currentValue = geneWithDecoration.getRiAssignmentStatus() == null ? "None" : geneWithDecoration.getRiAssignmentStatus();
+        if (geneWithDecoration.isAssignmentStatusDecorated()) {
+            currentValue += " *";
         }
         cell = buildHtmlCell("td", currentValue, null);
         row.append(cell);
 
 
         // Null allele production
-        currentValue = gene.getRiNullAlleleProductionStatus() == null ? "None" : gene.getRiNullAlleleProductionStatus();
-        lastSentValue = (geneSent.getNullAlleleProductionStatus() == null ? "None" : geneSent.getNullAlleleProductionStatus());
-
+        currentValue = geneWithDecoration.getRiNullAlleleProductionStatus() == null ? "None" : geneWithDecoration.getRiNullAlleleProductionStatus();
+        if (geneWithDecoration.isNullAlleleProductionStatusDecorated()) {
+            currentValue += " *";
+        }
         if (currentValue.equals(GeneStatus.MOUSE_PRODUCTION_STARTED)){
             anchor = null;
         } else if (currentValue.equals(GeneStatus.MOUSE_PRODUCED)) {
-            anchor = paBaseUrl + "/search/allele2?k2=\"" + gene.getMgiAccessionId() + "\"";
+            anchor = paBaseUrl + "/search/allele2?k2=\"" + geneWithDecoration.getMgiAccessionId() + "\"";
         } else {
             anchor = null;
-        }
-        if ( ! suppress) {
-            // Indicate if status has changed since last e-mail was sent.
-            if ( ! currentValue.equals(lastSentValue)) {
-                currentValue += " *";
-            }
         }
         cell = buildHtmlCell("td", currentValue, anchor);
         row.append(cell);
 
 
         // Conditional allele production
-        currentValue = gene.getRiConditionalAlleleProductionStatus() == null ? "None" : gene.getRiConditionalAlleleProductionStatus();
-        lastSentValue = (geneSent.getConditionalAlleleProductionStatus() == null ? "None" : geneSent.getConditionalAlleleProductionStatus());
-
+        currentValue = geneWithDecoration.getRiConditionalAlleleProductionStatus() == null ? "None" : geneWithDecoration.getRiConditionalAlleleProductionStatus();
+        if (geneWithDecoration.isConditionalAlleleProductionStatusDecorated()) {
+            currentValue += " *";
+        }
         if (currentValue.equals(GeneStatus.MOUSE_PRODUCTION_STARTED)) {
             anchor = null;
         } else if (currentValue.equals(GeneStatus.MOUSE_PRODUCED)) {
-            anchor = paBaseUrl + "/search/allele2?k2=\"" + gene.getMgiAccessionId() + "\"";
+            anchor = paBaseUrl + "/search/allele2?k2=\"" + geneWithDecoration.getMgiAccessionId() + "\"";
         } else {
             anchor = null;
-        }
-        if ( ! suppress) {
-            if ( ! currentValue.equals(lastSentValue)) {
-                currentValue += " *";
-            }
         }
         cell = buildHtmlCell("td", currentValue, anchor);
         row.append(cell);
 
 
         // Phenotyping data available
-        currentValue = gene.getRiPhenotypingStatus() == null ? "No" : gene.getRiPhenotypingStatus();
-        lastSentValue = (geneSent.getPhenotypingStatus() == null ? "No" : geneSent.getPhenotypingStatus());
-
+        currentValue = geneWithDecoration.getRiPhenotypingStatus() == null ? "No" : geneWithDecoration.getRiPhenotypingStatus();
+        if (geneWithDecoration.isPhenotypingStatusDecorated()) {
+            currentValue += " *";
+        }
         if (currentValue.equals(GeneStatus.PHENOTYPING_DATA_AVAILABLE)) {
             currentValue = "Yes";
-            anchor = paBaseUrl + "/genes/" + gene.getMgiAccessionId() + "#section-associations";
+            anchor = paBaseUrl + "/genes/" + geneWithDecoration.getMgiAccessionId() + "#section-associations";
         } else {
             currentValue = "No";
             anchor = null;
-        }
-        if (lastSentValue.equals(GeneStatus.PHENOTYPING_DATA_AVAILABLE)) {
-            lastSentValue = "Yes";
-        } else {
-            lastSentValue = "No";
-        }
-        if ( ! suppress) {
-            if ( ! currentValue.equals(lastSentValue)) {
-                currentValue += " *";
-            }
         }
         cell = buildHtmlCell("td", currentValue, anchor);
         row.append(cell);
 
 
         // Action
-        anchor = paBaseUrl + "/unregistration/gene?geneAccessionId=" + gene.getMgiAccessionId();
+        anchor = riBaseUrl + "/summary";
         currentValue = "Unregister";
         cell = buildHtmlCell("td", currentValue, anchor);
         row.append(cell);

@@ -28,90 +28,93 @@ import java.util.Date;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Gene {
 
-    private int pk;
-    private String mgiAccessionId;
-    private String symbol;
+    protected int pk;
+    protected String mgiAccessionId;
+    protected String symbol;
 
     @JsonIgnore
-    private String assignedTo;
+    protected String assignedTo;
 
     @JsonIgnore
-    private String assignmentStatus;
+    protected String assignmentStatus;
 
     @JsonIgnore
-    private Date assignmentStatusDate;
+    protected Date assignmentStatusDate;
 
     @JsonIgnore
-    private String assignmentStatusDateString;
+    protected String assignmentStatusDateString;
 
-    private String riAssignmentStatus;
-
-    @JsonIgnore
-    private String conditionalAlleleProductionCentre;
+    protected String riAssignmentStatus;
 
     @JsonIgnore
-    private String conditionalAlleleProductionStatus;
+    protected String conditionalAlleleProductionCentre;
 
     @JsonIgnore
-    private Date conditionalAlleleProductionStatusDate;
+    protected String conditionalAlleleProductionStatus;
 
     @JsonIgnore
-    private String conditionalAlleleProductionStatusDateString;
+    protected Date conditionalAlleleProductionStatusDate;
 
     @JsonIgnore
-    private Date conditionalAlleleProductionStartDate;
+    protected String conditionalAlleleProductionStatusDateString;
 
     @JsonIgnore
-    private String conditionalAlleleProductionStartDateString;
-
-    private String riConditionalAlleleProductionStatus;
-
+    protected Date conditionalAlleleProductionStartDate;
 
     @JsonIgnore
-    private String nullAlleleProductionCentre;
+    protected String conditionalAlleleProductionStartDateString;
+
+    protected String riConditionalAlleleProductionStatus;
 
     @JsonIgnore
-    private String nullAlleleProductionStatus;
+    protected String nullAlleleProductionCentre;
 
     @JsonIgnore
-    private Date nullAlleleProductionStatusDate;
+    protected String nullAlleleProductionStatus;
 
     @JsonIgnore
-    private String nullAlleleProductionStatusDateString;
+    protected Date nullAlleleProductionStatusDate;
 
     @JsonIgnore
-    private Date nullAlleleProductionStartDate;
+    protected String nullAlleleProductionStatusDateString;
 
     @JsonIgnore
-    private String nullAlleleProductionStartDateString;
-
-    private String riNullAlleleProductionStatus;
+    protected Date nullAlleleProductionStartDate;
 
     @JsonIgnore
-    private String phenotypingCentre;
+    protected String nullAlleleProductionStartDateString;
+
+    protected String riNullAlleleProductionStatus;
 
     @JsonIgnore
-    private String phenotypingStatus;
+    protected String phenotypingCentre;
 
     @JsonIgnore
-    private Date phenotypingStatusDate;
+    protected String phenotypingStatus;
 
     @JsonIgnore
-    private String phenotypingStatusDateString;
-
-    private String riPhenotypingStatus;
+    protected Date phenotypingStatusDate;
 
     @JsonIgnore
-    private Integer numberOfSignificantPhenotypes;
+    protected String phenotypingStatusDateString;
+
+    protected String riPhenotypingStatus;
 
     @JsonIgnore
-    private String numberOfSignificantPhenotypesString;
+    protected Integer numberOfSignificantPhenotypes;
+
+    @JsonIgnore
+    protected String numberOfSignificantPhenotypesString;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date createdAt;
+    protected Date createdAt;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date updatedAt;
+    protected Date updatedAt;
+
+
+    // GETTERS AND SETTERS
+
 
     public String getRiConditionalAlleleProductionStatus() {
         return riConditionalAlleleProductionStatus;
@@ -124,10 +127,6 @@ public class Gene {
     public String getRiPhenotypingStatus() {
         return riPhenotypingStatus;
     }
-
-
-    // GETTERS AND SETTERS
-
 
     public int getPk() {
         return pk;
@@ -345,7 +344,6 @@ public class Gene {
         this.updatedAt = updatedAt;
     }
 
-
     public String getRiAssignmentStatus() {
         return riAssignmentStatus;
     }
@@ -354,21 +352,54 @@ public class Gene {
         this.riAssignmentStatus = riAssignmentStatus;
     }
 
-
     public void setRiConditionalAlleleProductionStatus(String riConditionalAlleleProductionStatus) {
         this.riConditionalAlleleProductionStatus = riConditionalAlleleProductionStatus;
     }
-
 
     public void setRiNullAlleleProductionStatus(String riNullAlleleProductionStatus) {
         this.riNullAlleleProductionStatus = riNullAlleleProductionStatus;
     }
 
-
     public void setRiPhenotypingStatus(String riPhenotypingStatus) {
         this.riPhenotypingStatus = riPhenotypingStatus;
     }
 
+
+    public Gene() {
+
+    }
+
+    public Gene(Gene gene) {
+        pk = gene.pk;
+        mgiAccessionId = gene.mgiAccessionId;
+        symbol = gene.symbol;
+        assignedTo = gene.assignedTo;
+        assignmentStatus = gene.assignmentStatus;
+        assignmentStatusDate = gene.assignmentStatusDate;
+        assignmentStatusDateString = gene.assignmentStatusDateString;
+        riAssignmentStatus = gene.riAssignmentStatus;
+        conditionalAlleleProductionCentre = gene.conditionalAlleleProductionCentre;
+        conditionalAlleleProductionStatus = gene.conditionalAlleleProductionStatus;
+        conditionalAlleleProductionStatusDate = gene.conditionalAlleleProductionStatusDate;
+        conditionalAlleleProductionStatusDateString = gene.conditionalAlleleProductionStatusDateString;
+        conditionalAlleleProductionStartDate = gene.conditionalAlleleProductionStartDate;
+        conditionalAlleleProductionStartDateString = gene.conditionalAlleleProductionStartDateString;
+        riConditionalAlleleProductionStatus = gene.riConditionalAlleleProductionStatus;
+        nullAlleleProductionCentre = gene.nullAlleleProductionCentre;
+        nullAlleleProductionStatus = gene.nullAlleleProductionStatus;
+        nullAlleleProductionStatusDate = gene.nullAlleleProductionStatusDate;
+        nullAlleleProductionStatusDateString = gene.nullAlleleProductionStatusDateString;
+        nullAlleleProductionStartDate = gene.nullAlleleProductionStartDate;
+        nullAlleleProductionStartDateString = gene.nullAlleleProductionStartDateString;
+        riNullAlleleProductionStatus = gene.riNullAlleleProductionStatus;
+        phenotypingCentre = gene.phenotypingCentre;
+        phenotypingStatus = gene.phenotypingStatus;
+        phenotypingStatusDate = gene.phenotypingStatusDate;
+        phenotypingStatusDateString = gene.phenotypingStatusDateString;
+        riPhenotypingStatus = gene.riPhenotypingStatus;
+        numberOfSignificantPhenotypes = gene.numberOfSignificantPhenotypes;
+        numberOfSignificantPhenotypesString = gene.numberOfSignificantPhenotypesString;
+    }
 
     @Override
     public String toString() {

@@ -16,8 +16,10 @@
 
 package org.mousephenotype.ri.core.services;
 
+import org.mousephenotype.ri.core.entities.GeneSent;
 import org.mousephenotype.ri.core.entities.Summary;
 import org.mousephenotype.ri.core.entities.SummaryHtmlTable;
+import org.mousephenotype.ri.core.entities.SummaryWithDecoration;
 import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.springframework.stereotype.Service;
 
@@ -35,13 +37,16 @@ public class GenerateService {
 
 
     private String   paBaseUrl;
+    private String   riBaseUrl;
     private SqlUtils sqlUtils;
 
     @Inject
-    public GenerateService(String paBaseUrl, SqlUtils sqlUtils) {
+    public GenerateService(String paBaseUrl, String riBaseUrl, SqlUtils sqlUtils) {
         this.paBaseUrl = paBaseUrl;
+        this.riBaseUrl = riBaseUrl;
         this.sqlUtils = sqlUtils;
     }
+
 
     /**
      *
@@ -52,14 +57,10 @@ public class GenerateService {
         return sqlUtils.getAllSummariesByEmailAddress();
     }
 
-    /**
-     *
-     * @return A map of all registered contact summaries with at least one gene of interest status changed since the last
-     *         e-mail was sent, indexed by contact email address.
-     */
-    Map<String, Summary> getChangedSummariesByEmailAddress() {
 
-        return sqlUtils.getChangedSummariesByEmailAddress();
+    public Map<String, GeneSent> getGeneSentStatusByGeneAccessionId(String emailAddress) {
+
+        return sqlUtils.getGeneSentStatusByGeneAccessionId(emailAddress);
     }
 
     /**
@@ -73,21 +74,21 @@ public class GenerateService {
 
 
     /**
-     * @param summary The {@link Summary} source instance
+     * @param summary The {@link Summary} instance containing the summary information (emailAddress and genes of
+     *                interest). If the instance is a {@link SummaryWithDecoration}, the resulting string will contain
+     *                gene state change decoration; otherwise, it will not.
      * @param inHtml Boolean indicating whether or not the output should be in html
-     * @param suppress A boolean that, when true, Suppresses the decoration indicating whether or not a gene's status
-     *                 has changed since the last e-mail sent. When false, decoration is displayed
      * @return A string containing the contact (named in the summary) e-mail content
      */
-    public String getSummaryContent(Summary summary, boolean inHtml, boolean suppress) {
+    public String getSummaryContent(Summary summary, boolean inHtml) {
         StringBuilder sb = new StringBuilder();
 
         sb
                 .append(getSummaryPreface(inHtml))
-                .append(getSummaryHtmlTableText(paBaseUrl, summary, suppress))
+                .append(getSummaryHtmlTableText(summary))
                 .append(inHtml ? "<br />" : "\n");
 
-        if ( ! suppress) {
+        if ((summary instanceof SummaryWithDecoration) && (((SummaryWithDecoration) summary).isDecorated())){
             sb
                 .append("* Gene assignment status has changed since the last e-mail sent to you.")
                 .append(inHtml ? "<br /><br />" : "\n\n");
@@ -227,14 +228,13 @@ public class GenerateService {
     }
 
     /**
-     *
-     * @param summary The {@link Summary} instance containing the summary information (emailAddress and genes of interest)
-     * @param suppress A boolean that, when true, Suppresses the decoration indicating whether or not a gene's status
-     *                 has changed since the last e-mail sent. When false, decoration is displayed
+     * @param summary The {@link Summary} instance containing the summary information (emailAddress and genes of
+     *                interest). If the instance is a {@link SummaryWithDecoration}, the resulting string will contain
+     *                gene state change decoration; otherwise, it will not.
      * @return An HTML string containing this contact's summary information, in HTML table format
      */
-    protected String getSummaryHtmlTableText(String paBaseUrl, Summary summary, boolean suppress) {
-        return SummaryHtmlTable.buildTableContent(paBaseUrl, sqlUtils, summary, suppress);
+    protected String getSummaryHtmlTableText(Summary summary) {
+        return SummaryHtmlTable.buildTableContent(paBaseUrl, riBaseUrl, summary);
     }
 
     protected String getSummaryPreface(boolean inHtml) {

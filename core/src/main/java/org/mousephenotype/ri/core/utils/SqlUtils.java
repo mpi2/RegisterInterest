@@ -322,44 +322,6 @@ public class SqlUtils {
         }
     }
 
-    public Map<String, Summary> getChangedSummariesByEmailAddress() {
-
-        Map<String, Summary> changedSummaries = new HashMap<>();
-
-        // Get all contacts with one or more gene statuses different than the last e-mail sent.
-        final String selectContact =
-                "SELECT DISTINCT\n" +
-                        "   c.address\n" +
-                        "FROM contact c\n" +
-                        "LEFT OUTER JOIN contact_gene cg ON cg.contact_pk = c.pk\n" +
-                        "LEFT OUTER JOIN gene         g  ON g.pk          = cg.gene_pk\n" +
-                        "LEFT OUTER JOIN gene_sent    gs ON gs.address    = c.address\n" +
-                        "WHERE (\n" +
-                        "      (sent_at IS NULL)\n" +
-                        "   OR (g.ri_assignment_status != gs.assignment_status)\n" +
-                        "   OR (g.ri_conditional_allele_production_status != gs.conditional_allele_production_status)\n" +
-                        "   OR (g.ri_null_allele_production_status != gs.null_allele_production_status)\n" +
-                        "   OR (g.ri_phenotyping_status != gs.phenotyping_status))";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-
-        List<String> emailAddresses = jdbcInterest.queryForList(selectContact, parameterMap, String.class);
-        for (String emailAddress : emailAddresses) {
-
-            parameterMap.put("address", emailAddress);
-            List<Gene> genes = getGenesByEmailAddress(emailAddress);
-
-            Summary summary = new Summary();
-            summary.setEmailAddress(emailAddress);
-            summary.setGenes(genes);
-
-            changedSummaries.put(emailAddress, summary);
-        }
-
-        return changedSummaries;
-    }
-
-
     /**
      *
      * @return a list of all summaries, keyed by email address
@@ -387,16 +349,6 @@ public class SqlUtils {
 
         return allSummaries;
     }
-
-
-    // FIXME - tidy me up.
-
-
-
-
-
-
-
 
     public static DataSource getConfiguredDatasource(String url, String username, String password) {
         org.apache.tomcat.jdbc.pool.DataSource ds = new org.apache.tomcat.jdbc.pool.DataSource();
@@ -587,9 +539,9 @@ public class SqlUtils {
         Map<Integer, String> results = new HashMap<>();
         final String query =
                 "SELECT cg.pk, c.address\n" +
-                        "FROM contact c\n" +
-                        "JOIN contact_gene cg ON cg.contact_pk      = c. pk\n" +
-                        "JOIN gene_sent    gs ON gs.contact_gene_pk = cg.pk";
+                "FROM contact c\n" +
+                "JOIN contact_gene cg ON cg.contact_pk      = c. pk\n" +
+                "JOIN gene_sent    gs ON gs.contact_gene_pk = cg.pk";
 
         List<Map<String, Object>> listMap = jdbcInterest.queryForList(query, new HashMap<>());
         for (Map<String, Object> map : listMap) {
@@ -689,25 +641,6 @@ public class SqlUtils {
     }
 
     /**
-     * Return the {@link GeneSent}
-     *
-     * @param pk the gene_sent primary key
-     *
-     * @return the {@link GeneSent} matching the contactGenePk if found; null otherwise
-     */
-    public GeneSent getGeneSent(int pk) {
-
-        final String query = "SELECT * FROM gene_sent WHERE pk = :pk";
-
-        Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("pk", pk);
-
-        List<GeneSent> genesSent = jdbcInterest.query(query, parameterMap, new GeneSentRowMapper());
-
-        return (genesSent.isEmpty() ? null : genesSent.get(0));
-    }
-
-    /**
      * Return a map of {@link GeneSent} statuses, indexed by mgi_accession_id, matching the given {@code address}
      * @param emailAddress the contact e-mail address
      * @return A map, indexed by mgi_accession_id, containing the {@link GeneSent} statuses ONLY, any or all of which
@@ -719,24 +652,24 @@ public class SqlUtils {
      *     <li>phenotyping_status</li>
      * </ul>
      */
-    public Map<String, GeneSent> getGeneSentStatusByEmailAddress(String emailAddress) {
+    public Map<String, GeneSent> getGeneSentStatusByGeneAccessionId(String emailAddress) {
 
         HashMap<String, GeneSent> results = new HashMap<>();
 
         final String query =
                 "SELECT\n" +
-                        "  g.symbol,\n" +
-                        "  g.mgi_accession_id,\n" +
-                        "  gs.assignment_status,\n" +
-                        "  gs.null_allele_production_status,\n" +
-                        "  gs.conditional_allele_production_status,\n" +
-                        "  gs.phenotyping_status\n" +
-                        "FROM contact c\n" +
-                        "JOIN contact_gene cg ON cg.contact_pk = c.pk\n" +
-                        "JOIN gene g ON g.pk = cg.gene_pk\n" +
-                        "JOIN gene_sent gs ON gs.address = c.address and gs.mgi_accession_id = g.mgi_accession_id\n" +
-                        "WHERE c.address = :address\n" +
-                        "ORDER BY symbol";
+                "  g.symbol,\n" +
+                "  g.mgi_accession_id,\n" +
+                "  gs.assignment_status,\n" +
+                "  gs.null_allele_production_status,\n" +
+                "  gs.conditional_allele_production_status,\n" +
+                "  gs.phenotyping_status\n" +
+                "FROM contact c\n" +
+                "JOIN contact_gene cg ON cg.contact_pk = c.pk\n" +
+                "JOIN gene g ON g.pk = cg.gene_pk\n" +
+                "JOIN gene_sent gs ON gs.address = c.address and gs.mgi_accession_id = g.mgi_accession_id\n" +
+                "WHERE c.address = :address\n" +
+                "ORDER BY symbol";
 
 
         Map<String, Object> parameterMap = new HashMap<>();
@@ -756,60 +689,6 @@ public class SqlUtils {
         }
 
         return results;
-    }
-
-    /**
-     *
-     * @return A {@link Map} of all {@link GeneSentSummary} instances, indexed by contact_pk
-     */
-    public Map<Integer, GeneSentSummary> getGeneSentSummary() {
-
-        Map<Integer, GeneSentSummary> sentMap = new HashMap<>();
-
-        final String query = "SELECT * FROM gene_sent_summary";
-        Map<String, Object> parameterMap = new HashMap<>();
-
-        List<GeneSentSummary> summaryList = jdbcInterest.query(query, parameterMap, new GeneSentSummaryRowMapper());
-        for (GeneSentSummary summary : summaryList) {
-            sentMap.put(summary.getContactPk(), summary);
-        }
-
-        return sentMap;
-    }
-
-
-    /**
-     * Return the {@link GeneSentSummary} for the given {@code address}
-     * @param address the contact e-mail address
-     * @return the {@link GeneSentSummary} if found; null otherwise
-     */
-    public GeneSentSummary getGeneSentSummaryForContact(String address) {
-
-        GeneSentSummary result = null;
-
-        final String query =
-                "SELECT * FROM gene_sent_summary gss\n" +
-                        "JOIN contact c ON c.pk = gss.contact_pk\n" +
-                        "WHERE c.address = :address";
-
-
-        Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("address", address);
-
-        List<GeneSentSummary> summaryList = jdbcInterest.query(query, parameterMap, new GeneSentSummaryRowMapper());
-        if (summaryList.size() > 0) {
-            result = summaryList.get(0);
-        }
-
-        return result;
-    }
-
-    public int getGeneSentSummaryPendingEmailCount() {
-
-        final String query = "SELECT COUNT(*) FROM gene_sent_summary WHERE sent_at IS NULL";
-        Map<String, Object> parameterMap = new HashMap<>();
-
-        return jdbcInterest.queryForObject(query, parameterMap, Integer.class);
     }
 
     /**
@@ -861,16 +740,6 @@ public class SqlUtils {
         return genes;
     }
 
-    public List<GeneSent> getGenesScheduledForSending() {
-
-        final String query = "SELECT * FROM gene_sent WHERE sent_at IS NULL";
-        Map<String, Object> parameterMap = new HashMap<>();
-
-        List<GeneSent> genesSentList = jdbcInterest.query(query, parameterMap, new GeneSentRowMapper());
-
-        return genesSentList;
-    }
-
     /**
      * @return a {@link Map} of all imits status, indexed by status (i.e. name)
      */
@@ -906,44 +775,6 @@ public class SqlUtils {
         return (list.isEmpty() ? null : list.get(0));
     }
 
-    /**
-     *
-     * @return A {@link Map} of {@link GeneStatus} instances, keyed by status
-     */
-    public Map<String, GeneStatus> getStatusMap() {
-
-        Map<String, GeneStatus> statusMap = new HashMap<>();
-
-        final String query = "SELECT * FROM gene_status";
-        Map<String, Object> parameterMap = new HashMap<>();
-
-        List<GeneStatus> geneStatusList = jdbcInterest.query(query, parameterMap, new GeneStatusRowMapper());
-        for (GeneStatus geneStatus : geneStatusList) {
-            statusMap.put(geneStatus.getStatus(), geneStatus);
-        }
-
-        return statusMap;
-    }
-
-    /**
-     *
-     * @return A {@link Map} of {@link GeneStatus} instances, keyed by gene_status.pk
-     */
-    public Map<Integer, GeneStatus> getStatusMapByStatusPk() {
-
-        Map<Integer, GeneStatus> statusMap = new HashMap<>();
-
-        final String query = "SELECT * FROM gene_status";
-        Map<String, Object> parameterMap = new HashMap<>();
-
-        List<GeneStatus> geneStatusList = jdbcInterest.query(query, parameterMap, new GeneStatusRowMapper());
-        for (GeneStatus geneStatus : geneStatusList) {
-            statusMap.put(geneStatus.getPk(), geneStatus);
-        }
-
-        return statusMap;
-    }
-
     public Summary getSummary(String emailAddress) {
         final String query =
                 "SELECT g.* FROM gene g\n" +
@@ -961,57 +792,6 @@ public class SqlUtils {
         summary.setGenes(genes);
 
         return summary;
-    }
-
-    /**
-     * Insert the given {@link GeneSent} instance.
-     *
-     * @param geneSent the {@link GeneSent } instance to be used to update the database
-     *
-     * @return The {@link GeneSent} instance containing the primary key
-     *
-     * @throws InterestException
-     */
-    public GeneSent insertGeneSent(GeneSent geneSent) throws InterestException {
-
-        Map<String, Object> parameterMap = loadSentParameterMap(geneSent);
-
-        KeyHolder          keyholder       = new GeneratedKeyHolder();
-        SqlParameterSource parameterSource = new MapSqlParameterSource(parameterMap);
-
-        int pk = insertGeneSent(parameterSource, keyholder);
-
-        return getGeneSent(pk);
-    }
-
-    /**
-     * Insert the given {@link GeneSentSummary} instance.
-     *
-     * @param geneSentSummary the {@link GeneSentSummary } instance to be used to update the database
-     *                        @return the inserted {@link GeneSentSummary} primary key}
-     *
-     * @throws InterestException
-     */
-    public int insertGeneSentSummary(GeneSentSummary geneSentSummary) throws InterestException {
-
-        String insert = "INSERT INTO gene_sent_summary (subject, body, contact_pk, created_at, sent_at)" +
-                " VALUES (:subject, :body, :contactPk, :createdAt, :sentAt)";
-        Map<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("subject", geneSentSummary.getSubject());
-        parameterMap.put("body", geneSentSummary.getBody());
-        parameterMap.put("contactPk", geneSentSummary.getContactPk());
-        parameterMap.put("createdAt", geneSentSummary.getCreatedAt());
-        parameterMap.put("sentAt", geneSentSummary.getSentAt());
-
-        KeyHolder          keyholder       = new GeneratedKeyHolder();
-        SqlParameterSource parameterSource = new MapSqlParameterSource(parameterMap);
-
-        int count = jdbcInterest.update(insert, parameterSource, keyholder);
-        if (count > 0) {
-            return keyholder.getKey().intValue();
-        }
-
-        throw new InterestException("Unable to get primary key after INSERT.");
     }
 
     /**
@@ -1065,12 +845,6 @@ public class SqlUtils {
         }
     }
 
-    public void truncateGeneSentSummary() {
-
-        final String query = "DELETE FROM gene_sent_summary";
-        jdbcInterest.getJdbcOperations().execute(query);
-    }
-
     /**
      * Unregister {@code geneAccessionId} from {@code emailAddress}
      *
@@ -1105,21 +879,12 @@ public class SqlUtils {
         parameterMap.put("genePk", gene.getPk());
 
         int rowCount;
-//        try {
-
-            rowCount = jdbcInterest.update(delete, parameterMap);
-            if (rowCount < 1) {
-                message = "Unable to unregister gene " + geneAccessionId + " for contact " + emailAddress + ".";
-                logger.error(message);
-                throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-
-//        } catch (Exception e) {
-//
-//            message = "Exception while trying to unregister gene " + geneAccessionId + " for contact " + emailAddress + ": " + e.getLocalizedMessage();
-//            logger.error(message);
-//            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
+        rowCount = jdbcInterest.update(delete, parameterMap);
+        if (rowCount < 1) {
+            message = "Unable to unregister gene " + geneAccessionId + " for contact " + emailAddress + ".";
+            logger.error(message);
+            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -1331,29 +1096,6 @@ public class SqlUtils {
         return count;
     }
 
-    private int insertGeneSent(SqlParameterSource parameterSource, KeyHolder keyholder) throws InterestException {
-
-        // Try to insert the row into gene_sent. If the contact_gene_pk already exists, the INSERT operation is ignored.
-        final String columnNames =
-                "subject, body, address, mgi_accession_id, " +
-                        "ri_assignment_status, ri_conditional_allele_production_status, ri_null_allele_production_status, ri_phenotyping_status, " +
-                        "created_at, sent_at";
-
-        final String columnValues =
-                ":subject, :body, :address, :mgi_accession_id, " +
-                        ":ri_assignment_status, :ri_conditional_allele_production_status, :ri_null_allele_production_status, :ri_phenotyping_status, " +
-                        ":created_at, :sent_at";
-
-        final String query = "INSERT INTO gene_sent(" + columnNames + ") VALUES (" + columnValues + ")";
-
-        int count = jdbcInterest.update(query, parameterSource, keyholder);
-        if (count > 0) {
-            return keyholder.getKey().intValue();
-        }
-
-        throw new InterestException("Unable to get primary key after INSERT.");
-    }
-
     private Map<String, Object> loadGeneParameterMap(Gene gene) {
 
         Map<String, Object> parameterMap = new HashMap<>();
@@ -1385,24 +1127,6 @@ public class SqlUtils {
         parameterMap.put("number_of_significant_phenotypes", gene.getNumberOfSignificantPhenotypes());
 
         parameterMap.put("created_at", gene.getCreatedAt());
-
-        return parameterMap;
-    }
-
-    private Map<String, Object> loadSentParameterMap(GeneSent geneSent) {
-
-        Map<String, Object> parameterMap = new HashMap<>();
-
-        parameterMap.put("address", geneSent.getAddress());
-        parameterMap.put("mgi_accession_id", geneSent.getMgiAccessionId());
-
-        parameterMap.put("ri_assignment_status", geneSent.getAssignmentStatus());
-        parameterMap.put("ri_conditional_allele_production_status", geneSent.getConditionalAlleleProductionStatus());
-        parameterMap.put("ri_null_allele_production_status", geneSent.getNullAlleleProductionStatus());
-        parameterMap.put("ri_phenotyping_status", geneSent.getPhenotypingStatus());
-
-        parameterMap.put("created_at", (geneSent.getCreatedAt() == null ? new Date() : geneSent.getCreatedAt()));
-        parameterMap.put("sent_at", geneSent.getSentAt());
 
         return parameterMap;
     }
@@ -1440,37 +1164,6 @@ public class SqlUtils {
         final String query = "UPDATE gene SET " + colData + " WHERE mgi_accession_id = :mgi_accession_id";
 
         int count = jdbcInterest.update(query, parameterMap);
-
-        return count;
-    }
-
-    private int updateGeneSent(GeneSent geneSent, Map<String, Object> parameterMap) {
-
-        final String colData =
-                // Omit contact_gene_pk in the UPDATE as it is used in the WHERE clause.
-
-                "subject = :subject, " +
-                "body = :body, " +
-                "address = :address, " +
-                "mgi_accession_id = :mgi_accession_id, " +
-
-                "ri_assignment_status = :ri_assignment_status, " +
-                "ri_conditional_allele_production_status = :ri_conditional_allele_production_status, " +
-                "ri_null_allele_production_status = :ri_null_allele_production_status, " +
-                "ri_phenotyping_status = :ri_phenotyping_status, " +
-
-                "sent_at = :sent_at";
-
-        String query = "UPDATE gene_sent SET " + colData + " WHERE contact_gene_pk = :contact_gene_pk";
-
-        int count = jdbcInterest.update(query, parameterMap);
-        if (count > 0) {
-
-            // Get and update the gene_sent primary key.
-            query = "SELECT pk FROM gene_sent WHERE contact_gene_pk = :contact_gene_pk";
-            int pk = jdbcInterest.queryForObject(query, parameterMap, Integer.class);
-            geneSent.setPk(pk);
-        }
 
         return count;
     }

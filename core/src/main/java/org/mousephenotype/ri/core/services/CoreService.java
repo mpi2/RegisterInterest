@@ -16,7 +16,7 @@
 
 package org.mousephenotype.ri.core.services;
 
-import org.mousephenotype.ri.core.entities.Summary;
+import org.mousephenotype.ri.core.entities.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -45,6 +45,8 @@ public class CoreService {
 
         }
     }
+
+    // FIXME Send welcome on new account creation.
     public void generateAndSendWelcome(String emailAddress) {
 
         boolean inHtml = true;
@@ -53,60 +55,59 @@ public class CoreService {
     }
 
 
-    /**
-     * Generate and send e-mails for all contacts who have at least one gene of interest that has changed status since
-     * the last e-mail was sent
-     * @param suppress A boolean that, when true, Suppresses the decoration indicating whether or not a gene's status
-     *                 has changed since the last e-mail sent. When false, decoration is displayed
-     */
-    public void generateAndSendSummary(boolean suppress) {
+    public void generateAndSendAll() {
 
-        int count = 0;
+        int     count    = 0;
+        boolean inHtml   = true;
 
-        Map<String, Summary> summaries = generateService.getChangedSummariesByEmailAddress();
+        logger.info("BEGIN generateAndSendAll");
 
-        logger.info("BEGIN generateAndSendSummary");
-
+        Map<String, Summary> summaries = generateService.getAllSummariesByEmailAddress();
         for (Summary summary : summaries.values()) {
 
-            generateAndSendSummary(summary, true, suppress);
+            String content = generateService.getSummaryContent(summary, inHtml);
+            sendService.sendSummary(summary, SendService.DEFAULT_SUMMARY_SUBJECT, content, inHtml);
             count++;
 
             // Pause for 36 seconds so we don't exceed 100 e-mails per hour.
             sleep(36);
         }
 
-        logger.info("END generateAndSendSummary. Processed {} summaries.", count);
+        logger.info("END generateAndSendAll. Processed {} summaries.", count);
     }
 
+    public void generateAndSendDecorated() {
 
-    /**
-     * Generate and send a single summary e-mail
-     *
-     * @param emailAddress The email address of the recipient of the summary e-mail
-     */
-    public void generateAndSendSummary(String emailAddress) {
+        int count = 0;
 
-        boolean inHtml = true;
-        boolean showChangedGenes = true;
+        logger.info("BEGIN generateAndSendDecorated");
 
-        Summary summary = generateService.getsummaryByEmailAddress(emailAddress);
-        String content = generateService.getSummaryContent(summary, inHtml, showChangedGenes);
-        sendService.sendSummary(summary, SendService.DEFAULT_SUMMARY_SUBJECT, content, inHtml);
-    }
+        Map<String, Summary> summaries = generateService.getAllSummariesByEmailAddress();
+        for (Summary summaryWithoutDecoration : summaries.values()) {
 
+            Map<String, GeneSent> genesSentByGeneAccessionId = generateService.getGeneSentStatusByGeneAccessionId(summaryWithoutDecoration.getEmailAddress());
+            SummaryWithDecoration summaryWithDecoration = new SummaryWithDecoration(summaryWithoutDecoration);
 
-    /**
-     * Generate and send a single summary e-mail
-     *
-     * @param summary Input instance
-     * @param inHtml if true, generate output with html
-     * @param suppress A boolean that, when true, Suppresses the decoration indicating whether or not a gene's status
-     *                 has changed since the last e-mail sent. When false, decoration is displayed
-     */
-    public void generateAndSendSummary(Summary summary, boolean inHtml, boolean suppress) {
+            for (Gene gene : summaryWithDecoration.getGenes()) {
 
-        String content = generateService.getSummaryContent(summary, inHtml, suppress);
-        sendService.sendSummary(summary, SendService.DEFAULT_SUMMARY_SUBJECT, content, inHtml);
+                GeneSent geneSent = genesSentByGeneAccessionId.get(gene.getMgiAccessionId());
+                GeneWithDecoration geneWithDecoration = new GeneWithDecoration(gene, geneSent);
+                summaryWithDecoration.getGenes().add(geneWithDecoration);
+            }
+
+            if (summaryWithDecoration.isDecorated()) {
+
+                // At least one gene status component is decorated. Send an e-mail.
+
+                String content = generateService.getSummaryContent(summaryWithDecoration, true);
+                sendService.sendSummary(summaryWithDecoration, SendService.DEFAULT_SUMMARY_SUBJECT, content, true);
+                count++;
+
+                // Pause for 36 seconds so we don't exceed 100 e-mails per hour.
+                sleep(36);
+            }
+        }
+
+        logger.info("END generateAndSendDecorated. Processed {} summaries.", count);
     }
 }

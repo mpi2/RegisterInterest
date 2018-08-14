@@ -88,7 +88,18 @@
                                                         <a href='${paBaseUrl}/riSuccessHandler?riToken=${pageContext.session.id}&target=${paBaseUrl}/genes/${gene.mgiAccessionId}'>${gene.symbol}</a>
                                                     </td>
                                                     <td><a href="//www.informatics.jax.org/marker/${gene.mgiAccessionId}">${gene.mgiAccessionId}</a></td>
-                                                    <td>${gene.riAssignmentStatus}</td>
+
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${empty gene.riAssignmentStatus}">
+                                                                None
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                ${gene.riAssignmentStatus}
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+
                                                     <td>
                                                         <c:choose>
                                                             <c:when test="${empty gene.riNullAlleleProductionStatus}">

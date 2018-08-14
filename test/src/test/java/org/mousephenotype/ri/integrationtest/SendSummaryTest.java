@@ -139,7 +139,7 @@ public class SendSummaryTest {
 //        GeneSentSummary summary = sqlUtils.getGeneSentSummaryForContact(contact);
 //        Assert.assertNotNull("Expected GeneSentSummary value but was null", summary);
 //
-//        Map<String, GeneSent> genesSent = sqlUtils.getGeneSentStatusByEmailAddress(contact);
+//        Map<String, GeneSent> genesSent = sqlUtils.getGeneSentStatusByGeneAccessionId(contact);
 //        Assert.assertTrue(genesSent.size() > 0);
 //
 //        for (GeneSent geneSent : genesSent.values()) {

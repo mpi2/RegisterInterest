@@ -155,7 +155,7 @@ public class SummaryController {
      * @return
      */
     @RequestMapping(value = "/login", method = RequestMethod.GET)
-    public String loginUrl(
+    public String login(
             HttpServletRequest request,
             @RequestParam(value = "target", required = false) String target
     ) {
@@ -243,7 +243,7 @@ public class SummaryController {
 
 
     @RequestMapping(value = "/unregistration/gene", method = RequestMethod.POST)
-    public String unregisterGene(
+    public String unregistrationGene(
             HttpServletRequest request,
             ModelMap model,
             @RequestParam("geneAccessionId") String geneAccessionId
@@ -264,7 +264,7 @@ public class SummaryController {
 
 
     @RequestMapping(value = "/summary", method = RequestMethod.GET)
-    public String summaryUrl(ModelMap model, HttpServletRequest request) throws InterestException {
+    public String summary(ModelMap model, HttpServletRequest request) throws InterestException {
 
         Contact contact = sqlUtils.getContact(securityUtils.getPrincipal());
         if (contact == null) {
@@ -274,7 +274,7 @@ public class SummaryController {
             // contact is null. Get roles from authentication.
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             List<String>   roles          = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
-            logger.info("summaryUrl: Unable to get principal for user {} with role {}", securityUtils.getPrincipal(), StringUtils.join(roles, ", "));
+            logger.info("summary: Unable to get principal for user {} with role {}", securityUtils.getPrincipal(), StringUtils.join(roles, ", "));
 
             sleep(SHORT_SLEEP_SECONDS);
 

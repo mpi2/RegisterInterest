@@ -69,8 +69,17 @@ public class ApplicationSend implements CommandLineRunner {
 
         initialise(args);
 
-        logger.info("Generate and send gene status to contacts with gene status CHANGED since last e-mail.");
-        coreService.generateAndSendSummary(suppress);
+        if (suppress) {
+
+            logger.info("Generate and send gene status to all contacts.");
+            coreService.generateAndSendAll();
+
+        } else {
+
+            logger.info("Generate and send gene status to contacts with gene status CHANGED since last e-mail.");
+            coreService.generateAndSendDecorated();
+
+        }
     }
 
 
