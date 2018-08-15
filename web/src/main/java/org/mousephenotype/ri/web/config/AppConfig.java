@@ -121,36 +121,4 @@ public class AppConfig {
     public String smtpReplyto() {
         return smtpReplyto;
     }
-
-
-    // phenotype archive properties
-
-
-    @NotNull
-    @Value("${riBaseUrl}")
-    String riBaseUrl;
-
-    @NotNull
-    @Value("${paBaseUrl}")
-    String paBaseUrl;
-
-    @NotNull
-    @Value("${drupal_base_url}")
-    private String drupalBaseUrl;
-
-
-    @Bean
-    public String paBaseUrl() {
-        return paBaseUrl;
-    }
-
-    @Bean
-    public String riBaseUrl() {
-        return riBaseUrl;
-    }
-
-    @Bean
-    public String drupalBaseUrl() {
-        return drupalBaseUrl;
-    }
 }

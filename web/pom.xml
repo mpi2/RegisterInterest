@@ -145,6 +145,13 @@
             <artifactId>mail</artifactId>
         </dependency>
 
+        <!-- Apache Commons Upload -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.5</version>
+        </dependency>
+
     </dependencies>
 
     <build>
