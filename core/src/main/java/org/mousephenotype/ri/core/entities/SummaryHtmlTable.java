@@ -114,9 +114,6 @@ public class SummaryHtmlTable {
 
         // Null allele production
         currentValue = geneWithDecoration.getRiNullAlleleProductionStatus() == null ? "None" : geneWithDecoration.getRiNullAlleleProductionStatus();
-        if (geneWithDecoration.isNullAlleleProductionStatusDecorated()) {
-            currentValue += " *";
-        }
         if (currentValue.equals(GeneStatus.MOUSE_PRODUCTION_STARTED)){
             anchor = null;
         } else if (currentValue.equals(GeneStatus.MOUSE_PRODUCED)) {
@@ -124,15 +121,15 @@ public class SummaryHtmlTable {
         } else {
             anchor = null;
         }
+        if (geneWithDecoration.isNullAlleleProductionStatusDecorated()) {
+            currentValue += " *";
+        }
         cell = buildHtmlCell("td", currentValue, anchor);
         row.append(cell);
 
 
         // Conditional allele production
         currentValue = geneWithDecoration.getRiConditionalAlleleProductionStatus() == null ? "None" : geneWithDecoration.getRiConditionalAlleleProductionStatus();
-        if (geneWithDecoration.isConditionalAlleleProductionStatusDecorated()) {
-            currentValue += " *";
-        }
         if (currentValue.equals(GeneStatus.MOUSE_PRODUCTION_STARTED)) {
             anchor = null;
         } else if (currentValue.equals(GeneStatus.MOUSE_PRODUCED)) {
@@ -140,21 +137,24 @@ public class SummaryHtmlTable {
         } else {
             anchor = null;
         }
+        if (geneWithDecoration.isConditionalAlleleProductionStatusDecorated()) {
+            currentValue += " *";
+        }
         cell = buildHtmlCell("td", currentValue, anchor);
         row.append(cell);
 
 
         // Phenotyping data available
         currentValue = geneWithDecoration.getRiPhenotypingStatus() == null ? "No" : geneWithDecoration.getRiPhenotypingStatus();
-        if (geneWithDecoration.isPhenotypingStatusDecorated()) {
-            currentValue += " *";
-        }
         if (currentValue.equals(GeneStatus.PHENOTYPING_DATA_AVAILABLE)) {
             currentValue = "Yes";
             anchor = paBaseUrl + "/genes/" + geneWithDecoration.getMgiAccessionId() + "#section-associations";
         } else {
             currentValue = "No";
             anchor = null;
+        }
+        if (geneWithDecoration.isPhenotypingStatusDecorated()) {
+            currentValue += " *";
         }
         cell = buildHtmlCell("td", currentValue, anchor);
         row.append(cell);

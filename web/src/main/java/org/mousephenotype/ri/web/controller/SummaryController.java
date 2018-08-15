@@ -22,6 +22,7 @@ import org.mousephenotype.ri.core.entities.Contact;
 import org.mousephenotype.ri.core.entities.ResetCredentials;
 import org.mousephenotype.ri.core.entities.Summary;
 import org.mousephenotype.ri.core.exceptions.InterestException;
+import org.mousephenotype.ri.core.services.CoreService;
 import org.mousephenotype.ri.core.utils.DateUtils;
 import org.mousephenotype.ri.core.utils.EmailUtils;
 import org.mousephenotype.ri.core.utils.SecurityUtils;
@@ -105,9 +106,10 @@ public class SummaryController {
     public final static String TITLE_SEND_MAIL_FAILED           = "Mail server is down";
 
     private final org.slf4j.Logger logger        = LoggerFactory.getLogger(this.getClass());
-    private       DateUtils        dateUtils     = new DateUtils();
-    private       EmailUtils       emailUtils    = new EmailUtils();
-    private       SecurityUtils    securityUtils = new SecurityUtils();
+    private CoreService   coreService;
+    private DateUtils     dateUtils     = new DateUtils();
+    private EmailUtils    emailUtils    = new EmailUtils();
+    private SecurityUtils securityUtils = new SecurityUtils();
 
     // Properties
     private String          drupalBaseUrl;
@@ -135,7 +137,8 @@ public class SummaryController {
             String smtpFrom,
             String smtpHost,
             int smtpPort,
-            String smtpReplyto
+            String smtpReplyto,
+            CoreService coreService
     ) {
         this.paBaseUrl = paBaseUrl;
         this.riBaseUrl = riBaseUrl;
@@ -146,6 +149,7 @@ public class SummaryController {
         this.smtpHost = smtpHost;
         this.smtpPort = smtpPort;
         this.smtpReplyto = smtpReplyto;
+        this.coreService = coreService;
     }
 
 
@@ -460,6 +464,10 @@ public class SummaryController {
                 contact = sqlUtils.getContact(emailAddress);
                 title = TITLE_ACCOUNT_CREATED;
                 status = INFO_ACCOUNT_CREATED;
+
+                // Send welcome e-mail.
+                coreService.generateAndSendWelcome(emailAddress);
+                
             } else {
                 sqlUtils.updatePassword(emailAddress, passwordEncoder.encode(newPassword));
                 title = TITLE_PASSWORD_CHANGED;

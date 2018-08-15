@@ -854,6 +854,7 @@ public class SqlUtils {
      * @throws InterestException (HttpRequest.INTERNAL_SERVER_ERROR) if either {@code emailAddress} or
      *                           {@code geneAccessionId} doesn't exist
      */
+    @Transactional
     public void unregisterGene(String emailAddress, String geneAccessionId) throws InterestException {
 
         String message;
@@ -885,6 +886,15 @@ public class SqlUtils {
             logger.error(message);
             throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
+        // Delete from gene_sent if a row exists.
+        delete = "DELETE FROM gene_sent WHERE address = :emailAddress AND mgi_accession_id = :mgiAccessionId";
+
+        parameterMap = new HashMap<>();
+        parameterMap.put("emailAddress", contact.getEmailAddress());
+        parameterMap.put("mgiAccessionId", gene.getMgiAccessionId());
+
+       jdbcInterest.update(delete, parameterMap);
     }
 
     /**

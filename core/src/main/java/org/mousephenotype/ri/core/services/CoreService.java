@@ -46,7 +46,6 @@ public class CoreService {
         }
     }
 
-    // FIXME Send welcome on new account creation.
     public void generateAndSendWelcome(String emailAddress) {
 
         boolean inHtml = true;
