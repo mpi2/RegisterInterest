@@ -86,15 +86,7 @@ public class CoreService {
         for (Summary summaryWithoutDecoration : summaries.values()) {
 
             Map<String, GeneSent> genesSentByGeneAccessionId = generateService.getGeneSentStatusByGeneAccessionId(summaryWithoutDecoration.getEmailAddress());
-            SummaryWithDecoration summaryWithDecoration = new SummaryWithDecoration(summaryWithoutDecoration);
-
-            for (Gene gene : summaryWithDecoration.getGenes()) {
-
-                GeneSent geneSent = genesSentByGeneAccessionId.get(gene.getMgiAccessionId());
-                GeneWithDecoration geneWithDecoration = new GeneWithDecoration(gene, geneSent);
-                summaryWithDecoration.getGenes().add(geneWithDecoration);
-            }
-
+            SummaryWithDecoration summaryWithDecoration = new SummaryWithDecoration(summaryWithoutDecoration, genesSentByGeneAccessionId);
             if (summaryWithDecoration.isDecorated()) {
 
                 // At least one gene status component is decorated. Send an e-mail.

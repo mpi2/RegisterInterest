@@ -16,7 +16,9 @@
 
 package org.mousephenotype.ri.core.entities;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class mimics the {@link Summary} class, replacing the {@link List<Gene>} with a {@link List<GeneWithDecoration>}
@@ -24,13 +26,17 @@ import java.util.List;
  */
 public class SummaryWithDecoration extends Summary {
 
-    private String emailAddress;
-    private List<Gene> genes;
+    public SummaryWithDecoration(Summary summary, Map<String, GeneSent> genesSentByGeneAccessionId) {
 
-
-    public SummaryWithDecoration(Summary summary) {
         this.emailAddress = summary.getEmailAddress();
-        this.genes = summary.getGenes();
+
+        List<Gene> genesWithDecoration = new ArrayList<>();
+        for (Gene gene : summary.getGenes()) {
+            GeneWithDecoration geneWithDecoration = new GeneWithDecoration(gene, genesSentByGeneAccessionId.get(gene.getMgiAccessionId()));
+            genesWithDecoration.add(geneWithDecoration);
+        }
+
+        this.genes = genesWithDecoration;
     }
 
     public boolean isDecorated() {
@@ -47,27 +53,5 @@ public class SummaryWithDecoration extends Summary {
         }
 
         return false;
-    }
-
-
-    public String getEmailAddress() {
-        return emailAddress;
-    }
-
-    public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
-    }
-
-    public List<Gene> getGenes() {
-        return genes;
-    }
-
-
-    @Override
-    public String toString() {
-        return "Summary{" +
-                "emailAddress='" + emailAddress + '\'' +
-                ", genes=" + genes +
-                '}';
     }
 }

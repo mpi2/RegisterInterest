@@ -29,9 +29,8 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Summary {
 
-
-    private String emailAddress;
-    private List<Gene> genes = new ArrayList<>();
+    protected String emailAddress;
+    protected List<Gene> genes = new ArrayList<>();
 
 
     public String getEmailAddress() {
