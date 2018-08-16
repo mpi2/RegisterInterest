@@ -3,16 +3,10 @@
 <%@taglib prefix="t" tagdir="/WEB-INF/tags" %>
 <%@ page pageEncoding="UTF-8" %>
 
-<%--<c:set var="paBaseUrl" value="${paBaseUrl}" />--%>
-
 <t:genericpage>
 
-    <jsp:attribute name="title">Register Interest Summary page</jsp:attribute>
+    <jsp:attribute name="title">Register Interest Login</jsp:attribute>
     <jsp:attribute name="breadcrumb">&nbsp;&raquo; <a href="${riBaseUrl}/login">Register Interest</a> &raquo; Login</jsp:attribute>
-
-
-
-
 
     <jsp:attribute name="bodyTag">
         <body>
@@ -53,11 +47,11 @@
                             </c:if>
 
                             <div class="form-item form-type-textfield form-item-name">
-                                <input type="text" class="form-conrol required" id="username" name="ssoId" placeholder="Enter Username" required />
+                                <input type="text" class="form-conrol required" id="username" name="ssoId" placeholder="Enter e-mail address" required />
                             </div>
 
                             <div class="form-item form-type-password form-item-pass">
-                                <input type="password" class="form-control  required" id="password" name="password" placeholder="Enter Password" required />
+                                <input type="password" class="form-control  required" id="password" name="password" placeholder="Enter password" required />
                             </div>
 
                             <div class="form-actions">

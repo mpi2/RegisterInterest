@@ -275,23 +275,6 @@
 
                     <a href="${drupalBaseUrl}">Home</a><jsp:invokefragment="breadcrumb" /><%-- breadcrumbs here --%>
                 </div>
-                    <%--<div class='searchcontent'>--%>
-                    <%--<div id='bigsearchbox' class='block'>--%>
-                    <%--<div class='content'>--%>
-                    <%--<p><i id='sicon' class='fa fa-search'></i></p>--%>
-                    <%--<div class='ui-widget'>--%>
-                    <%--<input id='s' value="search">--%>
-                    <%--<i id='clearIcon' class='fa fa-times'></i>--%>
-                    <%--</div>--%>
-                    <%--</div>--%>
-                    <%--</div>--%>
-                    <%--<a><i class='fa fa-question-circle fa-2x searchExample'></i></a>--%>
-                    <%--<div style="clear: both"></div>--%>
-                    <%--</div>--%>
-
-                    <%--<div id='batchQryLink'>--%>
-                    <%--<a id='batchquery' href='${paBaseUrl}/batchQuery'><i class='fa fa-th-list batchQuery'></i><span id='bqry'>Batch search</span></a>--%>
-                    <%--</div>--%>
                 <div class='searchcontent'>
                     <div id='bigsearchbox' class='block'>
                         <i id='sicon' class='fa fa-search'></i>
@@ -391,4 +374,3 @@
 
 </div> <!-- wrapper -->
 </body>
-

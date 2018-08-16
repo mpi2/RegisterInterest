@@ -3,11 +3,9 @@
 <%@taglib prefix="t" tagdir="/WEB-INF/tags" %>
 <%@ page pageEncoding="UTF-8" %>
 
-<%--<c:set var="paBaseUrl" value="${paBaseUrl}" />--%>
-
 <t:genericpage>
 
-    <jsp:attribute name="title">Register Interest Summary page</jsp:attribute>
+    <jsp:attribute name="title">Register Interest Summary</jsp:attribute>
     <jsp:attribute name="breadcrumb">&nbsp;&raquo; <a href="${riBaseUrl}/summary">Register Interest</a> &raquo; Summary</jsp:attribute>
     <jsp:attribute name="bodyTag">
         <body>
@@ -35,36 +33,23 @@
                                     <button type="submit" class="btn btn-block btn-primary btn-default" formaction="${riBaseUrl}/account" formmethod="get">Delete all registrations of interest</button>
                                 </form>
 
-                                <h3>Username: ${summary.emailAddress}</h3>
+                                <h6>Username: ${summary.emailAddress}</h6>
 
                                 <br />
 
                                 <c:choose>
                                     <c:when test="${fn:length(summary.genes) eq 0}">
 
-                                        <h4>You have not yet registered interest in any genes.</h4>
+                                        You have not yet registered interest in any genes.
+
+                                        <br />
 
                                     </c:when>
                                     <c:otherwise>
 
-                                        <h4>You have registered interest in the following ${fn:length(summary.genes)} genes:</h4>
+                                        You have registered interest in the following ${fn:length(summary.genes)} genes:
 
                                         <div id="summaryTableDiv">
-
-                                            <style>
-                                                table {
-                                                    font-family: arial, sans-serif;
-                                                    border-collapse: collapse;
-                                                    width: 100%;
-                                                }
-                                                td, th {
-                                                    border: 1px solid #dddddd;
-                                                    text-align: left;
-                                                    padding: 8px;
-                                                }
-                                                tr:nth-child(even) {
-                                                    background-color: #dddddd;}
-                                            </style>
                                             <table id="summary-table" class='table tableSorter'>
                                                 <thead>
                                                     <tr>
@@ -151,12 +136,12 @@
                                         </div>
                                     </c:otherwise>
                                 </c:choose>
-
-                                <br />
-
-                                <a href='${paBaseUrl}/riSuccessHandler?riToken=${pageContext.session.id}'>Search for more genes to register</a>
-
                             </div>
+
+                            <br />
+
+                            <a href='${paBaseUrl}/riSuccessHandler?riToken=${pageContext.session.id}'>Search for more genes to register</a>
+
                         </div>
                     </div>
                 </div>
