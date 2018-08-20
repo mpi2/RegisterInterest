@@ -22,11 +22,9 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mousephenotype.ri.ws.config.TestConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -46,9 +44,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *      Resource r = context.getResource("classpath:sql/h2/generate-data.sql");
  *      ScriptUtils.executeSqlScript(ds.getConnection(), r);
  */
+@Deprecated
 @RunWith(SpringRunner.class)
 @WebAppConfiguration
-@ContextConfiguration(classes = TestConfig.class)
 @ComponentScan("org.mousephenotype.ri.ws")
 @TestPropertySource("file:${user.home}/configfiles/${profile}/application.properties")
 public class InterestControllerTest {

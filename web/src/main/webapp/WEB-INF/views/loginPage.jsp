@@ -5,7 +5,7 @@
 
 <t:genericpage>
 
-    <jsp:attribute name="title">Register Interest Login</jsp:attribute>
+    <jsp:attribute name="title">IMPC Login</jsp:attribute>
     <jsp:attribute name="breadcrumb">&nbsp;&raquo; <a href="${riBaseUrl}/login">Register Interest</a> &raquo; Login</jsp:attribute>
 
     <jsp:attribute name="bodyTag">

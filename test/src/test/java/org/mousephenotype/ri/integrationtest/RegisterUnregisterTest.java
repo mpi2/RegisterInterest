@@ -123,7 +123,7 @@ public class RegisterUnregisterTest {
 
     private void unregister(String email, String geneAccessionId) {
 
-        ResponseEntity<String> response = interestController.apiUnregisterGene(geneAccessionId);
+        ResponseEntity<String> response = interestController.apiUnregistrationGene(geneAccessionId);
         System.out.println(response.getStatusCode().toString());
         System.out.println(response.getBody());
     }

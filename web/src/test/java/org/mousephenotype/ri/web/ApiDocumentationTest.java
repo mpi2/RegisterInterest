@@ -14,13 +14,12 @@
  *  License.
  ******************************************************************************/
 
-package org.mousephenotype.ri.ws;
+package org.mousephenotype.ri.web;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mousephenotype.ri.ws.config.TestConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -53,7 +52,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@ContextConfiguration(classes = TestConfig.class)
+//@ContextConfiguration(classes = TestConfig.class)
 public class ApiDocumentationTest {
 
     @Rule

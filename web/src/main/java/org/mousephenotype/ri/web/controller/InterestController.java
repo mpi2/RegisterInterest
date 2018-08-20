@@ -71,7 +71,7 @@ public class InterestController implements ErrorController {
      * and the list of genes to which they have subscribed.
      */
     @RequestMapping(method = GET, value = "/api/summary")
-    public ResponseEntity<Summary> summaryUrl() {
+    public ResponseEntity<Summary> apiSummary() {
 
         HttpHeaders responseHeaders = new HttpHeaders();
         HttpStatus  status          = HttpStatus.OK;
@@ -117,7 +117,7 @@ public class InterestController implements ErrorController {
      * @return message if an error or warning occurred; an empty string otherwise
      */
     @RequestMapping(method = POST, value = "/api/registration/gene/info")
-    public ResponseEntity<String> apiRegistrationGeneGet(
+    public ResponseEntity<String> apiRegistrationGeneInfo(
             @RequestParam("geneAccessionId") String geneAccessionId
     ) {
         String      contactIsRegistered;
@@ -194,7 +194,7 @@ public class InterestController implements ErrorController {
      * @return message if an error or warning occurred; an empty string otherwise
      */
     @RequestMapping(method = DELETE, value = "/api/unregistration/gene")
-    public ResponseEntity<String> apiUnregisterGene(
+    public ResponseEntity<String> apiUnregistrationGene(
             @RequestParam("geneAccessionId") String geneAccessionId
     ) {
         String      message;
@@ -202,7 +202,7 @@ public class InterestController implements ErrorController {
 
         Gene gene = sqlUtils.getGene(geneAccessionId);
         if (gene == null) {
-            message = "apiUnregisterGene(): gene " + geneAccessionId + " does not exist.";
+            message = "apiUnregistrationGene(): gene " + geneAccessionId + " does not exist.";
             logger.error(message);
             return new ResponseEntity<>(message, responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }

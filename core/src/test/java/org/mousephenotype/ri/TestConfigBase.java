@@ -1,5 +1,5 @@
 /*******************************************************************************
- *  Copyright © 2017 EMBL - European Bioinformatics Institute
+ *  Copyright © 2018 EMBL - European Bioinformatics Institute
  *
  *  Licensed under the Apache License, Version 2.0 (the
  *  "License"); you may not use this file except in compliance
@@ -14,24 +14,22 @@
  *  License.
  ******************************************************************************/
 
-package org.mousephenotype.ri.ws.config;
+package org.mousephenotype.ri;
 
-import org.mousephenotype.ri.web.config.AppConfig;
+import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.FilterType;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
 import javax.sql.DataSource;
 
 /**
- * Created by mrelac on 02/05/2017.
+ * Created by mrelac on 16/08/2018
  */
 @Configuration
-@ComponentScan(value = "org.mousephenotype.ri", excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = AppConfig.class)})
-public class TestConfig {
+public class TestConfigBase {
     @Bean
     public DataSource riDataSource() {
         return new EmbeddedDatabaseBuilder()
@@ -40,5 +38,15 @@ public class TestConfig {
                 .setName("ri")
                 .addScripts("sql/h2/schema.sql", "sql/h2/interestController-data.sql")
                 .build();
+    }
+
+    @Bean
+    protected SqlUtils sqlUtils() {
+        return new SqlUtils(jdbc());
+    }
+
+    @Bean
+    protected NamedParameterJdbcTemplate jdbc() {
+        return new NamedParameterJdbcTemplate(riDataSource());
     }
 }

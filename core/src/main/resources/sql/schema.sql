@@ -18,7 +18,6 @@ CREATE TABLE contact (
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 
 
-DROP TABLE IF EXISTS gene_contact;
 DROP TABLE IF EXISTS contact_gene;
 CREATE TABLE contact_gene (
     pk             INT          NOT NULL      AUTO_INCREMENT PRIMARY KEY,
@@ -120,22 +119,6 @@ CREATE TABLE gene_sent (
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
 
 
-DROP TABLE IF EXISTS gene_sent_summary;
-CREATE TABLE gene_sent_summary (
-    pk                                          INT             NOT NULL        AUTO_INCREMENT PRIMARY KEY,
-
-    subject                                     VARCHAR(78)     NOT NULL,
-    body                                        MEDIUMTEXT      NOT NULL,
-    address                                     VARCHAR(255)    NOT NULL,
-
-    created_at                                  DATETIME        NOT NULL,
-    sent_at                                     DATETIME,                       -- a null value means 'generated but not geneSent yet'.
-    updated_at                                  TIMESTAMP       NOT NULL        DEFAULT CURRENT_TIMESTAMP
-    ON UPDATE CURRENT_TIMESTAMP
-
-) COLLATE=utf8_general_ci ENGINE=InnoDb;
-
-
 DROP TABLE IF EXISTS gene_status;
 CREATE TABLE gene_status (
     pk          INT          NOT NULL           AUTO_INCREMENT PRIMARY KEY,
@@ -163,9 +146,6 @@ CREATE TABLE imits_status (
     FOREIGN KEY gene_status_fk   (gene_status) REFERENCES gene_status(status)
 
 ) COLLATE=utf8_general_ci ENGINE=InnoDb;
-
-
-DROP TABLE IF EXISTS log;
 
 
 DROP TABLE IF EXISTS reset_credentials;
