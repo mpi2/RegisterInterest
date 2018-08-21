@@ -873,6 +873,11 @@ public class SqlUtils {
             throw new InterestException(message, HttpStatus.NOT_FOUND);
         }
 
+        // If the contact has not registered for this gene, return appropriate HttpStatus.
+        if (getContactGene(emailAddress, geneAccessionId) == null) {
+            throw new InterestException("Contact " + emailAddress + " is not registered for gene " + geneAccessionId, HttpStatus.NOT_FOUND);
+        }
+
         String delete = "DELETE FROM contact_gene WHERE contact_pk = :contactPk AND gene_pk = :genePk";
 
         Map<String, Object> parameterMap = new HashMap<>();

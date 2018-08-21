@@ -16,11 +16,20 @@ import javax.sql.DataSource;
 
 /**
  * Base test class to aggregate the spring test annotations.
- * All test classes should extend this base class
+ * All test classes from all modules should extend this base class. Test classes from other modules must declare
+ * a dependency on the test jar created from this class:
+ *         <dependency>
+ *             <groupId>org.mousephenotype.ri</groupId>
+ *             <artifactId>core</artifactId>
+ *             <version>1.0.0-RELEASE</version>
+ *             <classifier>tests</classifier>
+ *             <type>test-jar</type>
+ *             <scope>test</scope>
+ *         </dependency>
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@ContextConfiguration(classes = {TestConfigBase.class})
+@ContextConfiguration(classes = {BaseTestConfig.class})
 public class BaseTest {
 
     @Autowired
@@ -32,9 +41,9 @@ public class BaseTest {
     @Before
     public void setup() throws Exception {
 
-        Resource r = context.getResource("classpath:sql/schema.sql");
+        Resource r = context.getResource("classpath:sql/h2/schema.sql");
         ScriptUtils.executeSqlScript(riDataSource.getConnection(), r);
-        r = context.getResource("classpath:sql/base-test-data.sql");
+        r = context.getResource("classpath:sql/h2/base-test-data.sql");
         ScriptUtils.executeSqlScript(riDataSource.getConnection(), r);
     }
 
@@ -43,5 +52,4 @@ public class BaseTest {
     public void aTest() {
 
     }
-
 }

@@ -22,10 +22,10 @@ SET @PK_PAPP = (SELECT pk FROM gene_status WHERE status = @PAPP);
 SET @PK_W = (SELECT pk FROM gene_status WHERE status = @W);
 
 INSERT INTO contact (address, created_at) VALUES
-  ('mrelac@ebi.ac.uk', @now),
-  ('vmunoz@ebi.ac.uk', @now),
-  ('jmason@ebi.ac.uk', @now),
-  ('pm9@ebi.ac.uk',    @now)
+  ('user1@ebi.ac.uk', @now),
+  ('user2@ebi.ac.uk', @now),
+  ('user3@ebi.ac.uk', @now),
+  ('user4@ebi.ac.uk', @now)
 ;
 
 
@@ -43,6 +43,6 @@ INSERT INTO gene_sent
   (1,  'user1@ebi.ac.uk', 'MGI:103576',      NOW(),      NOW()),
   (2,  'user1@ebi.ac.uk', 'MGI:1919199',     NOW(),      NOW()),
   (3,  'user1@ebi.ac.uk', 'MGI:2443658',     NOW(),      NOW()),
-  (4,  'user1@ebi.ac.uk', 'MGI:2444824',     NOW(),      NOW()),
-  (5,  'user1@ebi.ac.uk', 'MGI:3576659',     NOW(),      NOW())
+  (4,  'user2@ebi.ac.uk', 'MGI:2444824',     NOW(),      NOW()),
+  (5,  'user3@ebi.ac.uk', 'MGI:3576659',     NOW(),      NOW())
 ;

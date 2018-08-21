@@ -87,7 +87,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/account").access("hasRole('USER') or hasRole('ADMIN')")
 
                 .and()
-//                    .csrf().disable().authorizeRequests()
                         .csrf().ignoringAntMatchers("/api/**")
 
                 .and().exceptionHandling()

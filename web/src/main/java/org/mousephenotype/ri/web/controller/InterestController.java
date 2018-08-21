@@ -31,7 +31,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -39,7 +38,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -128,7 +126,7 @@ public class InterestController implements ErrorController {
         if (gene == null) {
             message = "gene " + geneAccessionId + " does not exist.";
             logger.warn(message);
-            return new ResponseEntity<>("false", responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("false", responseHeaders, HttpStatus.NOT_FOUND);
         }
 
         // Return true if contact is registered
@@ -156,7 +154,7 @@ public class InterestController implements ErrorController {
         if (gene == null) {
             message = "gene " + geneAccessionId + " does not exist.";
             logger.warn(message);
-            return new ResponseEntity<>(message, responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(message, responseHeaders, HttpStatus.NOT_FOUND);
         }
 
         try {
@@ -204,8 +202,16 @@ public class InterestController implements ErrorController {
         if (gene == null) {
             message = "apiUnregistrationGene(): gene " + geneAccessionId + " does not exist.";
             logger.error(message);
-            return new ResponseEntity<>(message, responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(message, responseHeaders, HttpStatus.NOT_FOUND);
         }
+
+
+
+
+
+// fixme fixme fixme
+
+
 
         try {
 

@@ -1,6 +1,6 @@
 [source,http,options="nowrap"]
 ----
-DELETE /mi/impc/interest/api/unregistration/gene?geneAccessionId=MGI:0000010 HTTP/1.1
+DELETE /mi/impc/interest/api/unregistration/gene?geneAccessionId=MGI:103576 HTTP/1.1
 Accept: application/json
 Host: localhost:8080
 

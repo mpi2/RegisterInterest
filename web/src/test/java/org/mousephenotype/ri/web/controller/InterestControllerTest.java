@@ -1,43 +1,27 @@
 package org.mousephenotype.ri.web.controller;
 
-import org.hamcrest.Matchers;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mousephenotype.ri.core.entities.RIGrantedAuthority;
-import org.mousephenotype.ri.core.entities.RIRole;
+import org.mousephenotype.ri.BaseTest;
+import org.mousephenotype.ri.core.entities.Gene;
+import org.mousephenotype.ri.core.entities.Summary;
+import org.mousephenotype.ri.web.TestConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.test.context.support.WithSecurityContext;
-import org.springframework.security.test.context.support.WithSecurityContextFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.htmlunit.MockMvcWebClientBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
-import java.util.Collection;
-
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by mrelac on 16/08/2018.
@@ -46,188 +30,150 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = TestConfig.class)
 //@WebAppConfiguration
 @SpringBootTest
-public class InterestControllerTest  {
-
-    @Autowired
-    private WebApplicationContext context;
+public class InterestControllerTest extends BaseTest {
 
     @Autowired
     private InterestController interestController;
 
-    private MockMvc mockMvc;
+
+    private final String registeredGeneAccessionId = "MGI:103576";
+    private final String unregisteredGeneAccessionId = "MGI:2444824";
 
 
     @Before
     public void setUp() {
 
-//        this.mockMvc = MockMvcBuilders
-//                .webAppContextSetup(this.context)
-//                .apply(springSecurity())
-//                .build();
-//
-//        MockMvcWebClientBuilder
-//                .mockMvcSetup(mockMvc)
-////                .contextPath("")
-////                .useMockMvcForHosts("example.com", "example.org")
-//                .build()
-//                ;
     }
 
     @After
     public void tearDown() {
     }
 
-@Ignore
+
+    @Test
+    public void apiSummaryNoUser() {
+        ResponseEntity<Summary> response = interestController.apiSummary();
+        Summary summary = response.getBody();
+        Assert.assertTrue(response.getStatusCode() == HttpStatus.OK);
+        Assert.assertEquals("anonymous", summary.getEmailAddress());
+        Assert.assertTrue(summary.getGenes().isEmpty());
+    }
+
+
     @Test
     @WithMockUser
-    public void apiSummaryUnauthenticatedUser() throws Exception {
-
-        String url = "/api/summary";
-
-        this.mockMvc.perform(
-                get(url)
-                    .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
-                    .andExpect(status().is4xxClientError())
-        ;
+    public void apiSummaryUnauthenticatedUser() {
+        ResponseEntity<Summary> response = interestController.apiSummary();
+        Summary summary = response.getBody();
+        Assert.assertTrue(response.getStatusCode() == HttpStatus.OK);
+        Assert.assertEquals("user", summary.getEmailAddress());
+        Assert.assertTrue(summary.getGenes().isEmpty());
     }
 
 
     @Test
-    @PreAuthorize("authenticated")
-//    @WithMockCustomUser
-    public void apiSummaryAuthenticatedUser() throws Exception {
-
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-
-        String url = "/api/summary";
-
-        this.mockMvc.perform(
-                get(url)
-                        .accept(MediaType.parseMediaType("application/json;charset=UTF-8")))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()", Matchers.comparesEqualTo(0)))
-        ;
+    @WithMockUser("user1@ebi.ac.uk")
+    public void apiSummaryTest() {
+        final List<String> expectedGeneAccessionIds = new ArrayList<>(Arrays.asList(new String[] { "MGI:103576", "MGI:1919199", "MGI:2443658" }));
+        ResponseEntity<Summary> response = interestController.apiSummary();
+        Summary summary = response.getBody();
+        Assert.assertTrue(response.getStatusCode() == HttpStatus.OK);
+        Assert.assertEquals(3, summary.getGenes().size());
+        List<Gene>          genes         = summary.getGenes();
+        for (Gene gene : genes) {
+            Assert.assertTrue(expectedGeneAccessionIds.contains(gene.getMgiAccessionId()));
+        }
     }
 
-//    @Test
-//    public void apiSummaryList() {
-//    }
-//
-//    @Test
-//    public void apiRegistrationGeneInfo() {
-//    }
-//
+    @Test
+    @WithMockUser("user1@ebi.ac.uk")
+    public void apiSummaryList() {
+        final List<String> expectedGeneAccessionIds = new ArrayList<>(Arrays.asList(new String[] { "MGI:103576", "MGI:1919199", "MGI:2443658" }));
+        ResponseEntity<Map<String, List<String>>> response = interestController.apiSummaryList();
+        Assert.assertTrue(response.getStatusCode() == HttpStatus.OK);
+        Assert.assertEquals(1, response.getBody().size());
+        List<String> actualGeneAccessionIds = response.getBody().get("geneAccessionIds");
+        Assert.assertEquals(3, actualGeneAccessionIds.size());
+        for (String geneAccessionId : expectedGeneAccessionIds) {
+            Assert.assertTrue(actualGeneAccessionIds.contains(geneAccessionId));
+        }
+    }
+
+    @Test
+    @WithMockUser("user1@ebi.ac.uk")
+    public void apiRegistrationGeneInfo() {
+        ResponseEntity<String> response = interestController.apiRegistrationGeneInfo(registeredGeneAccessionId);
+        Assert.assertTrue(response.getBody().equals("true"));
+        response = interestController.apiRegistrationGeneInfo(unregisteredGeneAccessionId);
+        Assert.assertTrue(response.getBody().equals("false"));
+    }
+
+    // FIXME FIXME FIXME
 //    @Test
 //    public void apiRegistrationGene() {
 //    }
-//
+
+    @Test
+    public void apiRolesNoUser() {
+        List<String> response = interestController.apiRoles();
+        Assert.assertTrue(response.isEmpty());
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void apiRolesAnonymousUser() {
+        List<String> response = interestController.apiRoles();
+        Assert.assertEquals(1, response.size());
+        Assert.assertTrue(response.get(0).equals("ROLE_ANONYMOUS"));
+    }
+
+    @Test
+    @WithMockUser("user1@ebi.ac.uk")
+    public void apiRolesAuthenticatedUser() {
+        List<String> response = interestController.apiRoles();
+        Assert.assertEquals(1, response.size());
+        Assert.assertTrue(response.get(0).equals("ROLE_USER"));
+    }
+
+    @Test
+    public void apiUnregistrationGeneNoUser() {
+        ResponseEntity<String> response = interestController.apiUnregistrationGene(registeredGeneAccessionId);
+        Assert.assertEquals(response.getStatusCodeValue(), 404);
+        Assert.assertTrue(response.getBody().equals("Invalid contact anonymous."));
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void apiUnregistrationGeneAnonymousUser() {
+        ResponseEntity<String> response = interestController.apiUnregistrationGene(registeredGeneAccessionId);
+        Assert.assertEquals(response.getStatusCodeValue(), 404);
+        Assert.assertTrue(response.getBody().equals("Invalid contact anonymous."));
+    }
+
+    @Test
+    @WithMockUser("user1@ebi.ac.uk")
+    public void apiUnregistrationGeneAuthenticatedUserRegisteredGene() {
+        ResponseEntity<String> response = interestController.apiUnregistrationGene(registeredGeneAccessionId);
+        Assert.assertEquals(response.getStatusCodeValue(), 200);
+        Assert.assertTrue(response.getBody().isEmpty());
+    }
+
+    // FIXME FIXME FIXME
 //    @Test
-//    public void apiRoles() {
+//    @WithMockUser("user1@ebi.ac.uk")
+//    public void apiUnregistrationGeneAuthenticatedUserUnregisteredGene() {
+//        ResponseEntity<String> response = interestController.apiUnregistrationGene(unregisteredGeneAccessionId);
+//        Assert.assertEquals(404, response.getStatusCodeValue());
+//        Assert.assertTrue(response.getBody().isEmpty());
 //    }
-//
+
 //    @Test
-//    public void apiUnregistrationGene() {
+//    public void apiRegistrationGeneAuthenticatedUserRegisteredGene() {
+//        final String registeredGeneAccessionId = "MGI:103576";
+//        final String unregisteredGeneAccessionId = "MGI:2444824";
+//        ResponseEntity<String> response = interestController.apiRegistrationGeneInfo(registeredGeneAccessionId);
+//        Assert.assertTrue(response.getBody().equals("true"));
+//        response = interestController.apiRegistrationGeneInfo(unregisteredGeneAccessionId);
+//        Assert.assertTrue(response.getBody().equals("false"));
 //    }
-
-
-//    final class WithUserDetailsSecurityContextFactory
-//            implements WithSecurityContextFactory<WithUserDetails> {
-//
-//        private UserDetailsService userDetailsService;
-//
-//        @Autowired
-//        public WithUserDetailsSecurityContextFactory(UserDetailsService userDetailsService) {
-//            this.userDetailsService = userDetailsService;
-//        }
-//
-//        public SecurityContext createSecurityContext(WithUserDetails withUser) {
-//            String username = withUser.value();
-//            Assert.hasLength(username, "value() must be non-empty String");
-//            UserDetails     principal      = userDetailsService.loadUserByUsername(username);
-//            Authentication  authentication = new UsernamePasswordAuthenticationToken(principal, principal.getPassword(), principal.getAuthorities());
-//            SecurityContext context        = SecurityContextHolder.createEmptyContext();
-//            context.setAuthentication(authentication);
-//            return context;
-//        }
-//    }
-
-    @Retention(RetentionPolicy.RUNTIME)
-    @WithSecurityContext(factory = WithMockCustomUserSecurityContextFactory.class)
-    public @interface WithMockCustomUser {
-
-        String username() default "user1@ebi.ac.uk";
-
-        String password() default "user1pass";
-    }
-
-    public class WithMockCustomUserSecurityContextFactory
-            implements WithSecurityContextFactory<WithMockCustomUser> {
-        @Override
-        public SecurityContext createSecurityContext(WithMockCustomUser customUser) {
-            SecurityContext context = SecurityContextHolder.createEmptyContext();
-
-            CustomUserDetails principal =
-                    new CustomUserDetails(customUser.username(), customUser.password());
-            Authentication auth =
-                    new UsernamePasswordAuthenticationToken(principal, "password", principal.getAuthorities());
-            context.setAuthentication(auth);
-            return context;
-        }
-    }
-
-    public class CustomUserDetails implements UserDetails {
-
-        private String username;
-        private String password;
-
-        public CustomUserDetails() {
-            username = "user1@ebi.ac.uk";
-            password = "user1pass";
-        }
-
-        public CustomUserDetails(String username, String password) {
-            this.username = username;
-            this.password = password;
-        }
-
-        @Override
-        public Collection<? extends GrantedAuthority> getAuthorities() {
-            ArrayList<GrantedAuthority> auths = new ArrayList<>();
-            auths.add(new RIGrantedAuthority(RIRole.USER));
-            return auths;
-        }
-
-        @Override
-        public String getPassword() {
-            return username;
-        }
-
-        @Override
-        public String getUsername() {
-            return password;
-        }
-
-        @Override
-        public boolean isAccountNonExpired() {
-            return true;
-        }
-
-        @Override
-        public boolean isAccountNonLocked() {
-            return true;
-        }
-
-        @Override
-        public boolean isCredentialsNonExpired() {
-            return true;
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return true;
-        }
-    }
-
-
 }

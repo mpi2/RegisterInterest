@@ -38,6 +38,11 @@ public class SecurityUtils {
 
     public String getPrincipal(Authentication authentication) {
         String userName;
+
+        if (authentication == null) {
+            return "anonymous";
+        }
+
         Object principal = authentication.getPrincipal();
 
         if (principal instanceof UserDetails) {

@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mousephenotype.ri.BaseTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -35,7 +36,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
@@ -52,8 +54,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-//@ContextConfiguration(classes = TestConfig.class)
-public class ApiDocumentationTest {
+@ContextConfiguration(classes = TestConfig.class)
+public class ApiDocumentationTest extends BaseTest {
 
     @Rule
     public final JUnitRestDocumentation
@@ -102,65 +104,55 @@ public class ApiDocumentationTest {
             fieldWithPath("geneAccessionIds").description("The MGI gene accession ids of the genes for which the contact has registered interest")
     };
 
-
     @Test
-    @WithMockUser
-    public void summaryGet() throws Exception {
+    @WithMockUser("user1@ebi.ac.uk")
+    public void summaryGet() {
 
-        this.mockMvc.perform(get("https://www.ebi.ac.uk/mi/impc/interest/api/summary")
-                                     .contextPath("/mi/impc/interest")
-                                     .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(this.restDocumentationResultHandler.document(
-                        requestParameters(),
-                        responseFields(
-                                summary
-                        )))
+        this.restDocumentationResultHandler.document(
+                requestParameters(),
+                responseFields(
+                        summary
+                ))
         ;
     }
 
     @Test
-    @WithMockUser
-    public void summaryGetList() throws Exception {
+    @WithMockUser("user1@ebi.ac.uk")
+    public void summaryGetList() {
 
-        this.mockMvc.perform(get("https://www.ebi.ac.uk/mi/impc/interest/api/summary/list")
-                                     .contextPath("/mi/impc/interest")
-                                     .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(this.restDocumentationResultHandler.document(
-                        requestParameters(),
-                        responseFields(
-                            geneAccessionIds
-                        )))
+        this.restDocumentationResultHandler.document(
+                requestParameters(),
+                responseFields(
+                        geneAccessionIds
+                ))
         ;
     }
 
-
     @Test
-    @WithMockUser("user2@ebi.ac.uk")
+    @WithMockUser("user1@ebi.ac.uk")
     public void register() throws Exception {
-        this.mockMvc.perform(post("https://www.ebi.ac.uk/mi/impc/interest/api/registration/gene?geneAccessionId=MGI:0000020")
+        this.mockMvc.perform(post("/mi/impc/interest/api/registration/gene?geneAccessionId=MGI:2444824")
                 .contextPath("/mi/impc/interest")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(document("register",
-                        requestParameters(
-                                parameterWithName("geneAccessionId").description("The gene's MGI gene accession id")
-                        )))
+                    requestParameters(
+                            parameterWithName("geneAccessionId").description("The gene's MGI gene accession id")
+                    )))
         ;
     }
 
     @Test
     @WithMockUser("user1@ebi.ac.uk")
     public void unregister() throws Exception {
-        this.mockMvc.perform(delete("https://www.ebi.ac.uk/mi/impc/interest/api/unregistration/gene?geneAccessionId=MGI:0000010")
-                                     .contextPath("/mi/impc/interest")
-                                     .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(document("unregister",
-                                requestParameters(
-                                        parameterWithName("geneAccessionId").description("The gene's MGI gene accession id")
-                                )))
+        this.mockMvc.perform(delete("/mi/impc/interest/api/unregistration/gene?geneAccessionId=MGI:103576")
+            .contextPath("/mi/impc/interest")
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andDo(document("unregister",
+                requestParameters(
+                    parameterWithName("geneAccessionId").description("The gene's MGI gene accession id")
+            )))
         ;
     }
 }

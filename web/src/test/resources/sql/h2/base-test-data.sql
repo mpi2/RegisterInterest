@@ -22,10 +22,10 @@ SET @PK_PAPP = (SELECT pk FROM gene_status WHERE status = @PAPP);
 SET @PK_W = (SELECT pk FROM gene_status WHERE status = @W);
 
 INSERT INTO contact (address, password, created_at) VALUES
-  ('mrelac@ebi.ac.uk', 'user1pass', @now),
-  ('vmunoz@ebi.ac.uk', 'user2pass', @now),
-  ('jmason@ebi.ac.uk', 'user3pass', @now),
-  ('pm9@ebi.ac.uk',    'user4pass', @now)
+  ('user1@ebi.ac.uk', 'user1pass', @now),
+  ('user2@ebi.ac.uk', 'user2pass', @now),
+  ('user3@ebi.ac.uk', 'user3pass', @now),
+  ('user4@ebi.ac.uk', 'user4pass', @now)
 ;
 
 
@@ -38,11 +38,10 @@ INSERT INTO gene
   ('MGI:3576659',     'Ano5',     'c-010',       @PAPP,             @now,                   @PAPP,                'caps-010',                             @MPS,                                 NULL,                                    @nowplus2,                                 @nowplus1,                                 'naps-010',                     @MPS,                          @MPS,                             @nowplus4,                          @nowplus3,                         'ps-010',           NULL,               @nowplus5,               NULL,                  NULL,                             @now)
 ;
 
-INSERT INTO gene_sent
-(pk, address,           mgi_accession_id, created_at, sent_at) VALUES
-  (1,  'user1@ebi.ac.uk', 'MGI:103576',      NOW(),      NOW()),
-  (2,  'user1@ebi.ac.uk', 'MGI:1919199',     NOW(),      NOW()),
-  (3,  'user1@ebi.ac.uk', 'MGI:2443658',     NOW(),      NOW()),
-  (4,  'user1@ebi.ac.uk', 'MGI:2444824',     NOW(),      NOW()),
-  (5,  'user1@ebi.ac.uk', 'MGI:3576659',     NOW(),      NOW())
+INSERT INTO contact_gene(contact_pk, gene_pk, created_at) VALUES
+  (1, 1, @now),
+  (1, 2, @now),
+  (1, 3, @now),
+  (2, 1, @now),
+  (3, 1, @now)
 ;

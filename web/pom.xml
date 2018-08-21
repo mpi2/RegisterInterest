@@ -172,6 +172,17 @@
             <scope>compile</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.mousephenotype.ri</groupId>
+            <artifactId>core</artifactId>
+            <version>1.0.0-RELEASE</version>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+
+
     </dependencies>
 
     <build>
