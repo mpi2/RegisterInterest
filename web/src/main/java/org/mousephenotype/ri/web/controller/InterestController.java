@@ -163,8 +163,7 @@ public class InterestController implements ErrorController {
 
         } catch (InterestException e) {
 
-            logger.warn(e.getLocalizedMessage());
-            return new ResponseEntity<>(e.getLocalizedMessage(), e.getHttpStatus());
+            return new ResponseEntity<>(e.getLocalizedMessage(), e.getInterestStatus().toHttpStatus());
         }
 
         return new ResponseEntity<>("", responseHeaders, HttpStatus.OK);
@@ -205,21 +204,13 @@ public class InterestController implements ErrorController {
             return new ResponseEntity<>(message, responseHeaders, HttpStatus.NOT_FOUND);
         }
 
-
-
-
-
-// fixme fixme fixme
-
-
-
         try {
 
             sqlUtils.unregisterGene(securityUtils.getPrincipal(), geneAccessionId);
 
         } catch (InterestException e) {
 
-            return new ResponseEntity<>(e.getLocalizedMessage(), e.getHttpStatus());
+            return new ResponseEntity<>(e.getLocalizedMessage(), e.getInterestStatus().toHttpStatus());
         }
 
         return new ResponseEntity<>("", responseHeaders, HttpStatus.OK);

@@ -16,14 +16,14 @@
 
 package org.mousephenotype.ri.core.exceptions;
 
-import org.springframework.http.HttpStatus;
+import org.mousephenotype.ri.core.entities.InterestStatus;
 
 /**
  * Created by mrelac on 24/07/2015.
  */
 public class InterestException extends Exception {
 
-    private HttpStatus httpStatus;
+    private InterestStatus interestStatus = InterestStatus.OK;
     
     public InterestException() {
         super();
@@ -33,14 +33,14 @@ public class InterestException extends Exception {
         super(message);
     }
     
-    public InterestException(HttpStatus httpStatus) {
+    public InterestException(InterestStatus interestStatus) {
         super();
-        this.httpStatus = httpStatus;
+        this.interestStatus = interestStatus;
     }
     
-    public InterestException(String message, HttpStatus httpStatus) {
+    public InterestException(String message, InterestStatus interestStatus) {
         super(message);
-        this.httpStatus = httpStatus;
+        this.interestStatus = interestStatus;
     }
 
     public InterestException(Exception e) {
@@ -59,11 +59,18 @@ public class InterestException extends Exception {
         super(message, cause, enableSuppression, writeableStackTrace);
     }
 
-    public HttpStatus getHttpStatus() {
-        return httpStatus;
+    public InterestStatus getInterestStatus() {
+        return interestStatus;
     }
 
-    public void setHttpStatus(HttpStatus httpStatus) {
-        this.httpStatus = httpStatus;
+    public void setInterestStatus(InterestStatus interestStatus) {
+        this.interestStatus = interestStatus;
+    }
+
+    @Override
+    public String toString() {
+        return "InterestException{" +
+                "interestStatus=" + interestStatus +
+                '}';
     }
 }

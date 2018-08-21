@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -67,8 +66,7 @@ public class SqlUtils {
      *
      * @param emailAddress The email addresss to be inserted
      * @param role The role to be added
-     * @throws InterestException (HttpStatus.INTERNAL_SERVER_ERROR if either the email address doesn't exist or this
-     *                           emailAddress/role pair already exists
+     * @throws {@link InterestException}
      */
     public void addRole(String emailAddress, RIRole role) throws InterestException {
 
@@ -78,7 +76,7 @@ public class SqlUtils {
         if (contact == null) {
             message = "addRole(): Invalid contact " + emailAddress + ".";
             logger.error(message);
-            throw new InterestException(message, HttpStatus.NOT_FOUND);
+            throw new InterestException(message, InterestStatus.NOT_FOUND);
         }
 
         final String insert = "INSERT INTO contact_role (contact_pk, role, created_at)" +
@@ -96,14 +94,14 @@ public class SqlUtils {
             if (rowCount < 1) {
                 message = "Unable to add role " + role.toString() + " for contact " + emailAddress + ".";
                 logger.error(message);
-                throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+                throw new InterestException(message, InterestStatus.INTERNAL_ERROR);
             }
 
         } catch (Exception e) {
 
             message = "Error inserting contact_role for " + emailAddress + ": " + e.getLocalizedMessage();
             logger.error(message);
-            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new InterestException(message, InterestStatus.INTERNAL_ERROR);
         }
     }
 
@@ -163,17 +161,17 @@ public class SqlUtils {
             pk = jdbcInterest.update(insert, parameterSource, keyholder);
             if (pk < 1) {
                 logger.error("Contact {} already exists.", emailAddress);
-                throw new InterestException(ERROR_MESSAGE, HttpStatus.INTERNAL_SERVER_ERROR);
+                throw new InterestException(ERROR_MESSAGE, InterestStatus.EXISTS);
             }
+
+            // Add the USER role to the database.
+            addRole(emailAddress, RIRole.USER);
 
         } catch (Exception e) {
 
             logger.error("Exception adding contact {}. Reason: {}", emailAddress, e.getLocalizedMessage());
-            throw new InterestException(ERROR_MESSAGE, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new InterestException(ERROR_MESSAGE, InterestStatus.INTERNAL_ERROR);
         }
-
-        // Add the USER role to the database.
-        addRole(emailAddress, RIRole.USER);
     }
 
     public void createSpringBatchTables(DataSource datasource) {
@@ -210,8 +208,8 @@ public class SqlUtils {
         Contact contact = getContact(emailAddress);
         if (contact == null) {
             message = "deleteContact(): Invalid contact " + emailAddress + ".";
-            logger.error(message);
-            throw new InterestException(message, HttpStatus.NOT_FOUND);
+            logger.warn(message);
+            throw new InterestException(message, InterestStatus.NOT_FOUND);
         }
 
         String delete;
@@ -285,8 +283,8 @@ public class SqlUtils {
      * @param emailAddress The email address
      * @param role the role
      *
-     * @throws InterestException (HttpStatus.INTERNAL_SERVER_ERROR if either the email address doesn't exist or this
-     *                           emailAddress/role pair doesn't exist
+     * @throws {@link InterestException}.NOT_FOUND if either the email address doesn't exist or an internal error
+     *         occurrs
      */
     public void deleteRole(String emailAddress, RIRole role) throws InterestException {
 
@@ -295,8 +293,8 @@ public class SqlUtils {
         Contact contact = getContact(emailAddress);
         if (contact == null) {
             message = "deleteRole(): Invalid contact " + emailAddress + ".";
-            logger.error(message);
-            throw new InterestException(message, HttpStatus.NOT_FOUND);
+            logger.warn(message);
+            throw new InterestException(message, InterestStatus.NOT_FOUND);
         }
 
         final String delete = "DELETE FROM contact_role WHERE contact_pk = :contactPk AND role = :role";
@@ -307,18 +305,13 @@ public class SqlUtils {
             parameterMap.put("contactPk", contact.getPk());
             parameterMap.put("role", role.toString());
 
-            int rowCount = jdbcInterest.update(delete, parameterMap);
-            if (rowCount < 1) {
-                message = "Unable to delete role " + role.toString() + " for contact " + emailAddress + ".";
-                logger.error(message);
-                throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+            jdbcInterest.update(delete, parameterMap);
 
         } catch (Exception e) {
 
             message = "Error deleting contact_role for " + emailAddress + ": " + e.getLocalizedMessage();
             logger.error(message);
-            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new InterestException(message, InterestStatus.INTERNAL_ERROR);
         }
     }
 
@@ -800,8 +793,8 @@ public class SqlUtils {
      * @param emailAddress contact email address
      * @param geneAccessionId gene accession id
      *
-     * @throws InterestException (HttpRequest.INTERNAL_SERVER_ERROR) if either {@code emailAddress} or
-     *                           {@code geneAccessionId} doesn't exist
+     * @throws InterestException if either {@code emailAddress} or {@code geneAccessionId} doesn't exist, or if contact
+     *                           is already registered for this gene.
      */
     public void registerGene(String emailAddress, String geneAccessionId) throws InterestException {
 
@@ -811,14 +804,14 @@ public class SqlUtils {
         if (gene == null) {
             message = "Invalid gene " + geneAccessionId + ".";
             logger.error(message);
-            throw new InterestException(message, HttpStatus.NOT_FOUND);
+            throw new InterestException(message, InterestStatus.NOT_FOUND);
         }
 
         Contact contact = getContact(emailAddress);
         if (contact == null) {
             message = "Invalid contact " + emailAddress + ".";
             logger.error(message);
-            throw new InterestException(message, HttpStatus.NOT_FOUND);
+            throw new InterestException(message, InterestStatus.NOT_FOUND);
         }
 
         Date now = new Date();
@@ -830,18 +823,14 @@ public class SqlUtils {
         parameterMap.put("genePk", gene.getPk());
         parameterMap.put("createdAt", now);
 
-        int rowCount;
         try {
 
-            rowCount = jdbcInterest.update(insert, parameterMap);
-            if (rowCount < 1) {
-                message = "Unable to register gene " + geneAccessionId + " for contact " + emailAddress + ".";
-                logger.error(message);
-                throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+            jdbcInterest.update(insert, parameterMap);
 
         } catch (DuplicateKeyException e) {
-            throw e;
+
+            message = "Contact " + emailAddress + " is already registered for gene " + geneAccessionId + ".";
+            throw new InterestException(message, InterestStatus.EXISTS);
         }
     }
 
@@ -851,8 +840,8 @@ public class SqlUtils {
      * @param emailAddress contact email address
      * @param geneAccessionId gene accession id
      *
-     * @throws InterestException (HttpRequest.INTERNAL_SERVER_ERROR) if either {@code emailAddress} or
-     *                           {@code geneAccessionId} doesn't exist
+     * @throws InterestException if either {@code emailAddress} or {@code geneAccessionId} doesn't exist, or if contact
+     *                           is not registered for this gene.
      */
     @Transactional
     public void unregisterGene(String emailAddress, String geneAccessionId) throws InterestException {
@@ -863,19 +852,21 @@ public class SqlUtils {
         if (gene == null) {
             message = "Invalid gene " + geneAccessionId + ".";
             logger.error(message);
-            throw new InterestException(message, HttpStatus.NOT_FOUND);
+            throw new InterestException(message, InterestStatus.NOT_FOUND);
         }
 
         Contact contact = getContact(emailAddress);
         if (contact == null) {
             message = "Invalid contact " + emailAddress + ".";
             logger.error(message);
-            throw new InterestException(message, HttpStatus.NOT_FOUND);
+            throw new InterestException(message, InterestStatus.NOT_FOUND);
         }
 
         // If the contact has not registered for this gene, return appropriate HttpStatus.
         if (getContactGene(emailAddress, geneAccessionId) == null) {
-            throw new InterestException("Contact " + emailAddress + " is not registered for gene " + geneAccessionId, HttpStatus.NOT_FOUND);
+            message = "Contact " + emailAddress + " is not registered for gene " + geneAccessionId + ".";
+            logger.error(message);
+            throw new InterestException(message, InterestStatus.NOT_FOUND);
         }
 
         String delete = "DELETE FROM contact_gene WHERE contact_pk = :contactPk AND gene_pk = :genePk";
@@ -884,13 +875,7 @@ public class SqlUtils {
         parameterMap.put("contactPk", contact.getPk());
         parameterMap.put("genePk", gene.getPk());
 
-        int rowCount;
-        rowCount = jdbcInterest.update(delete, parameterMap);
-        if (rowCount < 1) {
-            message = "Unable to unregister gene " + geneAccessionId + " for contact " + emailAddress + ".";
-            logger.error(message);
-            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        jdbcInterest.update(delete, parameterMap);
 
         // Delete from gene_sent if a row exists.
         delete = "DELETE FROM gene_sent WHERE address = :emailAddress AND mgi_accession_id = :mgiAccessionId";
@@ -906,9 +891,9 @@ public class SqlUtils {
      * Update the account_locked flag to the supplied value
      * @param emailAddress contact email address
      * @param accountLocked new value
-     * @throws InterestException (HttpRequest.INTERNAL_SERVER_ERROR) if {@code emailAddress} doesn't exist
+     * @return {@link InterestStatus}.NOT_FOUND if {@code emailAddress} doesn't exist
      */
-    public void updateAccountLocked(String emailAddress, boolean accountLocked) throws InterestException {
+    public InterestStatus updateAccountLocked(String emailAddress, boolean accountLocked) throws InterestException {
 
         String message;
         String update = "UPDATE contact SET account_locked = :accountLocked WHERE address = :address";
@@ -920,10 +905,10 @@ public class SqlUtils {
 
         int rowCount = jdbcInterest.update(update, parameterMap);
         if (rowCount < 1) {
-            message = "Unable to update password for contact " + emailAddress + ".";
-            logger.error(message);
-            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+            return InterestStatus.NOT_FOUND;
         }
+
+        return InterestStatus.OK;
     }
 
     /**
@@ -1009,7 +994,7 @@ public class SqlUtils {
      *
      * @param emailAddress contact email address
      * @param encryptedPassword new, encrypted password
-     * @throws InterestException (HttpRequest.INTERNAL_SERVER_ERROR) if {@code emailAddress} doesn't exist
+     * @throws {@link InterestException}.NOT_FOUND) if {@code emailAddress} doesn't exist
      */
     public void updatePassword(String emailAddress, String encryptedPassword) throws InterestException {
 
@@ -1025,7 +1010,7 @@ public class SqlUtils {
         if (rowCount < 1) {
             message = "Unable to update password for contact " + emailAddress + ".";
             logger.error(message);
-            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new InterestException(message, InterestStatus.NOT_FOUND);
         }
     }
 
@@ -1034,7 +1019,7 @@ public class SqlUtils {
      *
      * @param emailAddress contact email address
      * @param passwordExpired new value
-     * @throws InterestException (HttpRequest.INTERNAL_SERVER_ERROR)
+     * @throws {@link InterestException}.NOT_FOUND) if {@code emailAddress} doesn't exist
      */
     public void updatePasswordExpired(String emailAddress, boolean passwordExpired) throws InterestException {
 
@@ -1050,7 +1035,7 @@ public class SqlUtils {
         if (rowCount < 1) {
             message = "Unable to update passwordExpired for contact " + emailAddress + ".";
             logger.error(message);
-            throw new InterestException(message, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new InterestException(message, InterestStatus.NOT_FOUND);
         }
     }
 

@@ -108,11 +108,6 @@ public class InterestControllerTest extends BaseTest {
         Assert.assertTrue(response.getBody().equals("false"));
     }
 
-    // FIXME FIXME FIXME
-//    @Test
-//    public void apiRegistrationGene() {
-//    }
-
     @Test
     public void apiRolesNoUser() {
         List<String> response = interestController.apiRoles();
@@ -138,7 +133,7 @@ public class InterestControllerTest extends BaseTest {
     @Test
     public void apiUnregistrationGeneNoUser() {
         ResponseEntity<String> response = interestController.apiUnregistrationGene(registeredGeneAccessionId);
-        Assert.assertEquals(response.getStatusCodeValue(), 404);
+        Assert.assertEquals(404, response.getStatusCodeValue());
         Assert.assertTrue(response.getBody().equals("Invalid contact anonymous."));
     }
 
@@ -146,7 +141,7 @@ public class InterestControllerTest extends BaseTest {
     @WithAnonymousUser
     public void apiUnregistrationGeneAnonymousUser() {
         ResponseEntity<String> response = interestController.apiUnregistrationGene(registeredGeneAccessionId);
-        Assert.assertEquals(response.getStatusCodeValue(), 404);
+        Assert.assertEquals(404, response.getStatusCodeValue());
         Assert.assertTrue(response.getBody().equals("Invalid contact anonymous."));
     }
 
@@ -154,26 +149,41 @@ public class InterestControllerTest extends BaseTest {
     @WithMockUser("user1@ebi.ac.uk")
     public void apiUnregistrationGeneAuthenticatedUserRegisteredGene() {
         ResponseEntity<String> response = interestController.apiUnregistrationGene(registeredGeneAccessionId);
-        Assert.assertEquals(response.getStatusCodeValue(), 200);
+        Assert.assertEquals(200, response.getStatusCodeValue());
         Assert.assertTrue(response.getBody().isEmpty());
     }
 
-    // FIXME FIXME FIXME
-//    @Test
-//    @WithMockUser("user1@ebi.ac.uk")
-//    public void apiUnregistrationGeneAuthenticatedUserUnregisteredGene() {
-//        ResponseEntity<String> response = interestController.apiUnregistrationGene(unregisteredGeneAccessionId);
-//        Assert.assertEquals(404, response.getStatusCodeValue());
-//        Assert.assertTrue(response.getBody().isEmpty());
-//    }
+    @Test
+    @WithMockUser("user1@ebi.ac.uk")
+    public void apiUnregistrationGeneAuthenticatedUserUnregisteredGene() {
+        final String expectedBody = "Contact user1@ebi.ac.uk is not registered for gene MGI:2444824.";
+        ResponseEntity<String> response = interestController.apiUnregistrationGene(unregisteredGeneAccessionId);
+        Assert.assertEquals(404, response.getStatusCodeValue());
+        Assert.assertEquals(expectedBody, response.getBody());
+    }
 
-//    @Test
-//    public void apiRegistrationGeneAuthenticatedUserRegisteredGene() {
-//        final String registeredGeneAccessionId = "MGI:103576";
-//        final String unregisteredGeneAccessionId = "MGI:2444824";
-//        ResponseEntity<String> response = interestController.apiRegistrationGeneInfo(registeredGeneAccessionId);
-//        Assert.assertTrue(response.getBody().equals("true"));
-//        response = interestController.apiRegistrationGeneInfo(unregisteredGeneAccessionId);
-//        Assert.assertTrue(response.getBody().equals("false"));
-//    }
+    @Test
+    @WithAnonymousUser
+    public void apiRegistrationGeneAnonymousUser() {
+        ResponseEntity<String> response = interestController.apiRegistrationGene(unregisteredGeneAccessionId);
+        Assert.assertEquals(404, response.getStatusCodeValue());
+        Assert.assertTrue(response.getBody().equals("Invalid contact anonymous."));
+    }
+
+    @Test
+    @WithMockUser("user1@ebi.ac.uk")
+    public void apiRegistrationGeneAuthenticatedUserRegisteredGene() {
+        final String expectedBody = "Contact user1@ebi.ac.uk is already registered for gene MGI:103576.";
+        ResponseEntity<String> response = interestController.apiRegistrationGene(registeredGeneAccessionId);
+        Assert.assertEquals(400, response.getStatusCodeValue());
+        Assert.assertEquals(expectedBody, response.getBody());
+    }
+
+    @Test
+    @WithMockUser("user1@ebi.ac.uk")
+    public void apiRegistrationGeneAuthenticatedUserUnregisteredGene() {
+        ResponseEntity<String> response = interestController.apiRegistrationGene(unregisteredGeneAccessionId);
+        Assert.assertEquals(200, response.getStatusCodeValue());
+        Assert.assertTrue(response.getBody().isEmpty());
+    }
 }
