@@ -59,7 +59,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Inject
     public WebSecurityConfig(String paBaseUrl, String riBaseUrl, DataSource riDataSource) {
         this.paBaseUrl = paBaseUrl;
-        this.paBaseUrl = paBaseUrl;
+        this.riBaseUrl = riBaseUrl;
         this.riDataSource = riDataSource;
     }
 
@@ -94,7 +94,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .and()
                     .formLogin()
-                        .loginPage("/login")
+                        .loginPage(riBaseUrl + "/login")
                         .failureUrl("/failedLogin")
                         .successHandler(new RiSavedRequestAwareAuthenticationSuccessHandler())
                         .usernameParameter("ssoId")
