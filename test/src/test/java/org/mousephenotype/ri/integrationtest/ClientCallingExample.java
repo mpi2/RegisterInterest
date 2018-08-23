@@ -31,7 +31,8 @@ import java.util.Base64;
 /**
  * Created by mrelac on 20/09/2017.
  */
-@RunWith(SpringRunner.class)
+@Deprecated
+//@RunWith(SpringRunner.class)
 public class ClientCallingExample implements CommandLineRunner {
 
     @Value("${username:}")

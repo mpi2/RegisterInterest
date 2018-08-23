@@ -225,11 +225,6 @@ public class SqlUtils {
         parameterMap.put("address", contact.getEmailAddress());
         jdbcInterest.update(delete, parameterMap);
 
-        // Delete all matching emailAddress from gene_sent_summary (GDPR).
-        delete = "DELETE FROM gene_sent_summary WHERE address = :address";
-        parameterMap.put("address", contact.getEmailAddress());
-        jdbcInterest.update(delete, parameterMap);
-
         // Delete all matching emailAddress from reset_credentials
         deleteResetCredentialsByEmailAddress(emailAddress);
 

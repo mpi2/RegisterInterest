@@ -25,23 +25,25 @@
                     change your Register Interest password, and delete all of the genes for which you have registered.
                 </p>
 
+                <br />
+
                 <div class="login-card">
                     <div class="login-form">
                         <form action="login" method="post" class="form-horizontal">
                             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
 
                             <c:if test="${param.error != null}">
-                                <div class="alert alert-danger">
+                                <div class="messages error">
                                     <p>Invalid username and password.</p>
                                 </div>
                             </c:if>
                             <c:if test="${param.logout != null}">
-                                <div class="alert alert-success">
+                                <div class="messages">
                                     <p>You have been logged out successfully.</p>
                                 </div>
                             </c:if>
                             <c:if test="${param.deleted != null}">
-                                <div class="alert alert-success">
+                                <div class="messages">
                                     <p>Your account has been deleted as requested.</p>
                                 </div>
                             </c:if>

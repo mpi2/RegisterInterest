@@ -35,8 +35,9 @@ import javax.validation.constraints.NotNull;
 /**
  * Created by mrelac on 21/06/2017.
  */
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = TestConfig.class)
+@Deprecated
+//@RunWith(SpringRunner.class)
+//@ContextConfiguration(classes = TestConfig.class)
 public class RegisterUnregisterTest {
 
     @NotNull

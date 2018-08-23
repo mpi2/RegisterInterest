@@ -85,25 +85,24 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/unregistration/**").access("hasRole('USER') or hasRole('ADMIN')")
                 .antMatchers(HttpMethod.GET, "/account").access("hasRole('USER') or hasRole('ADMIN')")
                 .antMatchers(HttpMethod.POST, "/account").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers(HttpMethod.GET,"/**")
+                    .permitAll()
 
                 .and()
-                        .csrf().ignoringAntMatchers("/api/**")
-
-                .and().exceptionHandling()
+                    .exceptionHandling()
                     .accessDeniedPage("/Access_Denied")
 
                 .and()
                     .formLogin()
-                        .loginPage(riBaseUrl + "/login")
-                        .failureUrl("/failedLogin")
+                        .loginPage("/login")
+                        .failureUrl("/login?error")
+                        .defaultSuccessUrl("/summary")
                         .successHandler(new RiSavedRequestAwareAuthenticationSuccessHandler())
                         .usernameParameter("ssoId")
                         .passwordParameter("password")
 
                 .and()
-                    .authorizeRequests()
-                    .antMatchers(HttpMethod.GET,"/**")
-                    .permitAll()
+                        .csrf().ignoringAntMatchers("/api/**")
                 ;
     }
 
@@ -130,7 +129,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     public class RiSavedRequestAwareAuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
-        private final org.slf4j.Logger logger        = LoggerFactory.getLogger(this.getClass());
+        private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
         public RiSavedRequestAwareAuthenticationSuccessHandler() {
             super();
@@ -166,14 +165,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     request.getSession().removeAttribute("target");
                 }
 
-                super.onAuthenticationSuccess(request, response, authentication);
+                clearAuthenticationAttributes(request);
 
+                String targetUrl = riBaseUrl + "/summary";
+                getRedirectStrategy().sendRedirect(request, response, targetUrl);
+                super.onAuthenticationSuccess(request, response, authentication);
                 return;
             }
+
             String targetUrlParameter = getTargetUrlParameter();
             if (isAlwaysUseDefaultTargetUrl()
-                    || (targetUrlParameter != null && StringUtils.hasText(request
-                                                                                  .getParameter(targetUrlParameter)))) {
+                    || (targetUrlParameter != null && StringUtils.hasText(request.getParameter(targetUrlParameter)))) {
                 requestCache.removeRequest(request, response);
                 super.onAuthenticationSuccess(request, response, authentication);
 

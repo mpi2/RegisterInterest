@@ -153,16 +153,12 @@ public class SummaryController {
     }
 
 
-    /**
-     * @param request
-     * @param target The target to return to, if supplied. If omitted, we return to the url defined in the loginPage.
-     * @return
-     */
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String login(
-            HttpServletRequest request,
-            @RequestParam(value = "target", required = false) String target
+            HttpServletRequest request
     ) {
+        String target = request.getParameter("target");
+
         // target is supplied by phenotypeArchive to indicate that we need to redirect back to PA after authentication.
         if (target != null) {
             request.getSession().setAttribute("target", target);
@@ -180,18 +176,6 @@ public class SummaryController {
         session.setAttribute("drupalBaseUrl", drupalBaseUrl);
 
         return "loginPage";
-    }
-
-
-    @RequestMapping(value = "/failedLogin", method = RequestMethod.GET)
-    public String failedLogin(HttpServletRequest request) {
-
-        String error = request.getQueryString();
-        if (error != null) {
-            sleep(INVALID_PASSWORD_SLEEP_SECONDS);
-        }
-
-        return "redirect:" + riBaseUrl + "/login?error";
     }
 
 

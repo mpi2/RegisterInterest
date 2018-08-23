@@ -32,8 +32,10 @@ import javax.sql.DataSource;
 /**
  * Created by mrelac on 27/06/2017.
  */
-@Configuration
-@PropertySource("file:${user.home}/configfiles/${profile}/test.properties")
+
+// FIXME
+//@Configuration
+//@PropertySource("file:${user.home}/configfiles/${profile}/test.properties")
 public class TestConfig {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

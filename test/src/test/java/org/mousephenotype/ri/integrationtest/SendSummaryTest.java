@@ -36,8 +36,9 @@ import javax.validation.constraints.NotNull;
 /**
  * Created by mrelac on 16-02-2018.
  */
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = TestConfig.class)
+//@RunWith(SpringRunner.class)
+@Deprecated
+//@ContextConfiguration(classes = TestConfig.class)
 public class SendSummaryTest {
 
     @NotNull
