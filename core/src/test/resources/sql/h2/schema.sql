@@ -93,6 +93,7 @@ CREATE TABLE gene_sent (
   created_at                           DATETIME     NOT NULL,
   sent_at                              DATETIME, -- a null value means 'generated but not geneSent yet'.
   updated_at                           TIMESTAMP    NOT NULL        DEFAULT CURRENT_TIMESTAMP
+
 );
 
 
