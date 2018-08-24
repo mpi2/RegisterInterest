@@ -241,7 +241,13 @@ public class UrlUtils {
 
         try {
             URL url = new URL(request.getRequestURL().toString());
-            String scheme = url.getProtocol();
+
+            String scheme;
+
+            if ( (url.getHost().equals("localhost") || url.getHost().equals("127.0.0.1")))
+                scheme = "http";
+            else
+                scheme = "https";
 
             urlStringWithScheme = (urlString.startsWith("http") ? urlString : scheme + ":" + urlString);
         } catch (MalformedURLException e) {
