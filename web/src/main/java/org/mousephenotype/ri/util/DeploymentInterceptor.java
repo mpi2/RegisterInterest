@@ -95,6 +95,7 @@ public class DeploymentInterceptor extends HandlerInterceptorAdapter {
 	    request.setAttribute("requestConfig", requestConfig);
 
 	    log.debug("Interception! Intercepted path " + request.getRequestURI());
+
 	    return true;
     }
 
@@ -120,5 +121,4 @@ public class DeploymentInterceptor extends HandlerInterceptorAdapter {
 
 		return config.get("drupalBaseUrl");
 	}
-
 }

@@ -147,6 +147,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
             logger.info("onAuthenticationSuccess!");
 
+            String paBaseUrlWithScheme = UrlUtils.urlWithScheme(request, paBaseUrl);
+            String riBaseUrlWithScheme = UrlUtils.urlWithScheme(request, riBaseUrl);
 
 
 
@@ -157,8 +159,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                 String target = (String) request.getSession().getAttribute("target");
                 String targetWithScheme = (target == null ? target : UrlUtils.urlWithScheme(request, target));
-                String paBaseUrlWithScheme = UrlUtils.urlWithScheme(request, request.getSession().getAttribute("paBaseUrl").toString());
-                String riBaseUrlWithScheme = UrlUtils.urlWithScheme(request, request.getSession().getAttribute("riBaseUrl").toString());
 
 logger.info("savedRequest IS NULL. targetWithScheme = {}", targetWithScheme);
 
