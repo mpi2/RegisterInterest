@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.mousephenotype.ri.util;
 
+import org.mousephenotype.ri.core.utils.UrlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -23,7 +24,6 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,13 +54,8 @@ public class DeploymentInterceptor extends HandlerInterceptorAdapter {
 
 	    Map<String, String> requestConfig = new HashMap<>();
 
-        URL url = new URL(request.getRequestURL().toString());
-		String scheme = url.getProtocol();
-
-        String riBaseUrl = config.get("riBaseUrl");
-        String riBaseUrlWithScheme = (riBaseUrl.startsWith("http") ? riBaseUrl : scheme + ":" + riBaseUrl);
-
-	    requestConfig.put("riBaseUrlWithScheme", riBaseUrlWithScheme);
+	    requestConfig.put("riBaseUrlWithScheme", UrlUtils.urlWithScheme(request, config.get("riBaseUrl")));
+        requestConfig.put("paBaseUrlWithScheme", UrlUtils.urlWithScheme(request, config.get("paBaseUrl")));
 
 	    // Map the global config values into the request configuration
 	    config.keySet().forEach(key -> {

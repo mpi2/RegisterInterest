@@ -16,6 +16,7 @@
 
 package org.mousephenotype.ri.web.config;
 
+import org.mousephenotype.ri.core.utils.UrlUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -155,12 +156,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
                 String target = (String) request.getSession().getAttribute("target");
+                String targetWithScheme = (target == null ? target : UrlUtils.urlWithScheme(request, target));
+                String paBaseUrlWithScheme = UrlUtils.urlWithScheme(request, request.getSession().getAttribute("paBaseUrl").toString());
+                String riBaseUrlWithScheme = UrlUtils.urlWithScheme(request, request.getSession().getAttribute("riBaseUrl").toString());
 
-logger.info("savedRequest IS NULL. target = {}", target);
+logger.info("savedRequest IS NULL. targetWithScheme = {}", targetWithScheme);
 
 
 
-                if ((target != null) && (target.startsWith(paBaseUrl))) {
+                if ((targetWithScheme != null) && (targetWithScheme.startsWith(paBaseUrlWithScheme))) {
 
 
                     String riToken = request.getRequestedSessionId();
@@ -169,13 +173,13 @@ logger.info("savedRequest IS NULL. target = {}", target);
 logger.info("riToken = {}" , riToken);
 
                     StringBuilder paSuccessHandlerTarget = new StringBuilder()
-                            .append(paBaseUrl).append("/riSuccessHandler")
-                            .append("?target=" + target)
+                            .append(paBaseUrlWithScheme).append("/riSuccessHandler")
+                            .append("?target=" + targetWithScheme)
                             .append("&riToken=" + riToken);
 
 
                     clearAuthenticationAttributes(request);
-logger.info("target: {}", target);
+logger.info("target: {}", targetWithScheme);
                     getRedirectStrategy().sendRedirect(request, response, paSuccessHandlerTarget.toString());
 
                     // Remove target from the session attributes.
@@ -184,7 +188,7 @@ logger.info("target: {}", target);
 
                 clearAuthenticationAttributes(request);
 
-                String targetUrl = riBaseUrl + "/summary";
+                String targetUrl = riBaseUrlWithScheme + "/summary";
 
 
 logger.info("targetUrl = {}", targetUrl);

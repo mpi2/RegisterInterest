@@ -234,4 +234,20 @@ public class UrlUtils {
 
         return map;
     }
+
+    public static String urlWithScheme(HttpServletRequest request, String urlString) {
+
+        String urlStringWithScheme;
+
+        try {
+            URL url = new URL(request.getRequestURL().toString());
+            String scheme = url.getProtocol();
+
+            urlStringWithScheme = (urlString.startsWith("http") ? urlString : scheme + ":" + urlString);
+        } catch (MalformedURLException e) {
+            return "";
+        }
+
+        return urlStringWithScheme;
+    }
 }
