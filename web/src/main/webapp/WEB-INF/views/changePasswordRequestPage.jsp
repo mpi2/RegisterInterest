@@ -29,7 +29,7 @@
         <div class="login-card">
             <div class="login-form">
                 <form action="changePasswordEmail" method="post" class="form-horizontal">
-                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+                    <%--<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />--%>
 
                     <c:choose>
                         <c:when test="${not empty error}">

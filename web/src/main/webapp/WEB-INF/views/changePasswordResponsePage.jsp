@@ -28,7 +28,7 @@
             <div class="login-form">
 
                 <form action="changePasswordResponse" method="post" class="form-horizontal">
-                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+                    <%--<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />--%>
                     <input type="hidden" name="token" value="${token}" />
 
                     <c:if test="${not empty error}">
