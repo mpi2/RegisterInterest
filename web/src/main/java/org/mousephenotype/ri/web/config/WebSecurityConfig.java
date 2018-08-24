@@ -102,7 +102,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         .passwordParameter("password")
 
                 .and()
-                        .csrf().ignoringAntMatchers("/api/**")
+//                        .csrf().ignoringAntMatchers("/api/**")
+                        .csrf().disable()
                 ;
     }
 

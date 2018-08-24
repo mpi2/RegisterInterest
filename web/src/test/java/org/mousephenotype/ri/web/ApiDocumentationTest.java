@@ -81,6 +81,22 @@ public class ApiDocumentationTest extends BaseTest {
                 .alwaysDo(this.restDocumentationResultHandler)
                 .build()
         ;
+
+        // Good api testing docs: https://docs.spring.io/spring-restdocs/docs/current/reference/html5/#configuration and
+        //                        https://asciidoctor.org/docs/asciidoc-writers-guide
+        // Alternate:
+//        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context)
+//                .apply(documentationConfiguration(this.restDocumentation).uris()
+//                .withScheme("https")
+//                       .withHost("mousephenotype.org")
+//                       .withPort(443)
+//                )
+//                .alwaysDo(this.restDocumentationResultHandler)
+//                .build()
+//        ;
+
+
+
     }
 
     FieldDescriptor[] summary = new FieldDescriptor[] {
