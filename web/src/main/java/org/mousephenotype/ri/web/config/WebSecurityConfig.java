@@ -143,14 +143,30 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                                             HttpServletResponse response, Authentication authentication)
                 throws ServletException, IOException
         {
+
+            logger.info("onAuthenticationSuccess!");
+
+
+
+
             SavedRequest savedRequest = requestCache.getRequest(request, response);
 
             if (savedRequest == null) {
 
+
                 String target = (String) request.getSession().getAttribute("target");
+
+logger.info("savedRequest IS NULL. target = {}", target);
+
+
+
                 if ((target != null) && (target.startsWith(paBaseUrl))) {
 
+
                     String riToken = request.getRequestedSessionId();
+
+
+logger.info("riToken = {}" , riToken);
 
                     StringBuilder paSuccessHandlerTarget = new StringBuilder()
                             .append(paBaseUrl).append("/riSuccessHandler")
@@ -159,7 +175,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
                     clearAuthenticationAttributes(request);
-                    logger.info("target: {}", target);
+logger.info("target: {}", target);
                     getRedirectStrategy().sendRedirect(request, response, paSuccessHandlerTarget.toString());
 
                     // Remove target from the session attributes.
@@ -169,6 +185,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 clearAuthenticationAttributes(request);
 
                 String targetUrl = riBaseUrl + "/summary";
+
+
+logger.info("targetUrl = {}", targetUrl);
+
+
+
+
                 getRedirectStrategy().sendRedirect(request, response, targetUrl);
                 super.onAuthenticationSuccess(request, response, authentication);
                 return;
@@ -177,7 +200,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             String targetUrlParameter = getTargetUrlParameter();
             if (isAlwaysUseDefaultTargetUrl()
                     || (targetUrlParameter != null && StringUtils.hasText(request.getParameter(targetUrlParameter)))) {
-                requestCache.removeRequest(request, response);
+
+
+            logger.info("isAlwaysUseDefaultTargetUrl()");
+
+
+
+            requestCache.removeRequest(request, response);
                 super.onAuthenticationSuccess(request, response, authentication);
 
                 return;
@@ -187,7 +216,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
             // Use the DefaultSavedRequest URL
             String targetUrl = savedRequest.getRedirectUrl();
-            logger.debug("Redirecting to DefaultSavedRequest Url: " + targetUrl);
+logger.info("Redirecting to DefaultSavedRequest Url: " + targetUrl);
             getRedirectStrategy().sendRedirect(request, response, targetUrl);
         }
     }
