@@ -70,7 +70,7 @@ public class MvcConfig extends WebMvcConfigurerAdapter {
 
 
     @NotNull
-    @Value("${base_url}")
+    @Value("${interest_base_url}")
     private String baseUrl;
 
     @NotNull
