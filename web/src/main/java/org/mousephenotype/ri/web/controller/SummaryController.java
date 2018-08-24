@@ -113,8 +113,6 @@ public class SummaryController {
 
     // Properties
     private String          drupalBaseUrl;
-    private String          paBaseUrl;
-    private String          riBaseUrl;
     private PasswordEncoder passwordEncoder;
     private SqlUtils        sqlUtils;
     private String          smtpFrom;
@@ -125,8 +123,6 @@ public class SummaryController {
 
     @Inject
     public SummaryController(
-            String paBaseUrl,
-            String riBaseUrl,
             String drupalBaseUrl,
             PasswordEncoder passwordEncoder,
             SqlUtils sqlUtils,
@@ -136,8 +132,6 @@ public class SummaryController {
             String smtpReplyto,
             CoreService coreService
     ) {
-        this.paBaseUrl = paBaseUrl;
-        this.riBaseUrl = riBaseUrl;
         this.drupalBaseUrl = drupalBaseUrl;
         this.passwordEncoder = passwordEncoder;
         this.sqlUtils = sqlUtils;
@@ -167,8 +161,8 @@ public class SummaryController {
         }
 
         HttpSession session = request.getSession();
-        session.setAttribute("riBaseUrl", riBaseUrl);
-        session.setAttribute("paBaseUrl", paBaseUrl);
+        session.setAttribute("riBaseUrlWithScheme", request.getAttribute("riBaseUrlWithScheme"));
+        session.setAttribute("paBaseUrl", request.getAttribute("paBaseUrl"));
         session.setAttribute("drupalBaseUrl", drupalBaseUrl);
 
         return "loginPage";
@@ -201,7 +195,7 @@ public class SummaryController {
             new SecurityContextLogoutHandler().logout(request, response, auth);
         }
 
-        return "redirect:" + riBaseUrl + "/summary";
+        return "redirect:" + request.getAttribute("riBaseUrlWithScheme") + "/summary";
     }
 
 
@@ -212,17 +206,18 @@ public class SummaryController {
             @RequestParam("geneAccessionId") String geneAccessionId
     ) {
 
-        model.put("riBaseUrl", riBaseUrl);
+        model.put("riBaseUrlWithScheme", request.getAttribute("riBaseUrlWithScheme"));
 
         // Use the web service to register
         HttpHeaders headers = SecurityUtils.buildHeadersFromJsessionId(request);
-        ResponseEntity<String> response = new RestTemplate().exchange(riBaseUrl + "/api/registration/gene?geneAccessionId=" + geneAccessionId, HttpMethod.POST, new HttpEntity<String>(headers), String.class);
+        ResponseEntity<String> response = new RestTemplate()
+                .exchange(request.getAttribute("riBaseUrlWithSchem") + "/api/registration/gene?geneAccessionId=" + geneAccessionId, HttpMethod.POST, new HttpEntity<String>(headers), String.class);
         String body = response.getBody();
         if ((body != null) && (body.isEmpty())) {
             logger.warn(body);
         }
 
-        return "redirect:" + riBaseUrl + "/summary";
+        return "redirect:" + request.getAttribute("riBaseUrlWithScheme") + "/summary";
     }
 
 
@@ -233,17 +228,18 @@ public class SummaryController {
             @RequestParam("geneAccessionId") String geneAccessionId
     ) {
 
-        model.put("riBaseUrl", riBaseUrl);
+        model.put("riBaseUrlWithScheme", request.getAttribute("riBaseUrlWithScheme"));
 
         // Use the web service to unregister
         HttpHeaders headers = SecurityUtils.buildHeadersFromJsessionId(request);
-        ResponseEntity<String> response = new RestTemplate().exchange(riBaseUrl + "/api/unregistration/gene?geneAccessionId=" + geneAccessionId, HttpMethod.DELETE, new HttpEntity<String>(headers), String.class);
+        ResponseEntity<String> response = new RestTemplate()
+                .exchange(request.getAttribute("riBaseUrlWithScheme") + "/api/unregistration/gene?geneAccessionId=" + geneAccessionId, HttpMethod.DELETE, new HttpEntity<String>(headers), String.class);
         String body = response.getBody();
         if ((body != null) && (body.isEmpty())) {
             logger.warn(body);
         }
 
-        return "redirect:" + riBaseUrl + "/summary";
+        return "redirect:" + request.getAttribute("riBaseUrlWithScheme") + "/summary";
     }
 
 
@@ -268,7 +264,7 @@ public class SummaryController {
         Summary summary = sqlUtils.getSummary(securityUtils.getPrincipal());
 
         model.addAttribute("summary", summary);
-        model.addAttribute("riBaseUrl", request.getSession().getAttribute("riBaseUrl"));
+        model.addAttribute("riBaseUrlWithScheme", request.getSession().getAttribute("riBaseUrlWithScheme"));
         model.addAttribute("paBaseUrl", request.getSession().getAttribute("paBaseUrl"));
 
         return "summaryPage";
@@ -286,12 +282,13 @@ public class SummaryController {
 
     @RequestMapping(value = "/changePasswordEmail", method = RequestMethod.POST)
     public String changePasswordEmail(
+            HttpServletRequest request,
             ModelMap model,
             @RequestParam(value = "emailAddress", defaultValue = "") String emailAddress,
             @RequestParam(value = "repeatEmailAddress", defaultValue = "") String repeatEmailAddress
     ) {
         // Validate e-mail addresses are identical.
-        if (!emailAddress.equals(repeatEmailAddress)) {
+        if ( ! emailAddress.equals(repeatEmailAddress)) {
             model.addAttribute("emailAddress", emailAddress);
             model.addAttribute("title", TITLE_EMAIL_ADDRESS_MISMATCH);
             model.addAttribute("error", ERR_EMAIL_ADDRESS_MISMATCH);
@@ -309,8 +306,8 @@ public class SummaryController {
 
         // Generate and assemble email with password change
         String token     = buildToken(emailAddress);
-        String tokenLink = riBaseUrl + "/changePasswordResponse?token=" + token;
-        logger.debug("tokenLink = " + tokenLink);
+        String tokenLink =  request.getAttribute("riBaseUrlWithScheme") + "/changePasswordResponse?token=" + token;
+        logger.info("tokenLink = " + tokenLink);
 
         String  body;
         String  subject;
@@ -514,7 +511,7 @@ public class SummaryController {
             new SecurityContextLogoutHandler().logout(request, response, auth);
         }
 
-        return "redirect:" + riBaseUrl + "/login?deleted";
+        return "redirect:" + request.getAttribute("riBaseUrlWithScheme") + "/login?deleted";
     }
 
 

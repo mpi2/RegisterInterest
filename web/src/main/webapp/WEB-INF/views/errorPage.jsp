@@ -39,7 +39,7 @@
 
                     <br />
 
-                    <a href="${riBaseUrl}/login">Login</a>
+                    <a href="${riBaseUrlWithScheme}/login">Login</a>
 
                 </form>
             </div>

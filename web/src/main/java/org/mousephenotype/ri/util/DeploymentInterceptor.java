@@ -23,8 +23,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,7 +53,14 @@ public class DeploymentInterceptor extends HandlerInterceptorAdapter {
         }
 
 	    Map<String, String> requestConfig = new HashMap<>();
-	    requestConfig.put("version", "v2.1.4");
+
+        URL url = new URL(request.getRequestURL().toString());
+		String scheme = url.getProtocol();
+
+        String riBaseUrl = config.get("riBaseUrl");
+        String riBaseUrlWithScheme = (riBaseUrl.startsWith("http") ? riBaseUrl : scheme + ":" + riBaseUrl);
+
+	    requestConfig.put("riBaseUrlWithScheme", riBaseUrlWithScheme);
 
 	    // Map the global config values into the request configuration
 	    config.keySet().forEach(key -> {

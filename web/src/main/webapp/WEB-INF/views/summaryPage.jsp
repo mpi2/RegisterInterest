@@ -6,7 +6,7 @@
 <t:genericpage>
 
     <jsp:attribute name="title">Register Interest Summary</jsp:attribute>
-    <jsp:attribute name="breadcrumb">&nbsp;&raquo; <a href="${riBaseUrl}/summary">Register Interest</a> &raquo; Summary</jsp:attribute>
+    <jsp:attribute name="breadcrumb">&nbsp;&raquo; <a href="${riBaseUrlWithScheme}/summary">Register Interest</a> &raquo; Summary</jsp:attribute>
     <jsp:attribute name="bodyTag">
         <body>
     </jsp:attribute>
@@ -25,12 +25,12 @@
                             <div class="inner">
                                 <form id="formActions" style="border: 0;">
                                     <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
-                                    <a href="${riBaseUrl}/logout">Logout</a>
+                                    <a href="${riBaseUrlWithScheme}/logout">Logout</a>
                                     &nbsp;&nbsp;&nbsp;&nbsp;
                                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                    <button type="submit" class="btn btn-block btn-primary btn-default" formaction="${riBaseUrl}/changePasswordRequest" formmethod="get">Reset registration of interest password</button>
+                                    <button type="submit" class="btn btn-block btn-primary btn-default" formaction="${riBaseUrlWithScheme}/changePasswordRequest" formmethod="get">Reset registration of interest password</button>
                                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                    <button type="submit" class="btn btn-block btn-primary btn-default" formaction="${riBaseUrl}/account" formmethod="get">Delete all registrations of interest</button>
+                                    <button type="submit" class="btn btn-block btn-primary btn-default" formaction="${riBaseUrlWithScheme}/account" formmethod="get">Delete all registrations of interest</button>
                                 </form>
 
                                 <h6>Username: ${summary.emailAddress}</h6>
@@ -122,7 +122,7 @@
                                                                 </c:choose>
                                                             </td>
                                                             <td>
-                                                                <form id="unregisterForm" action="${riBaseUrl}/unregistration/gene?geneAccessionId=${gene.mgiAccessionId}" method="post" style="border:0;">
+                                                                <form id="unregisterForm" action="${riBaseUrlWithScheme}/unregistration/gene?geneAccessionId=${gene.mgiAccessionId}" method="post" style="border:0;">
                                                                     <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
 
                                                                     <input type="submit" id="unregisterGene"

@@ -6,7 +6,7 @@
 <t:genericpage>
 
     <jsp:attribute name="title">IMPC Login</jsp:attribute>
-    <jsp:attribute name="breadcrumb">&nbsp;&raquo; <a href="${riBaseUrl}/login">Register Interest</a> &raquo; Login</jsp:attribute>
+    <jsp:attribute name="breadcrumb">&nbsp;&raquo; <a href="${riBaseUrlWithScheme}/login">Register Interest</a> &raquo; Login</jsp:attribute>
 
     <jsp:attribute name="bodyTag">
         <body>
@@ -62,9 +62,9 @@
 
                             <br/>
 
-                            <a href="${riBaseUrl}/changePasswordRequest">New account</a>
+                            <a href="${riBaseUrlWithScheme}/changePasswordRequest">New account</a>
                             &nbsp;&nbsp;&nbsp;&nbsp;
-                            <a href="${riBaseUrl}/changePasswordRequest">Forgot password?</a>
+                            <a href="${riBaseUrlWithScheme}/changePasswordRequest">Forgot password?</a>
 
                         </form>
                     </div>
