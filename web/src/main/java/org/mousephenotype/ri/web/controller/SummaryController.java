@@ -122,10 +122,6 @@ public class SummaryController {
     private int             smtpPort;
     private String          smtpReplyto;
 
-//    // Global properties
-//    @Resource(name = "globalConfiguration")
-//    private Map<String, String> config;
-
 
     @Inject
     public SummaryController(
@@ -280,7 +276,7 @@ public class SummaryController {
 
 
     @RequestMapping(value = "/changePasswordRequest", method = RequestMethod.GET)
-    public String changePasswordRequestUrl(ModelMap model) {
+    public String changePasswordRequest(ModelMap model) {
         model.addAttribute("title", TITLE_CHANGE_PASSWORD_REQUEST);
         model.addAttribute("status", INFO_CHANGE_PASSWORD);
 
@@ -289,7 +285,7 @@ public class SummaryController {
 
 
     @RequestMapping(value = "/changePasswordEmail", method = RequestMethod.POST)
-    public String changePasswordEmailUrl(
+    public String changePasswordEmail(
             ModelMap model,
             @RequestParam(value = "emailAddress", defaultValue = "") String emailAddress,
             @RequestParam(value = "repeatEmailAddress", defaultValue = "") String repeatEmailAddress
