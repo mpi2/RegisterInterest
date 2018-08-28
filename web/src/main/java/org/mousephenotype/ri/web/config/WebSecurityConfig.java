@@ -129,66 +129,95 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return new BCryptPasswordEncoder();
     }
 
+
+    // FIXME - Refactor using SavedRequestAwareAuthenticationSuccessHandler.
     public class RiSavedRequestAwareAuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
         private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
-        public RiSavedRequestAwareAuthenticationSuccessHandler() {
-            super();
-        }
-
         private RequestCache requestCache = new HttpSessionRequestCache();
 
-        @Override
-        public void onAuthenticationSuccess(HttpServletRequest request,
-                                            HttpServletResponse response, Authentication authentication)
-                throws ServletException, IOException
-        {
-            SavedRequest savedRequest = requestCache.getRequest(request, response);
-
-            if (savedRequest == null) {
-
-                String target = (String) request.getSession().getAttribute("target");
-                if ((target != null) && (target.startsWith(paBaseUrl))) {
-
-                    String riToken = request.getRequestedSessionId();
-
-                    StringBuilder paSuccessHandlerTarget = new StringBuilder()
-                            .append(paBaseUrl).append("/riSuccessHandler")
-                            .append("?target=" + target)
-                            .append("&riToken=" + riToken);
-
-
-                    clearAuthenticationAttributes(request);
-                    logger.info("target: {}", target);
-                    getRedirectStrategy().sendRedirect(request, response, paSuccessHandlerTarget.toString());
-
-                    // Remove target from the session attributes.
-                    request.getSession().removeAttribute("target");
-                }
-
-                clearAuthenticationAttributes(request);
-
-                String targetUrl = riBaseUrl + "/summary";
-                getRedirectStrategy().sendRedirect(request, response, targetUrl);
-                super.onAuthenticationSuccess(request, response, authentication);
-                return;
-            }
-
-            String targetUrlParameter = getTargetUrlParameter();
-            if (isAlwaysUseDefaultTargetUrl()
-                    || (targetUrlParameter != null && StringUtils.hasText(request.getParameter(targetUrlParameter)))) {
-                requestCache.removeRequest(request, response);
-                super.onAuthenticationSuccess(request, response, authentication);
-
-                return;
-            }
-
-            clearAuthenticationAttributes(request);
-
-            // Use the DefaultSavedRequest URL
-            String targetUrl = savedRequest.getRedirectUrl();
-            logger.debug("Redirecting to DefaultSavedRequest Url: " + targetUrl);
-            getRedirectStrategy().sendRedirect(request, response, targetUrl);
+        public RiSavedRequestAwareAuthenticationSuccessHandler() {
         }
+
+        public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
+            SavedRequest savedRequest = this.requestCache.getRequest(request, response);
+            if (savedRequest == null) {
+                super.onAuthenticationSuccess(request, response, authentication);
+            } else {
+                String targetUrlParameter = this.getTargetUrlParameter();
+                if (!this.isAlwaysUseDefaultTargetUrl() && (targetUrlParameter == null || !StringUtils.hasText(request.getParameter(targetUrlParameter)))) {
+                    this.clearAuthenticationAttributes(request);
+                    String targetUrl = savedRequest.getRedirectUrl();
+                    this.logger.debug("Redirecting to DefaultSavedRequest Url: " + targetUrl);
+                    this.getRedirectStrategy().sendRedirect(request, response, targetUrl);
+                } else {
+                    this.requestCache.removeRequest(request, response);
+                    super.onAuthenticationSuccess(request, response, authentication);
+                }
+            }
+        }
+
+        public void setRequestCache(RequestCache requestCache) {
+            this.requestCache = requestCache;
+        }
+//
+//        public RiSavedRequestAwareAuthenticationSuccessHandler() {
+//            super();
+//        }
+//
+//        private RequestCache requestCache = new HttpSessionRequestCache();
+//
+//        @Override
+//        public void onAuthenticationSuccess(HttpServletRequest request,
+//                                            HttpServletResponse response, Authentication authentication)
+//                throws ServletException, IOException
+//        {
+//            SavedRequest savedRequest = requestCache.getRequest(request, response);
+//
+//            if (savedRequest == null) {
+//
+//                String target = (String) request.getSession().getAttribute("target");
+//                if ((target != null) && (target.startsWith(paBaseUrl))) {
+//
+//                    String riToken = request.getRequestedSessionId();
+//
+//                    StringBuilder paSuccessHandlerTarget = new StringBuilder()
+//                            .append(paBaseUrl).append("/riSuccessHandler")
+//                            .append("?target=" + target)
+//                            .append("&riToken=" + riToken);
+
+//
+//                    clearAuthenticationAttributes(request);
+//                    logger.info("target: {}", target);
+//                    getRedirectStrategy().sendRedirect(request, response, paSuccessHandlerTarget.toString());
+//
+////                    // Remove target from the session attributes.
+////                    request.getSession().removeAttribute("target");
+////                }
+////
+////                clearAuthenticationAttributes(request);
+////
+////                String targetUrl = riBaseUrl + "/summary";
+////                getRedirectStrategy().sendRedirect(request, response, targetUrl);
+////                super.onAuthenticationSuccess(request, response, authentication);
+////                return;
+////            }
+////
+////            String targetUrlParameter = getTargetUrlParameter();
+////            if (isAlwaysUseDefaultTargetUrl()
+////                    || (targetUrlParameter != null && StringUtils.hasText(request.getParameter(targetUrlParameter)))) {
+////                requestCache.removeRequest(request, response);
+////                super.onAuthenticationSuccess(request, response, authentication);
+////
+////                return;
+////            }
+////
+////            clearAuthenticationAttributes(request);
+////
+////            // Use the DefaultSavedRequest URL
+////            String targetUrl = savedRequest.getRedirectUrl();
+////            logger.debug("Redirecting to DefaultSavedRequest Url: " + targetUrl);
+////            getRedirectStrategy().sendRedirect(request, response, targetUrl);
+//        }
     }
 }
