@@ -23,6 +23,7 @@ import org.mousephenotype.ri.core.entities.SummaryWithDecoration;
 import org.mousephenotype.ri.core.utils.SqlUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.inject.Inject;
 import java.util.Map;
 
@@ -39,6 +40,11 @@ public class GenerateService {
     private String   paBaseUrl;
     private String   riBaseUrl;
     private SqlUtils sqlUtils;
+
+
+    @Resource(name = "globalConfiguration")
+    private Map<String, String> config;
+
 
     @Inject
     public GenerateService(String paBaseUrl, String riBaseUrl, SqlUtils sqlUtils) {
@@ -83,9 +89,13 @@ public class GenerateService {
     public String getSummaryContent(Summary summary, boolean inHtml) {
         StringBuilder sb = new StringBuilder();
 
+
+        String paBaseUrlWithScheme = config.get("paBaseUrlWithScheme");
+        String riBaseUrlWithScheme = config.get("riBaseUrlWithScheme");
+
         sb
                 .append(getSummaryPreface(inHtml))
-                .append(getSummaryHtmlTableText(summary))
+                .append(getSummaryHtmlTableText(summary, paBaseUrlWithScheme, riBaseUrlWithScheme))
                 .append(inHtml ? "<br />" : "\n");
 
         if ((summary instanceof SummaryWithDecoration) && (((SummaryWithDecoration) summary).isDecorated())){
@@ -233,8 +243,8 @@ public class GenerateService {
      *                gene state change decoration; otherwise, it will not.
      * @return An HTML string containing this contact's summary information, in HTML table format
      */
-    protected String getSummaryHtmlTableText(Summary summary) {
-        return SummaryHtmlTable.buildTableContent(paBaseUrl, riBaseUrl, summary);
+    protected String getSummaryHtmlTableText(Summary summary, String paBaseUrlWithScheme, String riBaseUrlWithScheme) {
+        return SummaryHtmlTable.buildTableContent(paBaseUrlWithScheme, riBaseUrlWithScheme, summary);
     }
 
     protected String getSummaryPreface(boolean inHtml) {

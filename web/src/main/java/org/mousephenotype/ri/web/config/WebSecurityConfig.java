@@ -132,96 +132,45 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     public class RiSavedRequestAwareAuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
         private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
-
-        public RiSavedRequestAwareAuthenticationSuccessHandler() {
-            super();
-        }
-
         private RequestCache requestCache = new HttpSessionRequestCache();
 
+        public RiSavedRequestAwareAuthenticationSuccessHandler() {
+        }
+
         @Override
-        public void onAuthenticationSuccess(HttpServletRequest request,
-                                            HttpServletResponse response, Authentication authentication)
-                throws ServletException, IOException
-        {
+        public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
 
-            logger.info("onAuthenticationSuccess!");
+            String paBaseUrlWithScheme = UrlUtils.urlWithScheme(request.getRequestURL().toString(), paBaseUrl);
+            String riBaseUrlWithScheme = UrlUtils.urlWithScheme(request.getRequestURL().toString(), riBaseUrl);
+            String riToken             = request.getRequestedSessionId();
+            String target              = (String) request.getSession().getAttribute("target");
+            String targetWithScheme    = (target == null ? null : UrlUtils.urlWithScheme(request.getRequestURL().toString(), target));
 
-            String paBaseUrlWithScheme = UrlUtils.urlWithScheme(request, paBaseUrl);
-            String riBaseUrlWithScheme = UrlUtils.urlWithScheme(request, riBaseUrl);
+            logger.debug("paBaseUrlWithScheme = {}", paBaseUrlWithScheme);
+            logger.debug("riBaseUrlWithScheme = {}", riBaseUrlWithScheme);
+            logger.debug("riToken = {}", riToken);
+            logger.debug("targetWithScheme = {}", targetWithScheme);
 
 
-
-            SavedRequest savedRequest = requestCache.getRequest(request, response);
-
+            SavedRequest savedRequest = this.requestCache.getRequest(request, response);
             if (savedRequest == null) {
-
-
-                String target = (String) request.getSession().getAttribute("target");
-                String targetWithScheme = (target == null ? target : UrlUtils.urlWithScheme(request, target));
-
-logger.info("savedRequest IS NULL. targetWithScheme = {}", targetWithScheme);
-
-
-
-                if ((targetWithScheme != null) && (targetWithScheme.startsWith(paBaseUrlWithScheme))) {
-
-
-                    String riToken = request.getRequestedSessionId();
-
-
-logger.info("riToken = {}" , riToken);
-
-                    StringBuilder paSuccessHandlerTarget = new StringBuilder()
-                            .append(paBaseUrlWithScheme).append("/riSuccessHandler")
-                            .append("?target=" + targetWithScheme)
-                            .append("&riToken=" + riToken);
-
-
-                    clearAuthenticationAttributes(request);
-logger.info("target: {}", targetWithScheme);
-                    getRedirectStrategy().sendRedirect(request, response, paSuccessHandlerTarget.toString());
-
-                    // Remove target from the session attributes.
-                    request.getSession().removeAttribute("target");
+                super.onAuthenticationSuccess(request, response, authentication);
+            } else {
+                String targetUrlParameter = this.getTargetUrlParameter();
+                if (!this.isAlwaysUseDefaultTargetUrl() && (targetUrlParameter == null || !StringUtils.hasText(request.getParameter(targetUrlParameter)))) {
+                    this.clearAuthenticationAttributes(request);
+                    String targetUrl = savedRequest.getRedirectUrl();
+                    this.logger.debug("Redirecting to DefaultSavedRequest Url: " + targetUrl);
+                    this.getRedirectStrategy().sendRedirect(request, response, targetUrl);
+                } else {
+                    this.requestCache.removeRequest(request, response);
+                    super.onAuthenticationSuccess(request, response, authentication);
                 }
-
-                clearAuthenticationAttributes(request);
-
-                String targetUrl = riBaseUrlWithScheme + "/summary";
-
-
-logger.info("targetUrl = {}", targetUrl);
-
-
-
-
-                getRedirectStrategy().sendRedirect(request, response, targetUrl);
-                super.onAuthenticationSuccess(request, response, authentication);
-                return;
             }
+        }
 
-            String targetUrlParameter = getTargetUrlParameter();
-            if (isAlwaysUseDefaultTargetUrl()
-                    || (targetUrlParameter != null && StringUtils.hasText(request.getParameter(targetUrlParameter)))) {
-
-
-            logger.info("isAlwaysUseDefaultTargetUrl()");
-
-
-
-            requestCache.removeRequest(request, response);
-                super.onAuthenticationSuccess(request, response, authentication);
-
-                return;
-            }
-
-            clearAuthenticationAttributes(request);
-
-            // Use the DefaultSavedRequest URL
-            String targetUrl = savedRequest.getRedirectUrl();
-logger.info("Redirecting to DefaultSavedRequest Url: " + targetUrl);
-            getRedirectStrategy().sendRedirect(request, response, targetUrl);
+        public void setRequestCache(RequestCache requestCache) {
+            this.requestCache = requestCache;
         }
     }
 }

@@ -69,7 +69,7 @@
 
                                                         <tr>
                                                             <td>
-                                                                <a href='${paBaseUrl}/riSuccessHandler?riToken=${pageContext.session.id}&target=${paBaseUrl}/genes/${gene.mgiAccessionId}'>${gene.symbol}</a>
+                                                                <a href='${paBaseUrlWithScheme}/riSuccessHandler?riToken=${pageContext.session.id}&target=${paBaseUrlWithScheme}/genes/${gene.mgiAccessionId}'>${gene.symbol}</a>
                                                             </td>
                                                             <td><a href="//www.informatics.jax.org/marker/${gene.mgiAccessionId}">${gene.mgiAccessionId}</a></td>
 
@@ -90,7 +90,7 @@
                                                                         None
                                                                     </c:when>
                                                                     <c:when test="${gene.riNullAlleleProductionStatus == 'Genotype confirmed mice'}">
-                                                                        <a href='${paBaseUrl}/search/allele2?kw="${gene.mgiAccessionId}"'>${gene.riNullAlleleProductionStatus}</a>
+                                                                        <a href='${paBaseUrlWithScheme}/search/allele2?kw="${gene.mgiAccessionId}"'>${gene.riNullAlleleProductionStatus}</a>
                                                                     </c:when>
                                                                     <c:otherwise>
                                                                         ${gene.riNullAlleleProductionStatus}
@@ -103,7 +103,7 @@
                                                                         None
                                                                     </c:when>
                                                                     <c:when test="${gene.riConditionalAlleleProductionStatus == 'Genotype confirmed mice'}">
-                                                                        <a href='${paBaseUrl}/search/allele2?kw="${gene.mgiAccessionId}"'>${gene.riConditionalAlleleProductionStatus}</a>
+                                                                        <a href='${paBaseUrlWithScheme}/search/allele2?kw="${gene.mgiAccessionId}"'>${gene.riConditionalAlleleProductionStatus}</a>
                                                                     </c:when>
                                                                     <c:otherwise>
                                                                         ${gene.riConditionalAlleleProductionStatus}
@@ -114,7 +114,7 @@
                                                                 <c:choose>
                                                                     <c:when test="${gene.riPhenotypingStatus == 'Phenotyping data available'}">
 
-                                                                        <a href='${paBaseUrl}/riSuccessHandler?riToken=${pageContext.session.id}&target=${paBaseUrl}/genes/${gene.mgiAccessionId}#section-associations'>Yes</a>
+                                                                        <a href='${paBaseUrlWithScheme}/riSuccessHandler?riToken=${pageContext.session.id}&target=${paBaseUrlWithScheme}/genes/${gene.mgiAccessionId}#section-associations'>Yes</a>
                                                                     </c:when>
                                                                     <c:otherwise>
                                                                         No
@@ -140,7 +140,7 @@
 
                             <br />
 
-                            <a href='${paBaseUrl}/riSuccessHandler?riToken=${pageContext.session.id}'>Search for more genes to register</a>
+                            <a href='${paBaseUrlWithScheme}/riSuccessHandler?riToken=${pageContext.session.id}'>Search for more genes to register</a>
 
                         </div>
                     </div>

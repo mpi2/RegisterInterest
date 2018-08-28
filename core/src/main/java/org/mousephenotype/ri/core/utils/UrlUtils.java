@@ -235,12 +235,12 @@ public class UrlUtils {
         return map;
     }
 
-    public static String urlWithScheme(HttpServletRequest request, String urlString) {
+    public static String urlWithScheme(String requestUrl, String urlString) {
 
         String urlStringWithScheme;
 
         try {
-            URL url = new URL(request.getRequestURL().toString());
+            URL url = new URL(requestUrl);
 
             String scheme;
 
@@ -250,7 +250,9 @@ public class UrlUtils {
                 scheme = "https";
 
             urlStringWithScheme = (urlString.startsWith("http") ? urlString : scheme + ":" + urlString);
+
         } catch (MalformedURLException e) {
+
             return "";
         }
 

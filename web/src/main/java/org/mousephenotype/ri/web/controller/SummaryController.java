@@ -143,6 +143,12 @@ public class SummaryController {
     }
 
 
+    @RequestMapping(value = {"/"})
+    public String showDocsIndex(HttpServletRequest request) {
+        return "redirect:" + request.getAttribute("riBaseUrlWithScheme") + "/summary";
+    }
+
+
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String login(
             HttpServletRequest request

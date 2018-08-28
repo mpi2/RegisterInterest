@@ -54,8 +54,11 @@ public class DeploymentInterceptor extends HandlerInterceptorAdapter {
 
 	    Map<String, String> requestConfig = new HashMap<>();
 
-	    requestConfig.put("riBaseUrlWithScheme", UrlUtils.urlWithScheme(request, config.get("riBaseUrl")));
-        requestConfig.put("paBaseUrlWithScheme", UrlUtils.urlWithScheme(request, config.get("paBaseUrl")));
+	    requestConfig.put("riBaseUrlWithScheme", UrlUtils.urlWithScheme(request.getRequestURL().toString(), config.get("riBaseUrl")));
+        requestConfig.put("paBaseUrlWithScheme", UrlUtils.urlWithScheme(request.getRequestURL().toString(), config.get("paBaseUrl")));
+
+        config.put("paBaseUrlWithScheme", UrlUtils.urlWithScheme(request.getRequestURL().toString(), config.get("paBaseUrl")));
+		config.put("riBaseUrlWithScheme", UrlUtils.urlWithScheme(request.getRequestURL().toString(), config.get("riBaseUrl")));
 
 	    // Map the global config values into the request configuration
 	    config.keySet().forEach(key -> {

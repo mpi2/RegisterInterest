@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class DocumentationController {
 
-    @RequestMapping(value = {"/"})
+    @RequestMapping(value = {"/api"})
     public String showDocsIndex(Model model) {
         return "redirect:docs/api.html";
     }

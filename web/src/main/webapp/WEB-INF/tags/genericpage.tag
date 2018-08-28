@@ -43,11 +43,11 @@
     jspContext.setAttribute("usermenu", usermenu);
     jspContext.setAttribute("menu", menus[1]);
 
-    String riBaseUrl = (request.getAttribute("riBaseUrl") != null &&  ! ((String) request.getAttribute("riBaseUrl")).isEmpty()) ? (String) request.getAttribute("riBaseUrl") : (String) application.getInitParameter("riBaseUrl");
-    jspContext.setAttribute("riBaseUrl", riBaseUrl);
+    String riBaseUrlWithScheme = (request.getAttribute("riBaseUrlWithScheme") != null &&  ! ((String) request.getAttribute("riBaseUrlWithScheme")).isEmpty()) ? (String) request.getAttribute("riBaseUrlWithScheme") : (String) application.getInitParameter("riBaseUrlWithScheme");
+    jspContext.setAttribute("riBaseUrlWithScheme", riBaseUrlWithScheme);
 
-    String paBaseUrl = (request.getAttribute("paBaseUrl") != null &&  ! ((String) request.getAttribute("paBaseUrl")).isEmpty()) ? (String) request.getAttribute("paBaseUrl") : (String) application.getInitParameter("paBaseUrl");
-    jspContext.setAttribute("paBaseUrl", paBaseUrl);
+    String paBaseUrlWithScheme = (request.getAttribute("paBaseUrlWithScheme") != null &&  ! ((String) request.getAttribute("paBaseUrlWithScheme")).isEmpty()) ? (String) request.getAttribute("paBaseUrlWithScheme") : (String) application.getInitParameter("paBaseUrlWithScheme");
+    jspContext.setAttribute("paBaseUrlWithScheme", paBaseUrlWithScheme);
 %>
 <%@attribute name="header" fragment="true"%>
 <%@attribute name="footer" fragment="true"%>
@@ -80,20 +80,20 @@
 
     <!-- css -->
     <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" href="${paBaseUrl}/css/vendor/jquery.ui/jquery.ui.core.css">
-    <link rel="stylesheet" href="${paBaseUrl}/css/vendor/jquery.ui/jquery.ui.slider.css">
-    <link rel="stylesheet" href="${paBaseUrl}/css/vendor/font-awesome/font-awesome.min.css">
-    <link rel="stylesheet" href="${paBaseUrl}/js/vendor/jquery/jquery.qtip-2.2/jquery.qtip.min.css">
-    <link rel="stylesheet" href="${paBaseUrl}/js/vendor/jquery/jquery.fancybox-2.1.5/jquery.fancybox.css">
+    <link rel="stylesheet" href="${paBaseUrlWithScheme}/css/vendor/jquery.ui/jquery.ui.core.css">
+    <link rel="stylesheet" href="${paBaseUrlWithScheme}/css/vendor/jquery.ui/jquery.ui.slider.css">
+    <link rel="stylesheet" href="${paBaseUrlWithScheme}/css/vendor/font-awesome/font-awesome.min.css">
+    <link rel="stylesheet" href="${paBaseUrlWithScheme}/js/vendor/jquery/jquery.qtip-2.2/jquery.qtip.min.css">
+    <link rel="stylesheet" href="${paBaseUrlWithScheme}/js/vendor/jquery/jquery.fancybox-2.1.5/jquery.fancybox.css">
     <link rel="stylesheet" href="${drupalBaseUrl}/sites/all/modules/feedback_simple/feedback_simple.css">
-    <link rel="stylesheet" href="${paBaseUrl}/js/vendor/DataTables-1.10.4/extensions/TableTools/css/dataTables.tableTools.min.css">
-    <%--<link rel="stylesheet" href="${paBaseUrl}/css/searchPage.css">--%>
+    <link rel="stylesheet" href="${paBaseUrlWithScheme}/js/vendor/DataTables-1.10.4/extensions/TableTools/css/dataTables.tableTools.min.css">
+    <%--<link rel="stylesheet" href="${paBaseUrlWithScheme}/css/searchPage.css">--%>
 
-    <link href="${paBaseUrl}/css/default.css" rel="stylesheet" type="text/css" />
-    <%--<link href="${paBaseUrl}/css/wdm.css" rel="stylesheet" type="text/css" />--%>
+    <link href="${paBaseUrlWithScheme}/css/default.css" rel="stylesheet" type="text/css" />
+    <%--<link href="${paBaseUrlWithScheme}/css/wdm.css" rel="stylesheet" type="text/css" />--%>
 
     <!-- EBI CSS -->
-    <link href="${paBaseUrl}/css/additionalStyling.css" rel="stylesheet" type="text/css" />
+    <link href="${paBaseUrlWithScheme}/css/additionalStyling.css" rel="stylesheet" type="text/css" />
 
     <script>
         <%--
@@ -151,24 +151,24 @@
     <!-- NEW DESIGN JAVASCRIPT -->
 
     <!-- javascript -->
-    <script type="text/javascript" src="${paBaseUrl}/js/head.min.js?v=${version}"></script>
+    <script type="text/javascript" src="${paBaseUrlWithScheme}/js/head.min.js?v=${version}"></script>
     <!--We're calling these from Google as this will download from the closest geographic location which will speed page-loads for Aussies and Kiwis-->
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 
-    <script type="text/javascript" src="${paBaseUrl}/js/vendor/DataTables-1.10.4/media/js/jquery.dataTables.min.js?v=${version}"></script>
-    <script type="text/javascript" src="${paBaseUrl}/js/vendor/DataTables-1.10.4/extensions/TableTools/js/dataTables.tableTools.min.js?v=${version}"></script>
-    <script type="text/javascript" src="${paBaseUrl}/js/vendor/jquery.jeditable.js?v=${version}"></script>
+    <script type="text/javascript" src="${paBaseUrlWithScheme}/js/vendor/DataTables-1.10.4/media/js/jquery.dataTables.min.js?v=${version}"></script>
+    <script type="text/javascript" src="${paBaseUrlWithScheme}/js/vendor/DataTables-1.10.4/extensions/TableTools/js/dataTables.tableTools.min.js?v=${version}"></script>
+    <script type="text/javascript" src="${paBaseUrlWithScheme}/js/vendor/jquery.jeditable.js?v=${version}"></script>
 
 
     <!--[if lt IE 9 ]><script type="text/javascript" src="js/selectivizr-min.js"></script><![endif]-->
-    <script type="text/javascript" src="${paBaseUrl}/js/vendor/jquery/jquery.qtip-2.2/jquery.qtip.min.js?v=${version}"></script>
-    <script type="text/javascript" src="${paBaseUrl}/js/vendor/jquery/jquery.fancybox-2.1.5/jquery.fancybox.pack.js?v=${version}"></script>
-    <script type="text/javascript" src="${paBaseUrl}/js/vendor/jquery/jquery.tablesorter.min.js?v=${version}"></script>
+    <script type="text/javascript" src="${paBaseUrlWithScheme}/js/vendor/jquery/jquery.qtip-2.2/jquery.qtip.min.js?v=${version}"></script>
+    <script type="text/javascript" src="${paBaseUrlWithScheme}/js/vendor/jquery/jquery.fancybox-2.1.5/jquery.fancybox.pack.js?v=${version}"></script>
+    <script type="text/javascript" src="${paBaseUrlWithScheme}/js/vendor/jquery/jquery.tablesorter.min.js?v=${version}"></script>
 
-    <script type='text/javascript' src="${paBaseUrl}/js/general/toggle.js?v=${version}"></script>
+    <script type='text/javascript' src="${paBaseUrlWithScheme}/js/general/toggle.js?v=${version}"></script>
 
-    <script type="text/javascript" src="${paBaseUrl}/js/default.js?v=${version}"></script>
+    <script type="text/javascript" src="${paBaseUrlWithScheme}/js/default.js?v=${version}"></script>
 
     <jsp:invoke fragment="header" />
 
@@ -284,7 +284,7 @@
                     <a><i class='fa fa-question-circle fa-2x searchExample'></i></a>
                     <div style="clear: both"></div>
                     <div id='batchQryLink'>
-                        <a id='batchquery' href='${paBaseUrl}/batchQuery'><i class='fa fa-th-list batchQuery'></i><span id='bqry'>Batch search</span></a>
+                        <a id='batchquery' href='${paBaseUrlWithScheme}/batchQuery'><i class='fa fa-th-list batchQuery'></i><span id='bqry'>Batch search</span></a>
                     </div>
                     <div style="clear: both"></div>
                 </div>
@@ -299,7 +299,7 @@
                     <div class="region region-footer">
                         <div id="block-block-7" class="block block-block">
                             <div class="content">
-                                <img src="${paBaseUrl}/img/footerLogos.jpg" />
+                                <img src="${paBaseUrlWithScheme}/img/footerLogos.jpg" />
                                 <div class="clear"></div>
                             </div>
                         </div>
@@ -315,9 +315,9 @@
 
                             <div id="vnavi">
                                 <ul>
-                                    <li><a href="${paBaseUrl}/release">Release: ${releaseVersion}</a></li>
+                                    <li><a href="${paBaseUrlWithScheme}/release">Release: ${releaseVersion}</a></li>
                                     <li><a href="ftp://ftp.ebi.ac.uk/pub/databases/impc/">FTP</a></li>
-                                    <li><a href="${paBaseUrl}/documentation/index">Help/Documentation</a></li>
+                                    <li><a href="${paBaseUrlWithScheme}/documentation/index">Help/Documentation</a></li>
                                 </ul>
                             </div>
 
@@ -362,13 +362,13 @@
         </c:otherwise>
     </c:choose>
 
-    <script type='text/javascript' src='${paBaseUrl}/js/searchAndFacet/searchAndFacetConfig.js?v=${version}'></script>
-    <script type='text/javascript' src='${paBaseUrl}/js/utils/tools.js?v=${version}'></script>
-    <script type='text/javascript' src='${paBaseUrl}/js/general/ui.dropdownchecklist_modif.js?v=${version}'></script>
-    <script type='text/javascript' src='${paBaseUrl}/js/documentationConfig.js?v=${version}'></script>
+    <script type='text/javascript' src='${paBaseUrlWithScheme}/js/searchAndFacet/searchAndFacetConfig.js?v=${version}'></script>
+    <script type='text/javascript' src='${paBaseUrlWithScheme}/js/utils/tools.js?v=${version}'></script>
+    <script type='text/javascript' src='${paBaseUrlWithScheme}/js/general/ui.dropdownchecklist_modif.js?v=${version}'></script>
+    <script type='text/javascript' src='${paBaseUrlWithScheme}/js/documentationConfig.js?v=${version}'></script>
     <c:choose>
         <c:when test="${param['bare'] == null}">
-            <script type='text/javascript' src="${paBaseUrl}/js/searchAndFacet/breadcrumbSearchBox.js?v=${version}"></script>
+            <script type='text/javascript' src="${paBaseUrlWithScheme}/js/searchAndFacet/breadcrumbSearchBox.js?v=${version}"></script>
         </c:when>
     </c:choose>
 
