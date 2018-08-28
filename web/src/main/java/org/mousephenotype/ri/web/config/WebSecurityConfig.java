@@ -146,10 +146,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             String target              = (String) request.getSession().getAttribute("target");
             String targetWithScheme    = (target == null ? null : UrlUtils.urlWithScheme(request.getRequestURL().toString(), target));
 
-            logger.debug("paBaseUrlWithScheme = {}", paBaseUrlWithScheme);
-            logger.debug("riBaseUrlWithScheme = {}", riBaseUrlWithScheme);
-            logger.debug("riToken = {}", riToken);
-            logger.debug("targetWithScheme = {}", targetWithScheme);
+            logger.info("paBaseUrlWithScheme = {}", paBaseUrlWithScheme);
+            logger.info("riBaseUrlWithScheme = {}", riBaseUrlWithScheme);
+            logger.info("riToken = {}", riToken);
+            logger.info("targetWithScheme = {}", targetWithScheme);
 
 
             SavedRequest savedRequest = this.requestCache.getRequest(request, response);
@@ -160,7 +160,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 if (!this.isAlwaysUseDefaultTargetUrl() && (targetUrlParameter == null || !StringUtils.hasText(request.getParameter(targetUrlParameter)))) {
                     this.clearAuthenticationAttributes(request);
                     String targetUrl = savedRequest.getRedirectUrl();
-                    this.logger.debug("Redirecting to DefaultSavedRequest Url: " + targetUrl);
+                    this.logger.info("Redirecting to DefaultSavedRequest Url: " + targetUrl);
                     this.getRedirectStrategy().sendRedirect(request, response, targetUrl);
                 } else {
                     this.requestCache.removeRequest(request, response);
