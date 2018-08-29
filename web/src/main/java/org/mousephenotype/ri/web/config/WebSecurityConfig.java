@@ -146,6 +146,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
             String riToken = request.getRequestedSessionId();
             request.getSession().setAttribute("riToken", riToken);
+            logger.info("riToken = {}", riToken);
 
             String referer = request.getHeader("referer");
             if (referer == null)
