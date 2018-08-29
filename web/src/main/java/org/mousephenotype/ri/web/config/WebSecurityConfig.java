@@ -174,6 +174,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                     // Remove target from the session attributes.
                     request.getSession().removeAttribute("target");
+
+                    return;
                 }
 
                 logger.info("Authenticated!. savedRequest IS null. target = {}", target);
