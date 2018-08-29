@@ -177,11 +177,31 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     this.getRedirectStrategy().sendRedirect(request, response, targetUrl);
                 } else {
                     this.requestCache.removeRequest(request, response);
-                    logger.info("request URL = {}. target = {}", request.getRequestURL(), target);
+                    logger.info("request URL = {}. target = {}, riToken = {}", request.getRequestURL(), target, riToken);
 
                     if (target != null) {
                         this.getRedirectStrategy().sendRedirect(request, response, target);
                     }
+
+
+
+
+                    else {
+
+target = paBaseUrl + "/search/genes/kw=*";
+                        StringBuilder paSuccessHandlerTarget = new StringBuilder()
+                                .append(paBaseUrl).append("/riSuccessHandler")
+                                .append("?target=" + target)
+                                .append("&riToken=" + riToken);
+
+
+
+                    }
+
+
+
+
+
 
                     super.onAuthenticationSuccess(request, response, authentication);
                 }
