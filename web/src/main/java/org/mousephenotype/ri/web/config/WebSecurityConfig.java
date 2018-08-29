@@ -141,23 +141,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
 
-            String target;
+            String target = (String) request.getSession().getAttribute("target");
+            logger.info("session attribute 'target' = {}", target);
+
             String riToken = request.getRequestedSessionId();
             request.getSession().setAttribute("riToken", riToken);
 
-            logger.info("request.getRequestURL() = {}", request.getRequestURL().toString());
-            if (request.getUserPrincipal() != null)
-                logger.info("request.getUserPrincipal().getName() = {}", request.getUserPrincipal().getName());
-            else
-                logger.info("request.getUserPrincipal() is NULL!");
             String referer = request.getHeader("referer");
             if (referer == null)
                 logger.info("referer is NULL!");
             else
                 logger.info("referer = {}", referer);
-
             Map<String, String> params = UrlUtils.getParams(referer);
-
             target = params.get("target");
 
             if (target != null) {
