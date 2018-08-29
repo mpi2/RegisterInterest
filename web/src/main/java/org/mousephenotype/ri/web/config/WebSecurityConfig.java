@@ -140,18 +140,49 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         }
 
         public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
+
             SavedRequest savedRequest = this.requestCache.getRequest(request, response);
+            String target = (String) request.getSession().getAttribute("target");
+            String riToken             = request.getRequestedSessionId();
+            request.getSession().setAttribute("riToken", riToken);
+
             if (savedRequest == null) {
+
+                if (target != null) {
+
+                    logger.info("Authenticated!. target = {}", target);
+                    StringBuilder paSuccessHandlerTarget = new StringBuilder()
+                            .append(paBaseUrl).append("/riSuccessHandler")
+                            .append("?target=" + target)
+                            .append("&riToken=" + riToken);
+
+                    clearAuthenticationAttributes(request);
+                    logger.info("target: {}", target);
+                    getRedirectStrategy().sendRedirect(request, response, paSuccessHandlerTarget.toString());
+
+                    // Remove target from the session attributes.
+                    request.getSession().removeAttribute("target");
+                }
+
+                logger.info("Authenticated!. savedRequest IS null. target = {}", target);
                 super.onAuthenticationSuccess(request, response, authentication);
+
             } else {
+
                 String targetUrlParameter = this.getTargetUrlParameter();
-                if (!this.isAlwaysUseDefaultTargetUrl() && (targetUrlParameter == null || !StringUtils.hasText(request.getParameter(targetUrlParameter)))) {
+                if ( ! this.isAlwaysUseDefaultTargetUrl() && (targetUrlParameter == null || !StringUtils.hasText(request.getParameter(targetUrlParameter)))) {
                     this.clearAuthenticationAttributes(request);
                     String targetUrl = savedRequest.getRedirectUrl();
-                    this.logger.debug("Redirecting to DefaultSavedRequest Url: " + targetUrl);
+                    this.logger.info("Redirecting to DefaultSavedRequest Url: " + targetUrl);
                     this.getRedirectStrategy().sendRedirect(request, response, targetUrl);
                 } else {
                     this.requestCache.removeRequest(request, response);
+                    logger.info("request URL = {}. target = {}", request.getRequestURL(), target);
+
+                    if (target != null) {
+                        this.getRedirectStrategy().sendRedirect(request, response, target);
+                    }
+
                     super.onAuthenticationSuccess(request, response, authentication);
                 }
             }

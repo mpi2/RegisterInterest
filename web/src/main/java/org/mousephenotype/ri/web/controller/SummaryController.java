@@ -149,6 +149,12 @@ public class SummaryController {
     }
 
 
+    @RequestMapping(value = {"/"})
+    public String root() {
+        return "redirect:" + riBaseUrl + "/summary";
+    }
+
+
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String login(
             HttpServletRequest request
@@ -193,8 +199,13 @@ public class SummaryController {
     }
 
 
-    @RequestMapping(value = "/logout", method = RequestMethod.GET)
-    public String logout(HttpServletRequest request, HttpServletResponse response) {
+    // The logical endpoint name is /logout, but when /logout is used, this method never gets called. It appears like
+    // some Spring magic is going on. Renaming the endpoint to /logout2 avoids Spring interference and gets properly called.
+    @RequestMapping(value = "/logout2", method = RequestMethod.GET)
+    public String logout2(HttpServletRequest request, HttpServletResponse response) {
+
+        // Always remove riToken from the session attributes.
+        request.getSession().removeAttribute("riToken");
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
             logger.info("/logout: User {} logged out.", securityUtils.getPrincipal());

@@ -176,7 +176,12 @@ public class InterestController implements ErrorController {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
+
+
+
+            logger.info("RI InterestController.apiRoles() before getting roles");
             roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+            logger.info("RI InterestController.apiRoles() before getting roles");
         }
 
         return roles;
