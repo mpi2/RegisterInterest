@@ -146,6 +146,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             String riToken             = request.getRequestedSessionId();
             request.getSession().setAttribute("riToken", riToken);
 
+
+
+
+            if (target == null) {
+                target = paBaseUrl + "/search/gene?kw=*";
+            }
+
+
+
+
+
+
             if (savedRequest == null) {
 
                 if (target != null) {
@@ -165,6 +177,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 }
 
                 logger.info("Authenticated!. savedRequest IS null. target = {}", target);
+
                 super.onAuthenticationSuccess(request, response, authentication);
 
             } else {

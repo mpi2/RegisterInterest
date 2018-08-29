@@ -181,7 +181,7 @@ public class InterestController implements ErrorController {
 
             logger.info("RI InterestController.apiRoles() before getting roles");
             roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
-            logger.info("RI InterestController.apiRoles() before getting roles");
+            logger.info("RI InterestController.apiRoles() after getting roles");
         }
 
         return roles;
