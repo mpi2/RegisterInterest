@@ -147,11 +147,40 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             request.getSession().setAttribute("riToken", riToken);
 
 
+logger.info("target = {}", target);
+logger.info("request.getRequestURL() = {}", request.getRequestURL().toString());
+if (request.getUserPrincipal() != null)
+  logger.info("request.getUserPrincipal().getName() = {}", request.getUserPrincipal().getName());
+else
+    logger.info("request.getUserPrincipal() is NULL!");
+String referer = request.getHeader("referer");
+if (referer == null)
+    logger.info("referer is NULL!");
+else
+    logger.info("referer = {}", referer);
 
 
+
+            // Default target is /summary.
             if (target == null) {
-                target = paBaseUrl + "/search/gene?kw=*";
+//                target = paBaseUrl + "/search/gene?kw=*";
+                target = riBaseUrl + "/summary";
             }
+
+
+            // If a target was cached in savedRequest, use it. Otherwise, use
+
+
+
+
+
+            //
+            //
+            // Otherwise, default to RI /summary.
+
+
+
+
 
 
 
