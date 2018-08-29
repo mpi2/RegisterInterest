@@ -70,21 +70,21 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
 
                 // Web service
-                .antMatchers(HttpMethod.GET, "/api/admin/**").access("hasRole('ADMIN')")
-                .antMatchers(HttpMethod.POST, "/api/admin/**").access("hasRole('ADMIN')")
-                .antMatchers(HttpMethod.DELETE, "/api/admin/**").access("hasRole('ADMIN')")
-
-                .antMatchers(HttpMethod.GET, "/api/summary/**").access("hasRole('USER') or hasRole('ADMIN')")
-                .antMatchers(HttpMethod.GET, "/api/registration/**").access("hasRole('USER') or hasRole('ADMIN')")
-                .antMatchers(HttpMethod.POST, "/api/registration/**").access("hasRole('USER') or hasRole('ADMIN')")
-                .antMatchers(HttpMethod.DELETE, "/api/unregistration/**").access("hasRole('USER') or hasRole('ADMIN')")
-
-                // Web pages
-                .antMatchers(HttpMethod.GET, "/summary").access("hasRole('USER') or hasRole('ADMIN')")
-                .antMatchers(HttpMethod.POST, "/registration/**").access("hasRole('USER') or hasRole('ADMIN')")
-                .antMatchers(HttpMethod.POST, "/unregistration/**").access("hasRole('USER') or hasRole('ADMIN')")
-                .antMatchers(HttpMethod.GET, "/account").access("hasRole('USER') or hasRole('ADMIN')")
-                .antMatchers(HttpMethod.POST, "/account").access("hasRole('USER') or hasRole('ADMIN')")
+//                .antMatchers(HttpMethod.GET, "/api/admin/**").access("hasRole('ADMIN')")
+//                .antMatchers(HttpMethod.POST, "/api/admin/**").access("hasRole('ADMIN')")
+//                .antMatchers(HttpMethod.DELETE, "/api/admin/**").access("hasRole('ADMIN')")
+//
+//                .antMatchers(HttpMethod.GET, "/api/summary/**").access("hasRole('USER') or hasRole('ADMIN')")
+//                .antMatchers(HttpMethod.GET, "/api/registration/**").access("hasRole('USER') or hasRole('ADMIN')")
+//                .antMatchers(HttpMethod.POST, "/api/registration/**").access("hasRole('USER') or hasRole('ADMIN')")
+//                .antMatchers(HttpMethod.DELETE, "/api/unregistration/**").access("hasRole('USER') or hasRole('ADMIN')")
+//
+//                // Web pages
+//                .antMatchers(HttpMethod.GET, "/summary").access("hasRole('USER') or hasRole('ADMIN')")
+//                .antMatchers(HttpMethod.POST, "/registration/**").access("hasRole('USER') or hasRole('ADMIN')")
+//                .antMatchers(HttpMethod.POST, "/unregistration/**").access("hasRole('USER') or hasRole('ADMIN')")
+//                .antMatchers(HttpMethod.GET, "/account").access("hasRole('USER') or hasRole('ADMIN')")
+//                .antMatchers(HttpMethod.POST, "/account").access("hasRole('USER') or hasRole('ADMIN')")
                 .antMatchers(HttpMethod.GET,"/**")
                     .permitAll()
 
