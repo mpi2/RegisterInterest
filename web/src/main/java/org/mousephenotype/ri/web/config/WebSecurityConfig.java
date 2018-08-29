@@ -16,6 +16,7 @@
 
 package org.mousephenotype.ri.web.config;
 
+import org.mousephenotype.ri.core.utils.UrlUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -32,8 +33,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
-import org.springframework.security.web.savedrequest.SavedRequest;
-import org.springframework.util.StringUtils;
 
 import javax.inject.Inject;
 import javax.servlet.ServletException;
@@ -41,6 +40,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Created by mrelac on 12/06/2017.
@@ -141,178 +141,48 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
 
-            SavedRequest savedRequest = this.requestCache.getRequest(request, response);
-            String target = (String) request.getSession().getAttribute("target");
-            String riToken             = request.getRequestedSessionId();
+            String target;
+            String riToken = request.getRequestedSessionId();
             request.getSession().setAttribute("riToken", riToken);
 
+            logger.info("request.getRequestURL() = {}", request.getRequestURL().toString());
+            if (request.getUserPrincipal() != null)
+                logger.info("request.getUserPrincipal().getName() = {}", request.getUserPrincipal().getName());
+            else
+                logger.info("request.getUserPrincipal() is NULL!");
+            String referer = request.getHeader("referer");
+            if (referer == null)
+                logger.info("referer is NULL!");
+            else
+                logger.info("referer = {}", referer);
 
-logger.info("target = {}", target);
-logger.info("request.getRequestURL() = {}", request.getRequestURL().toString());
-if (request.getUserPrincipal() != null)
-  logger.info("request.getUserPrincipal().getName() = {}", request.getUserPrincipal().getName());
-else
-    logger.info("request.getUserPrincipal() is NULL!");
-String referer = request.getHeader("referer");
-if (referer == null)
-    logger.info("referer is NULL!");
-else
-    logger.info("referer = {}", referer);
+            Map<String, String> params = UrlUtils.getParams(referer);
 
+            target = params.get("target");
 
+            if (target != null) {
 
-            // Default target is /summary.
-            if (target == null) {
-//                target = paBaseUrl + "/search/gene?kw=*";
-                target = riBaseUrl + "/summary";
-            }
+                StringBuilder paSuccessHandlerTarget = new StringBuilder()
+                        .append(paBaseUrl).append("/riSuccessHandler")
+                        .append("?target=" + target)
+                        .append("&riToken=" + riToken);
 
+                clearAuthenticationAttributes(request);
+                logger.info("paSuccessHandlerTarget: {}", paSuccessHandlerTarget);
+                getRedirectStrategy().sendRedirect(request, response, paSuccessHandlerTarget.toString());
 
-            // If a target was cached in savedRequest, use it. Otherwise, use
-
-
-
-
-
-            //
-            //
-            // Otherwise, default to RI /summary.
-
-
-
-
-
-
-
-
-
-
-            if (savedRequest == null) {
-
-                if (target != null) {
-
-                    logger.info("Authenticated!. target = {}", target);
-                    StringBuilder paSuccessHandlerTarget = new StringBuilder()
-                            .append(paBaseUrl).append("/riSuccessHandler")
-                            .append("?target=" + target)
-                            .append("&riToken=" + riToken);
-
-                    clearAuthenticationAttributes(request);
-                    logger.info("target: {}", target);
-                    getRedirectStrategy().sendRedirect(request, response, paSuccessHandlerTarget.toString());
-
-                    // Remove target from the session attributes.
-                    request.getSession().removeAttribute("target");
-
-                    return;
-                }
-
-                logger.info("Authenticated!. savedRequest IS null. target = {}", target);
-
-                super.onAuthenticationSuccess(request, response, authentication);
+                // FIXME - I don't think we need this any more. Remove the code that inserts it into the session.
+                // Remove target from the session attributes.
+                request.getSession().removeAttribute("target");
 
             } else {
 
-                String targetUrlParameter = this.getTargetUrlParameter();
-                if ( ! this.isAlwaysUseDefaultTargetUrl() && (targetUrlParameter == null || !StringUtils.hasText(request.getParameter(targetUrlParameter)))) {
-                    this.clearAuthenticationAttributes(request);
-                    String targetUrl = savedRequest.getRedirectUrl();
-                    this.logger.info("Redirecting to DefaultSavedRequest Url: " + targetUrl);
-                    this.getRedirectStrategy().sendRedirect(request, response, targetUrl);
-                } else {
-                    this.requestCache.removeRequest(request, response);
-                    logger.info("request URL = {}. target = {}, riToken = {}", request.getRequestURL(), target, riToken);
-
-                    if (target != null) {
-                        this.getRedirectStrategy().sendRedirect(request, response, target);
-                    }
-
-
-
-
-                    else {
-
-target = paBaseUrl + "/search/genes/kw=*";
-                        StringBuilder paSuccessHandlerTarget = new StringBuilder()
-                                .append(paBaseUrl).append("/riSuccessHandler")
-                                .append("?target=" + target)
-                                .append("&riToken=" + riToken);
-
-
-
-                    }
-
-
-
-
-
-
-                    super.onAuthenticationSuccess(request, response, authentication);
-                }
+                super.onAuthenticationSuccess(request, response, authentication);
             }
         }
 
         public void setRequestCache(RequestCache requestCache) {
             this.requestCache = requestCache;
         }
-//
-//        public RiSavedRequestAwareAuthenticationSuccessHandler() {
-//            super();
-//        }
-//
-//        private RequestCache requestCache = new HttpSessionRequestCache();
-//
-//        @Override
-//        public void onAuthenticationSuccess(HttpServletRequest request,
-//                                            HttpServletResponse response, Authentication authentication)
-//                throws ServletException, IOException
-//        {
-//            SavedRequest savedRequest = requestCache.getRequest(request, response);
-//
-//            if (savedRequest == null) {
-//
-//                String target = (String) request.getSession().getAttribute("target");
-//                if ((target != null) && (target.startsWith(paBaseUrl))) {
-//
-//                    String riToken = request.getRequestedSessionId();
-//
-//                    StringBuilder paSuccessHandlerTarget = new StringBuilder()
-//                            .append(paBaseUrl).append("/riSuccessHandler")
-//                            .append("?target=" + target)
-//                            .append("&riToken=" + riToken);
-
-//
-//                    clearAuthenticationAttributes(request);
-//                    logger.info("target: {}", target);
-//                    getRedirectStrategy().sendRedirect(request, response, paSuccessHandlerTarget.toString());
-//
-////                    // Remove target from the session attributes.
-////                    request.getSession().removeAttribute("target");
-////                }
-////
-////                clearAuthenticationAttributes(request);
-////
-////                String targetUrl = riBaseUrl + "/summary";
-////                getRedirectStrategy().sendRedirect(request, response, targetUrl);
-////                super.onAuthenticationSuccess(request, response, authentication);
-////                return;
-////            }
-////
-////            String targetUrlParameter = getTargetUrlParameter();
-////            if (isAlwaysUseDefaultTargetUrl()
-////                    || (targetUrlParameter != null && StringUtils.hasText(request.getParameter(targetUrlParameter)))) {
-////                requestCache.removeRequest(request, response);
-////                super.onAuthenticationSuccess(request, response, authentication);
-////
-////                return;
-////            }
-////
-////            clearAuthenticationAttributes(request);
-////
-////            // Use the DefaultSavedRequest URL
-////            String targetUrl = savedRequest.getRedirectUrl();
-////            logger.debug("Redirecting to DefaultSavedRequest Url: " + targetUrl);
-////            getRedirectStrategy().sendRedirect(request, response, targetUrl);
-//        }
     }
 }
