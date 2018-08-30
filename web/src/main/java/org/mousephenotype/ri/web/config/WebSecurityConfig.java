@@ -33,6 +33,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
 
 import javax.inject.Inject;
 import javax.servlet.ServletException;
@@ -140,6 +141,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         }
 
         public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
+
+
+
+            SavedRequest savedRequest = this.requestCache.getRequest(request, response);
+            String targetUrlParameter = this.getTargetUrlParameter();
+            if (savedRequest != null) {
+                String targetUrl = savedRequest.getRedirectUrl();
+                logger.info("targetUrl {}", targetUrl);
+            }
+            logger.info("targetUrlParameter = {}", targetUrlParameter);
+
 
             String target = (String) request.getSession().getAttribute("target");
             logger.info("session attribute 'target' = {}", target);
