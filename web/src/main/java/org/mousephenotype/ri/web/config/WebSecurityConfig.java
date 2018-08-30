@@ -17,8 +17,10 @@
 package org.mousephenotype.ri.web.config;
 
 import org.mousephenotype.ri.core.utils.UrlUtils;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -36,6 +38,7 @@ import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
 
 import javax.inject.Inject;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -53,9 +56,10 @@ import java.util.Map;
 @PropertySource("file:${user.home}/configfiles/${profile}/application.properties")
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private DataSource riDataSource;
-    private String     paBaseUrl;
-    private String     riBaseUrl;
+    protected final Logger     logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
+    private         DataSource riDataSource;
+    private         String     paBaseUrl;
+    private         String     riBaseUrl;
 
     @Inject
     public WebSecurityConfig(String paBaseUrl, String riBaseUrl, DataSource riDataSource) {
@@ -128,6 +132,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public PasswordEncoder bcryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public ServletContextInitializer servletContextInitializer() {
+        return new ServletContextInitializer() {
+            @Override
+            public void onStartup(ServletContext servletContext) throws ServletException {
+                boolean secure = riBaseUrl.startsWith("https");
+                logger.info("setSecure({})", secure);
+                servletContext.getSessionCookieConfig().setSecure(secure);
+            }
+        };
     }
 
 
