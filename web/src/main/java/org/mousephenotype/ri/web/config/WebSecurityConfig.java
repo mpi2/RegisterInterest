@@ -37,6 +37,7 @@ import org.springframework.security.web.savedrequest.SavedRequest;
 
 import javax.inject.Inject;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -193,6 +194,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                 clearAuthenticationAttributes(request);
                 logger.info("paSuccessHandlerTarget: {}", paSuccessHandlerTarget);
+
+
+                Cookie cookie = new Cookie("JSESSIONID", riToken);
+                response.addCookie(cookie);
+
                 getRedirectStrategy().sendRedirect(request, response, paSuccessHandlerTarget.toString());
 
                 // FIXME - I don't think we need this any more. Remove the code that inserts it into the session.
