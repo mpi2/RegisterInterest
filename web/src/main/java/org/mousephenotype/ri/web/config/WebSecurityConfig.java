@@ -17,10 +17,8 @@
 package org.mousephenotype.ri.web.config;
 
 import org.mousephenotype.ri.core.utils.UrlUtils;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -38,7 +36,6 @@ import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
 
 import javax.inject.Inject;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -56,10 +53,9 @@ import java.util.Map;
 @PropertySource("file:${user.home}/configfiles/${profile}/application.properties")
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    protected final Logger     logger = LoggerFactory.getLogger(this.getClass().getCanonicalName());
-    private         DataSource riDataSource;
-    private         String     paBaseUrl;
-    private         String     riBaseUrl;
+    private DataSource riDataSource;
+    private String     paBaseUrl;
+    private String     riBaseUrl;
 
     @Inject
     public WebSecurityConfig(String paBaseUrl, String riBaseUrl, DataSource riDataSource) {
@@ -91,25 +87,25 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/account").access("hasRole('USER') or hasRole('ADMIN')")
                 .antMatchers(HttpMethod.POST, "/account").access("hasRole('USER') or hasRole('ADMIN')")
                 .antMatchers(HttpMethod.GET,"/**")
-                    .permitAll()
+                .permitAll()
 
                 .and()
-                    .exceptionHandling()
-                    .accessDeniedPage("/Access_Denied")
+                .exceptionHandling()
+                .accessDeniedPage("/Access_Denied")
 
                 .and()
-                    .formLogin()
-                        .loginPage("/login")
-                        .failureUrl("/login?error")
-                        .defaultSuccessUrl("/summary")
-                        .successHandler(new RiSavedRequestAwareAuthenticationSuccessHandler())
-                        .usernameParameter("ssoId")
-                        .passwordParameter("password")
+                .formLogin()
+                .loginPage("/login")
+                .failureUrl("/login?error")
+                .defaultSuccessUrl("/summary")
+                .successHandler(new RiSavedRequestAwareAuthenticationSuccessHandler())
+                .usernameParameter("ssoId")
+                .passwordParameter("password")
 
                 .and()
 //                        .csrf().ignoringAntMatchers("/api/**")
-                        .csrf().disable()
-                ;
+                .csrf().disable()
+        ;
     }
 
     @Autowired
@@ -117,33 +113,21 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         auth
                 .userDetailsService(userDetailsService())
-                    .passwordEncoder(bcryptPasswordEncoder())
+                .passwordEncoder(bcryptPasswordEncoder())
 
                 .and()
 
                 .jdbcAuthentication()
-                    .dataSource(riDataSource)
-                    .rolePrefix("ROLE_")
-                    .usersByUsernameQuery("SELECT address AS username, password, 'true' AS enabled FROM contact WHERE address = ?")
-                    .authoritiesByUsernameQuery("SELECT c.address AS username, cr.role FROM contact c JOIN contact_role cr ON cr.contact_pk = c.pk WHERE c.address = ?")
+                .dataSource(riDataSource)
+                .rolePrefix("ROLE_")
+                .usersByUsernameQuery("SELECT address AS username, password, 'true' AS enabled FROM contact WHERE address = ?")
+                .authoritiesByUsernameQuery("SELECT c.address AS username, cr.role FROM contact c JOIN contact_role cr ON cr.contact_pk = c.pk WHERE c.address = ?")
         ;
     }
 
     @Bean
     public PasswordEncoder bcryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public ServletContextInitializer servletContextInitializer() {
-        return new ServletContextInitializer() {
-            @Override
-            public void onStartup(ServletContext servletContext) throws ServletException {
-                boolean secure = riBaseUrl.startsWith("https");
-                logger.info("setSecure({})", secure);
-                servletContext.getSessionCookieConfig().setSecure(secure);
-            }
-        };
     }
 
 
