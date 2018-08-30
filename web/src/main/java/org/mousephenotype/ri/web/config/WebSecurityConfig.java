@@ -143,7 +143,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
 
-            HttpSession  session            = request.getSession(true);
+            String riToken = request.getSession(true).getId();
+            request.getSession().setAttribute("riToken", riToken);
+            logger.info("riToken = {}", riToken);
+
+//            HttpSession  session            = request.getSession(true);
             SavedRequest savedRequest       = this.requestCache.getRequest(request, response);
             String       targetUrlParameter = this.getTargetUrlParameter();
 
@@ -156,10 +160,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
 
-
             String target = (String) request.getSession().getAttribute("target");
 
-            String target1 = target = (String) session.getAttribute("target");
+//            String target1 = target = (String) session.getAttribute("target");
 
 
 
@@ -167,11 +170,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
             logger.info("session attribute 'target' = {}", target);
-            logger.info("session attribute 'target1' = {}", target1);
+//            logger.info("session attribute 'target1' = {}", target1);
 
-            String riToken = request.getRequestedSessionId();
-            request.getSession().setAttribute("riToken", riToken);
-            logger.info("riToken = {}", riToken);
+//            String riToken = request.getRequestedSessionId();
+//            request.getSession().setAttribute("riToken", riToken);
+//            logger.info("riToken = {}", riToken);
 
             String referer = request.getHeader("referer");
             if (referer == null)
