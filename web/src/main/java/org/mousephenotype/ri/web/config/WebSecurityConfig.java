@@ -39,6 +39,7 @@ import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.Map;
@@ -142,10 +143,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
 
+            HttpSession  session            = request.getSession(true);
+            SavedRequest savedRequest       = this.requestCache.getRequest(request, response);
+            String       targetUrlParameter = this.getTargetUrlParameter();
 
-
-            SavedRequest savedRequest = this.requestCache.getRequest(request, response);
-            String targetUrlParameter = this.getTargetUrlParameter();
             if (savedRequest != null) {
                 String targetUrl = savedRequest.getRedirectUrl();
                 logger.info("targetUrl {}", targetUrl);
@@ -153,8 +154,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             logger.info("targetUrlParameter = {}", targetUrlParameter);
 
 
+
+
+
             String target = (String) request.getSession().getAttribute("target");
+
+            String target1 = target = (String) session.getAttribute("target");
+
+
+
+
+
+
             logger.info("session attribute 'target' = {}", target);
+            logger.info("session attribute 'target1' = {}", target1);
 
             String riToken = request.getRequestedSessionId();
             request.getSession().setAttribute("riToken", riToken);
