@@ -1,4 +1,0 @@
-[source,bash]
-----
-$ curl https://www.ebi.ac.uk/mi/impc/interest/api/registration/gene?geneAccessionId=MGI:109490 -i -X POST -H 'Accept: application/json' -b JSESSIONID=3B69233B6B4A062DFBE4C892D684631C
-----

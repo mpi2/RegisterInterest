@@ -21,14 +21,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mousephenotype.ri.BaseTest;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.Banner;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Created by mrelac on 16/08/2018.
  */
+
+// FIXME FIXME FIXME
+
+
 @RunWith(SpringRunner.class)
 public class GenerateServiceTest extends BaseTest {
 

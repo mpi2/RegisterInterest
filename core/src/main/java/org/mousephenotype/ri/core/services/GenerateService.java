@@ -37,13 +37,11 @@ public class GenerateService {
 
 
     private String   paBaseUrl;
-    private String   riBaseUrl;
     private SqlUtils sqlUtils;
 
     @Inject
-    public GenerateService(String paBaseUrl, String riBaseUrl, SqlUtils sqlUtils) {
+    public GenerateService(String paBaseUrl, SqlUtils sqlUtils) {
         this.paBaseUrl = paBaseUrl;
-        this.riBaseUrl = riBaseUrl;
         this.sqlUtils = sqlUtils;
     }
 
@@ -234,7 +232,7 @@ public class GenerateService {
      * @return An HTML string containing this contact's summary information, in HTML table format
      */
     protected String getSummaryHtmlTableText(Summary summary) {
-        return SummaryHtmlTable.buildTableContent(paBaseUrl, riBaseUrl, summary);
+        return SummaryHtmlTable.buildTableContent(paBaseUrl, summary);
     }
 
     protected String getSummaryPreface(boolean inHtml) {

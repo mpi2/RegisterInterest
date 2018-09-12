@@ -1,9 +1,0 @@
-[source,http,options="nowrap"]
-----
-POST /mi/impc/interest/api/registration/gene?geneAccessionId=MGI:2444824 HTTP/1.1
-Accept: application/json
-Host: localhost:8080
-Content-Type: application/x-www-form-urlencoded
-
-geneAccessionId=MGI%3A2444824
-----

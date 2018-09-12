@@ -42,20 +42,11 @@ public class CoreConfig {
     @Value("${paBaseUrl}")
     private String paBaseUrl;
 
-    @NotNull
-    @Value("${riBaseUrl}")
-    private String riBaseUrl;
 
     @Bean
     public String paBaseUrl() {
         return paBaseUrl;
     }
-
-    @Bean
-    public String riBaseUrl() {
-        return riBaseUrl;
-    }
-
 
     @Bean
     public NamedParameterJdbcTemplate jdbc() {

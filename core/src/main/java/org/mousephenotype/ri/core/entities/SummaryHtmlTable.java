@@ -46,7 +46,7 @@ public class SummaryHtmlTable {
             "    background-color: #dddddd;"+
             "}";
 
-    public static String buildTableContent(String paBaseUrl, String riBaseUrl, Summary summary) {
+    public static String buildTableContent(String paBaseUrl, Summary summary) {
 
         StringBuilder body = new StringBuilder();
 
@@ -56,7 +56,7 @@ public class SummaryHtmlTable {
                 .append(buildRow("th", headings));
 
         for (Gene gene : summary.getGenes()) {
-            body.append(buildRow(paBaseUrl, riBaseUrl, gene));
+            body.append(buildRow(paBaseUrl, gene));
         }
 
         body.append("</table>");
@@ -70,7 +70,7 @@ public class SummaryHtmlTable {
      * @param gene This contact's {@link Gene} instance. Never null.
      * @return html tr text, wrapped in tr tag.
      */
-    public static String buildRow(String paBaseUrl, String riBaseUrl, Gene gene) {
+    public static String buildRow(String paBaseUrl, Gene gene) {
 
         StringBuilder row = new StringBuilder();
         String anchor;
@@ -161,7 +161,7 @@ public class SummaryHtmlTable {
 
 
         // Action
-        anchor = riBaseUrl + "/summary";
+        anchor = paBaseUrl + "/summary";
         currentValue = "Unregister";
         cell = buildHtmlCell("td", currentValue, anchor);
         row.append(cell);

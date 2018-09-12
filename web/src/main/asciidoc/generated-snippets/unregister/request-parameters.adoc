@@ -1,7 +1,0 @@
-|===
-|Parameter|Description
-
-|`geneAccessionId`
-|The gene's MGI gene accession id
-
-|===

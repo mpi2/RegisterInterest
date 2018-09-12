@@ -1,4 +1,0 @@
-[source,bash]
-----
-$ http POST 'http://localhost:8080/mi/impc/interest/api/registration/gene?geneAccessionId=MGI:2444824' 'Accept:application/json'
-----

@@ -1,8 +1,0 @@
-|===
-|Path|Type|Description
-
-|`geneAccessionIds`
-|`Array`
-|The MGI gene accession ids of the genes for which the contact has registered interest
-
-|===

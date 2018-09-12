@@ -1,4 +1,0 @@
-[source,bash]
-----
-$ curl 'http://localhost:8080/mi/impc/interest/api/unregistration/gene?geneAccessionId=MGI:103576' -i -X DELETE -H 'Accept: application/json'
-----
